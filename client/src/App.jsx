@@ -201,7 +201,7 @@ const StoreLayout = ({ theme, toggleTheme }) => {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
         <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', letterSpacing: '2px', fontWeight: 'bold' }}>POWERED BY</span>
-        <img src="/zihan.png" alt="Powered by Zihan" style={{ height: '25px', objectFit: 'contain' }} />
+        <img src="/zihan.png" alt="Powered by Zihan" style={{ height: '45px', objectFit: 'contain' }} />
       </div>
     </div>
   </div>
@@ -252,7 +252,7 @@ const AdminLayout = ({ theme, toggleTheme }) => {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
         <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', letterSpacing: '2px', fontWeight: 'bold' }}>POWERED BY</span>
-        <img src="/zihan.png" alt="Powered by Zihan" style={{ height: '25px', objectFit: 'contain' }} />
+        <img src="/zihan.png" alt="Powered by Zihan" style={{ height: '45px', objectFit: 'contain' }} />
       </div>
     </div>
   </div>
