@@ -276,6 +276,10 @@ function App() {
               <Route index element={<AdminDashboard />} />
             </Route>
           </Routes>
+          <div style={{ textAlign: 'center', padding: '20px', borderTop: '1px solid var(--glass-border)', marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Powered by</span>
+            <img src="/zihan.png" alt="Powered by Zihan" style={{ height: '30px', objectFit: 'contain' }} />
+          </div>
           <ChatWidget />
           </Router>
         </CartProvider>
