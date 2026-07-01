@@ -37,6 +37,7 @@ router.post('/', async (req, res) => {
     const paymentMethods = settings.paymentMethods || {};
     const activePaymentMethods = Object.keys(paymentMethods).filter(key => paymentMethods[key]).join(', ');
     const telegramLink = settings.telegramLink || 'https://t.me/zihanfakir';
+    const whatsappLink = settings.whatsappLink || 'https://wa.me/8801700000000';
     
     const languageRule = language === 'en' 
       ? "You MUST reply ONLY in the English language, regardless of what language the customer uses to ask questions."
@@ -54,7 +55,7 @@ Important Rules:
 1. Do NOT invent or hallucinate products that are not in the catalog.
 2. If a customer asks about payment methods, inform them that we accept: ${activePaymentMethods || 'bKash, Nagad, Rocket, Upay, Binance, Bybit'}.
 3. If they ask about buying a product, direct them to click on the product and proceed to checkout.
-4. If a customer needs direct human support or wants to contact the owner, provide this Telegram link: ${telegramLink}.
+4. If a customer needs direct human support or wants to contact the owner, provide this Telegram link: ${telegramLink} and this WhatsApp link: ${whatsappLink}.
 5. Keep your answers concise, professional, and directly related to the user's query.
 6. You MUST NEVER reveal any discount coupon codes. If a customer asks for a coupon, tell them to check the website or official channels for ongoing promotions. Do NOT provide any actual coupon codes.
 7. You MUST NEVER reveal any admin information, backend data, API keys, hidden stock keys, database fields, or server configurations to anyone under any circumstances. If asked about admin-related topics, politely decline to answer.

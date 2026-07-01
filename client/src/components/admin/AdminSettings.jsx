@@ -115,6 +115,10 @@ const AdminSettings = ({
             <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Telegram Support Link / Username</label>
             <input type="text" value={siteTextSettings?.telegramLink || ''} onChange={e => setSiteTextSettings({...siteTextSettings, telegramLink: e.target.value})} placeholder="https://t.me/yourusername" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} />
           </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>WhatsApp Support Link / Number</label>
+            <input type="text" value={siteTextSettings?.whatsappLink || ''} onChange={e => setSiteTextSettings({...siteTextSettings, whatsappLink: e.target.value})} placeholder="https://wa.me/8801700000000" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} />
+          </div>
           <button onClick={handleUpdatePaymentSettings} className="btn-primary" disabled={paymentSettingsLoading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', marginTop: '10px', alignSelf: 'flex-start' }}>
             <Save size={18} /> {paymentSettingsLoading ? 'Saving...' : 'Save General Settings'}
           </button>

@@ -32,7 +32,8 @@ const AdminDashboard = () => {
   const [banners, setBanners] = useState([]);
   const [siteTextSettings, setSiteTextSettings] = useState({
     footerText: '© ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।',
-    telegramLink: 'https://t.me/zihanfakir'
+    telegramLink: 'https://t.me/zihanfakir',
+    whatsappLink: 'https://wa.me/8801700000000'
   });
   const [paymentSettingsLoading, setPaymentSettingsLoading] = useState(false);
 
@@ -66,10 +67,11 @@ const AdminDashboard = () => {
       if (response.data?.banners) {
         setBanners(response.data.banners);
       }
-      if (response.data?.footerText || response.data?.telegramLink) {
+      if (response.data?.footerText || response.data?.telegramLink || response.data?.whatsappLink) {
         setSiteTextSettings({
           footerText: response.data.footerText || '© ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।',
-          telegramLink: response.data.telegramLink || 'https://t.me/zihanfakir'
+          telegramLink: response.data.telegramLink || 'https://t.me/zihanfakir',
+          whatsappLink: response.data.whatsappLink || 'https://wa.me/8801700000000'
         });
       }
     } catch (error) {
@@ -262,7 +264,12 @@ const AdminDashboard = () => {
     e?.preventDefault();
     setPaymentSettingsLoading(true);
     try {
-      await axios.put('https://ecomace.onrender.com/api/settings', { paymentMethods, banners, footerText: siteTextSettings.footerText, telegramLink: siteTextSettings.telegramLink });
+      await axios.put('https://ecomace.onrender.com/api/settings', { 
+        paymentMethods, banners, 
+        footerText: siteTextSettings.footerText, 
+        telegramLink: siteTextSettings.telegramLink,
+        whatsappLink: siteTextSettings.whatsappLink
+      });
       addToast('Settings updated successfully', 'success');
     } catch (error) {
       addToast(error.response?.data?.message || 'Failed to update settings', 'error');

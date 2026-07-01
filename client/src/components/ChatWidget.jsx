@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { MessageCircle, X, Send, Bot } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, Phone } from 'lucide-react';
 
 const ChatWidget = ({ siteSettings }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -115,6 +115,15 @@ const ChatWidget = ({ siteSettings }) => {
                 style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', borderRadius: '25px', backgroundColor: '#0088cc', color: 'white', border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', textDecoration: 'none', fontSize: '1rem', fontWeight: 'bold' }}
               >
                 Telegram Support <Send size={20} />
+              </a>
+              <a 
+                href={siteSettings?.whatsappLink || "https://wa.me/8801700000000"}
+                target="_blank" 
+                rel="noopener noreferrer"
+                onClick={() => setIsMenuOpen(false)}
+                style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', borderRadius: '25px', backgroundColor: '#25D366', color: 'white', border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', textDecoration: 'none', fontSize: '1rem', fontWeight: 'bold' }}
+              >
+                WhatsApp Support <Phone size={20} />
               </a>
             </div>
           )}

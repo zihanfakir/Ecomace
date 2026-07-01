@@ -266,7 +266,8 @@ function App() {
   
   const [siteSettings, setSiteSettings] = useState({
     footerText: '© ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।',
-    telegramLink: 'https://t.me/zihanfakir'
+    telegramLink: 'https://t.me/zihanfakir',
+    whatsappLink: 'https://wa.me/8801700000000'
   });
 
   useEffect(() => {
@@ -277,7 +278,8 @@ function App() {
           setSiteSettings(prev => ({
             ...prev,
             footerText: response.data.footerText || prev.footerText,
-            telegramLink: response.data.telegramLink || prev.telegramLink
+            telegramLink: response.data.telegramLink || prev.telegramLink,
+            whatsappLink: response.data.whatsappLink || prev.whatsappLink
           }));
         }
       } catch(err) {
