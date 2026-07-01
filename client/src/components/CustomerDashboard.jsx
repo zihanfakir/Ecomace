@@ -220,6 +220,7 @@ const CustomerDashboard = () => {
                               </div>
                             );
                           })}
+                        </div>
                       ))
                     ) : (
                       // Legacy format support
