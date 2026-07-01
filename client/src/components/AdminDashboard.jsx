@@ -548,6 +548,7 @@ const AdminDashboard = () => {
             orders={orders} 
             handleUpdateOrderStatus={handleUpdateOrderStatus} 
             setOrderToDelete={setOrderToDelete} 
+            user={user}
           />
         )}
         {activeTab === 'messages' && (

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Trash2, Search, Filter } from 'lucide-react';
 import ActionMenu from '../ActionMenu';
 
-const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete }) => {
+const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   
@@ -106,14 +106,16 @@ const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete }) => {
               </div>
               
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <ActionMenu actions={[
-                  { 
-                    label: 'Delete Order', 
-                    icon: <Trash2 size={16} />, 
-                    onClick: () => setOrderToDelete(order._id), 
-                    danger: true 
-                  }
-                ]} />
+                {user?.role === 'owner' && (
+                  <ActionMenu actions={[
+                    { 
+                      label: 'Delete Order', 
+                      icon: <Trash2 size={16} />, 
+                      onClick: () => setOrderToDelete(order._id), 
+                      danger: true 
+                    }
+                  ]} />
+                )}
               </div>
             </div>
           ))
