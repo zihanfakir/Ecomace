@@ -35,6 +35,10 @@ const Home = () => {
   const categories = ['All', ...new Set(products.map(p => p.category || 'Uncategorized'))];
 
   const getCategoryIcon = (cat) => {
+    // If the category already contains an emoji, don't add a default one
+    const hasEmoji = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/u.test(cat);
+    if (hasEmoji) return '';
+
     const lcat = cat.toLowerCase();
     if (lcat === 'all') return '✨';
     if (lcat.includes('software')) return '💻';
@@ -132,7 +136,9 @@ const Home = () => {
                 }
               }}
             >
-              <span style={{ fontSize: '1.2rem' }}>{getCategoryIcon(category)}</span>
+              {getCategoryIcon(category) && (
+                <span style={{ fontSize: '1.2rem' }}>{getCategoryIcon(category)}</span>
+              )}
               {category}
             </button>
           ))}
