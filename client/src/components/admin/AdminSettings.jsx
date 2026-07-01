@@ -6,6 +6,21 @@ const AdminSettings = ({
   user, profileData, setProfileData, handleUpdateProfile, profileLoading, message,
   paymentMethods, setPaymentMethods, banners, handleUpdateBanner, handleAddBanner, handleRemoveBanner, handleUpdatePaymentSettings, paymentSettingsLoading 
 }) => {
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        alert('Image must be smaller than 5MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileData(prev => ({ ...prev, photoUrl: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div>
       <h2 style={{ marginBottom: '30px' }}>Settings</h2>
@@ -29,6 +44,15 @@ const AdminSettings = ({
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Photo URL (Optional)</label>
                 <input type="text" value={profileData.photoUrl} onChange={e => setProfileData({...profileData, photoUrl: e.target.value})} placeholder="https://example.com/image.png" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} />
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>OR Upload Image:</span>
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}
+                  />
+                </div>
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>New Password (leave blank to keep current)</label>
