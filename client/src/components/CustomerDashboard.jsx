@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -18,6 +18,13 @@ const CustomerDashboard = () => {
   const [activeTicket, setActiveTicket] = useState(null);
   const [newTicket, setNewTicket] = useState({ subject: '', text: '', phone: '' });
   const [replyText, setReplyText] = useState('');
+  const chatEndRef = useRef(null);
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [activeTicket]);
   const { addToast } = useToast();
 
   const fetchTickets = async () => {
@@ -378,6 +385,7 @@ const CustomerDashboard = () => {
                       </div>
                     </div>
                   ))}
+                  <div ref={chatEndRef} />
                 </div>
 
                 {/* Chat Input */}

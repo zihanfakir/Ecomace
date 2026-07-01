@@ -1,7 +1,15 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Send } from 'lucide-react';
 
 const AdminSupport = ({ tickets, activeTicket, setActiveTicket, replyText, setReplyText, handleReplyTicket, handleCloseTicket }) => {
+  const chatEndRef = useRef(null);
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [activeTicket]);
+
   return (
     <div>
       <h2 style={{ marginBottom: '30px' }}>Support Tickets</h2>
@@ -99,6 +107,7 @@ const AdminSupport = ({ tickets, activeTicket, setActiveTicket, replyText, setRe
                   </span>
                 </div>
               ))}
+              <div ref={chatEndRef} />
             </div>
 
             <form onSubmit={handleReplyTicket} style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>

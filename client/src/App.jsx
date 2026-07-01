@@ -54,7 +54,7 @@ const StoreLayout = ({ theme, toggleTheme }) => {
   <div className="app-container">
     <nav className="glass-panel navbar-container" style={{ margin: '10px 20px', padding: '8px 25px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <Link to="/" style={{ textDecoration: 'none' }}>
+        <Link to="/" onClick={() => setIsMobileMenuOpen(false)} style={{ textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <img src="/logo.png" alt="Ecomace Logo" style={{ height: '35px', objectFit: 'contain' }} />
             <h2 style={{ color: 'var(--primary-accent)', margin: 0 }}>Ecomace</h2>
@@ -100,14 +100,14 @@ const StoreLayout = ({ theme, toggleTheme }) => {
         <div className="mobile-menu-btn" style={{ display: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             {user ? (
-              <Link to={(user.role === 'admin' || user.role === 'owner') ? '/admin' : '/dashboard'} style={{ color: 'var(--text-primary)', display: 'flex' }}>
+              <Link to={(user.role === 'admin' || user.role === 'owner') ? '/admin' : '/dashboard'} onClick={() => setIsMobileMenuOpen(false)} style={{ color: 'var(--text-primary)', display: 'flex' }}>
                 <User size={24} />
               </Link>
             ) : (
-              <Link to="/auth" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: '500', fontSize: '14px', background: 'var(--surface-color)', padding: '5px 10px', borderRadius: '8px', border: 'var(--glass-border)' }}>Login</Link>
+              <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)} style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: '500', fontSize: '14px', background: 'var(--surface-color)', padding: '5px 10px', borderRadius: '8px', border: 'var(--glass-border)' }}>Login</Link>
             )}
             
-            <Link to="/cart" style={{ position: 'relative', color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }}>
+            <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)} style={{ position: 'relative', color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }}>
               <ShoppingBag size={24} />
               {getCartCount() > 0 && (
                 <span style={{ position: 'absolute', top: '-8px', right: '-8px', backgroundColor: '#EF4444', color: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 'bold' }}>

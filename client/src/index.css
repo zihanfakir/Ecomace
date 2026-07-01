@@ -53,8 +53,9 @@ body {
 }
 /* Product Card Specific Hover */
 .product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
 /* Buttons */

@@ -25,18 +25,21 @@ export const CartProvider = ({ children }) => {
           addToast('Not enough stock available!', 'error');
           return prevCart;
         }
+        addToast('Added to cart!', 'success');
         return prevCart.map((item) =>
           item.product._id === product._id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
+      addToast('Added to cart!', 'success');
       return [...prevCart, { product, quantity: 1 }];
     });
   };
 
   const removeFromCart = (productId) => {
     setCart((prevCart) => prevCart.filter((item) => item.product._id !== productId));
+    addToast('Item removed from cart', 'info');
   };
 
   const updateQuantity = (productId, amount) => {

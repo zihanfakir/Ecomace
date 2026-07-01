@@ -40,6 +40,13 @@ const Checkout = () => {
     fetchSettings();
   }, []);
 
+  useEffect(() => {
+    if (!user) {
+      addToast('Please login to continue checkout', 'info');
+      navigate('/auth', { state: { from: '/checkout' } });
+    }
+  }, [user, navigate, addToast]);
+
   if (cart.length === 0 && !isSuccess) {
     return (
       <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', marginTop: '40px' }}>

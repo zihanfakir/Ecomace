@@ -10,6 +10,7 @@ const ProductDetails = () => {
   const { addToCart } = useContext(CartContext);
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -59,8 +60,13 @@ const ProductDetails = () => {
               -{product.discount}{product.discountType === 'flat' ? '৳' : '%'} OFF
             </div>
           )}
-          {product.photoUrl ? (
-            <img src={product.photoUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          {product.photoUrl && !imgError ? (
+            <img 
+              src={product.photoUrl} 
+              alt={product.name} 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              onError={() => setImgError(true)}
+            />
           ) : (
             <span style={{ fontSize: '6rem' }}>{product.icon || '🔑'}</span>
           )}

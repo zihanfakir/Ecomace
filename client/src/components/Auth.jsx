@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { LogIn, UserPlus } from 'lucide-react';
@@ -12,6 +12,7 @@ const Auth = () => {
   
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,7 +28,8 @@ const Auth = () => {
       if (response.data.user.role === 'admin' || response.data.user.role === 'owner') {
         navigate('/admin');
       } else {
-        navigate('/');
+        const destination = location.state?.from || '/';
+        navigate(destination);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong');
@@ -74,7 +76,7 @@ const Auth = () => {
           />
           
           <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-            {loading ? 'Processing...' : (isLogin ? <><LogIn size={18} /> Login</> : <><UserPlus size={18} /> Sign Up</>)}
+            {loading ? <><span className="spinner"></span> Processing...</> : (isLogin ? <><LogIn size={18} /> Login</> : <><UserPlus size={18} /> Sign Up</>)}
           </button>
         </form>
 

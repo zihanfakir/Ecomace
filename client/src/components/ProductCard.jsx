@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
@@ -6,6 +6,7 @@ import { CartContext } from '../context/CartContext';
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
   const { addToCart } = useContext(CartContext);
+  const [imgError, setImgError] = useState(false);
 
   return (
     <div className="glass-panel product-card" style={{ padding: '0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
@@ -19,8 +20,13 @@ const ProductCard = ({ product }) => {
         onClick={() => navigate(`/product/${product._id}`)}
         style={{ aspectRatio: '1 / 1', backgroundColor: 'var(--surface-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer' }}
       >
-        {product.photoUrl ? (
-          <img src={product.photoUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        {product.photoUrl && !imgError ? (
+          <img 
+            src={product.photoUrl} 
+            alt={product.name} 
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            onError={() => setImgError(true)}
+          />
         ) : (
           <span style={{ fontSize: '3rem' }}>{product.icon || '📦'}</span>
         )}
