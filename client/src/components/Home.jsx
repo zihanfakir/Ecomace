@@ -7,6 +7,15 @@ const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search input to remove typing lag
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -23,8 +32,8 @@ const Home = () => {
   }, []);
 
   const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    product.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+    product.description?.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
   return (
@@ -63,16 +72,20 @@ const Home = () => {
         </div>
         
         {loading ? (
-          <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Loading products...</p>
+          <div className="products-grid">
+            {[...Array(6)].map((_, idx) => (
+              <div key={idx} className="skeleton skeleton-card"></div>
+            ))}
+          </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="glass-panel" style={{ padding: '40px', textAlign: 'center' }}>
+          <div className="glass-panel animate-slide-up" style={{ padding: '40px', textAlign: 'center' }}>
             <h3 style={{ marginBottom: '10px' }}>No Products Found</h3>
             <p style={{ color: 'var(--text-secondary)' }}>Try adjusting your search criteria!</p>
           </div>
         ) : (
           <div className="products-grid">
-            {filteredProducts.map(product => (
-              <ProductCard key={product._id} product={product} />
+            {filteredProducts.map((product, index) => (
+              <ProductCard key={product._id} product={product} delayIndex={index % 6} />
             ))}
           </div>
         )}

@@ -3,13 +3,18 @@ import { ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, delayIndex = 0 }) => {
   const navigate = useNavigate();
   const { addToCart } = useContext(CartContext);
   const [imgError, setImgError] = useState(false);
 
   return (
-    <div className="glass-panel product-card" style={{ padding: '0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
+    <div 
+      className={`glass-panel product-card animate-slide-up animate-stagger-${delayIndex + 1}`} 
+      style={{ padding: '0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', transition: 'transform 0.3s ease, box-shadow 0.3s ease' }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.3)'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+    >
       {product.discount > 0 && (
         <div style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: '#EF4444', color: 'white', padding: '5px 10px', borderRadius: '20px', fontWeight: 'bold', boxShadow: '0 4px 10px rgba(239, 68, 68, 0.4)', zIndex: 10 }}>
           -{product.discount}{product.discountType === 'flat' ? '৳' : '%'} OFF

@@ -142,6 +142,7 @@ body {
     border-radius: 12px;
     margin-bottom: 15px;
     border: var(--glass-border) !important;
+    min-width: 0 !important;
   }
   
   .navbar-container { margin: 5px !important; padding: 10px !important; }
@@ -242,3 +243,49 @@ body {
 
 @media (max-width: 768px) { .desktop-nav-items { display: none !important; } .mobile-menu-btn { display: block !important; } }
 .hero-title { font-size: 3.5rem; }
+
+/* --- UI Animations & Enhancements --- */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+.animate-stagger-1 { animation-delay: 0.1s; opacity: 0; }
+.animate-stagger-2 { animation-delay: 0.2s; opacity: 0; }
+.animate-stagger-3 { animation-delay: 0.3s; opacity: 0; }
+.animate-stagger-4 { animation-delay: 0.4s; opacity: 0; }
+.animate-stagger-5 { animation-delay: 0.5s; opacity: 0; }
+.animate-stagger-6 { animation-delay: 0.6s; opacity: 0; }
+
+/* Skeleton Loader */
+@keyframes pulse {
+  0% { background-color: var(--glass-border); }
+  50% { background-color: var(--surface-color); }
+  100% { background-color: var(--glass-border); }
+}
+
+.skeleton {
+  animation: pulse 1.5s infinite ease-in-out;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.skeleton-card {
+  height: 300px;
+  border-radius: 12px;
+}
+
+.skeleton-text {
+  height: 20px;
+  margin-bottom: 10px;
+}
+
+.skeleton-title {
+  height: 30px;
+  width: 70%;
+  margin-bottom: 15px;
+}

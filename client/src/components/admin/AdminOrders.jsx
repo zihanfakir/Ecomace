@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trash2, Search, Filter } from 'lucide-react';
 import ActionMenu from '../ActionMenu';
 
 const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
   
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = (order._id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                           (order.customerDetails?.email || '').toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = (order._id.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+                           (order.customerDetails?.email || '').toLowerCase().includes(debouncedSearch.toLowerCase()));
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
