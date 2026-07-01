@@ -369,7 +369,6 @@ const AdminDashboard = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Keys / Accounts Stock (One per line)</label>
                 <textarea 
-                  required 
                   rows={5}
                   placeholder={`example1@gmail.com:pass123\nABCD-EFGH-1234-5678`}
                   value={newProduct.keys} 
