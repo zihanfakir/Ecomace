@@ -26,33 +26,28 @@ const ProductCard = ({ product }) => {
         )}
       </div>
 
-      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', flex: 1 }}>
+      <div className="product-card-content">
         <div onClick={() => navigate(`/product/${product._id}`)} style={{ cursor: 'pointer' }}>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '5px' }}>{product.name}</h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{product.description}</p>
+          <h3 className="product-card-title">{product.name}</h3>
+          <p className="product-card-desc">{product.description}</p>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', gap: '10px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', gap: '8px' }}>
           <div>
             {product.discount > 0 ? (
               <>
-                <div style={{ fontSize: '0.85rem', textDecoration: 'line-through', color: 'var(--text-secondary)' }}>৳ {product.price}</div>
-                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary-accent)' }}>৳ {product.discountType === 'flat' ? Math.max(0, product.price - product.discount) : Math.round(product.price - (product.price * (product.discount / 100)))}</div>
+                <div className="product-price-strike">৳ {product.price}</div>
+                <div className="product-price-large">৳ {product.discountType === 'flat' ? Math.max(0, product.price - product.discount) : Math.round(product.price - (product.price * (product.discount / 100)))}</div>
               </>
             ) : (
-              <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary-accent)' }}>৳ {product.price}</div>
+              <div className="product-price-large">৳ {product.price}</div>
             )}
-            <div style={{ fontSize: '0.8rem', color: (!product.stockKeys || product.stockKeys.length === 0) ? '#EF4444' : 'var(--text-secondary)', marginTop: '2px' }}>
+            <div className="product-stock-text" style={{ color: (!product.stockKeys || product.stockKeys.length === 0) ? '#EF4444' : 'var(--text-secondary)' }}>
               {(!product.stockKeys || product.stockKeys.length === 0) ? 'Out of Stock' : `${product.stockKeys.length} In Stock`}
             </div>
           </div>
           <button 
-            className="btn-primary" 
+            className="btn-primary product-cart-btn" 
             style={{ 
-              padding: '8px 16px', 
-              fontSize: '0.9rem', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px', 
               opacity: (!product.stockKeys || product.stockKeys.length === 0) ? 0.5 : 1, 
               cursor: (!product.stockKeys || product.stockKeys.length === 0) ? 'not-allowed' : 'pointer' 
             }}
