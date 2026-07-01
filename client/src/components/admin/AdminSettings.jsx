@@ -4,7 +4,8 @@ import ActionMenu from '../ActionMenu';
 
 const AdminSettings = ({ 
   user, profileData, setProfileData, handleUpdateProfile, profileLoading, message,
-  paymentMethods, setPaymentMethods, banners, handleUpdateBanner, handleAddBanner, handleRemoveBanner, handleUpdatePaymentSettings, paymentSettingsLoading 
+  paymentMethods, setPaymentMethods, banners, handleUpdateBanner, handleAddBanner, handleRemoveBanner,
+  siteTextSettings, setSiteTextSettings, handleUpdatePaymentSettings, paymentSettingsLoading 
 }) => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -100,6 +101,23 @@ const AdminSettings = ({
               </button>
             </form>
           </div>
+        </div>
+      </div>
+      
+      <h2 style={{ marginTop: '40px', marginBottom: '20px' }}>General Site Settings</h2>
+      <div style={{ backgroundColor: 'var(--surface-color)', padding: '30px', borderRadius: '12px', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Footer Copyright Text</label>
+            <input type="text" value={siteTextSettings?.footerText || ''} onChange={e => setSiteTextSettings({...siteTextSettings, footerText: e.target.value})} placeholder="© 2026 Your Name. All rights reserved." style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Telegram Support Link / Username</label>
+            <input type="text" value={siteTextSettings?.telegramLink || ''} onChange={e => setSiteTextSettings({...siteTextSettings, telegramLink: e.target.value})} placeholder="https://t.me/yourusername" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} />
+          </div>
+          <button onClick={handleUpdatePaymentSettings} className="btn-primary" disabled={paymentSettingsLoading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', marginTop: '10px', alignSelf: 'flex-start' }}>
+            <Save size={18} /> {paymentSettingsLoading ? 'Saving...' : 'Save General Settings'}
+          </button>
         </div>
       </div>
       

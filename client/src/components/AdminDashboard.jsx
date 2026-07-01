@@ -30,6 +30,10 @@ const AdminDashboard = () => {
   // Settings state
   const [paymentMethods, setPaymentMethods] = useState({ bkash: '', nagad: '', rocket: '', upay: '', bybit: '', binance: '' });
   const [banners, setBanners] = useState([]);
+  const [siteTextSettings, setSiteTextSettings] = useState({
+    footerText: '© ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।',
+    telegramLink: 'https://t.me/zihanfakir'
+  });
   const [paymentSettingsLoading, setPaymentSettingsLoading] = useState(false);
 
   // Profile settings state
@@ -61,6 +65,12 @@ const AdminDashboard = () => {
       }
       if (response.data?.banners) {
         setBanners(response.data.banners);
+      }
+      if (response.data?.footerText || response.data?.telegramLink) {
+        setSiteTextSettings({
+          footerText: response.data.footerText || '© ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।',
+          telegramLink: response.data.telegramLink || 'https://t.me/zihanfakir'
+        });
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -249,11 +259,11 @@ const AdminDashboard = () => {
   };
 
   const handleUpdatePaymentSettings = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     setPaymentSettingsLoading(true);
     try {
-      await axios.put('https://ecomace.onrender.com/api/settings', { paymentMethods, banners });
-      addToast('Settings updated successfully!', 'success');
+      await axios.put('https://ecomace.onrender.com/api/settings', { paymentMethods, banners, footerText: siteTextSettings.footerText, telegramLink: siteTextSettings.telegramLink });
+      addToast('Settings updated successfully', 'success');
     } catch (error) {
       addToast(error.response?.data?.message || 'Failed to update settings', 'error');
     } finally {
@@ -558,6 +568,8 @@ const AdminDashboard = () => {
             handleUpdateBanner={handleUpdateBanner}
             handleAddBanner={handleAddBanner}
             handleRemoveBanner={handleRemoveBanner}
+            siteTextSettings={siteTextSettings}
+            setSiteTextSettings={setSiteTextSettings}
             handleUpdatePaymentSettings={handleUpdatePaymentSettings}
             paymentSettingsLoading={paymentSettingsLoading}
           />

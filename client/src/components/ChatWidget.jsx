@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { MessageCircle, X, Send, Bot } from 'lucide-react';
 
-const ChatWidget = () => {
+const ChatWidget = ({ siteSettings }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [language, setLanguage] = useState('bn');
@@ -108,7 +108,7 @@ const ChatWidget = () => {
                 Eco AI Chat <Bot size={20} />
               </button>
               <a 
-                href="https://t.me/zihanfakir"
+                href={siteSettings?.telegramLink || "https://t.me/zihanfakir"}
                 target="_blank" 
                 rel="noopener noreferrer"
                 onClick={() => setIsMenuOpen(false)}

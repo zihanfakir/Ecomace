@@ -17,7 +17,7 @@ import { CartProvider, CartContext } from './context/CartContext';
 import { ToastProvider } from './context/ToastContext';
 import { useContext } from 'react';
 
-const StoreLayout = ({ theme, toggleTheme }) => {
+const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
   const { user, logout } = useContext(AuthContext);
   const { getCartCount } = useContext(CartContext);
   const [banners, setBanners] = useState([]);
@@ -197,7 +197,7 @@ const StoreLayout = ({ theme, toggleTheme }) => {
     </main>
     <div style={{ textAlign: 'center', padding: '30px 20px', borderTop: '1px solid var(--glass-border)', marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
       <div style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-        © ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।
+        {siteSettings?.footerText}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
         <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', letterSpacing: '2px', fontWeight: 'bold' }}>POWERED BY</span>
@@ -224,7 +224,7 @@ const ProtectedCustomerRoute = ({ children }) => {
   return children;
 };
 
-const AdminLayout = ({ theme, toggleTheme }) => {
+const AdminLayout = ({ theme, toggleTheme, siteSettings }) => {
   const { logout } = useContext(AuthContext);
   return (
   <div className="app-container" style={{ minHeight: '100vh' }}>
@@ -248,7 +248,7 @@ const AdminLayout = ({ theme, toggleTheme }) => {
     </main>
     <div style={{ textAlign: 'center', padding: '30px 20px', borderTop: '1px solid var(--glass-border)', marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
       <div style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-        © ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।
+        {siteSettings?.footerText}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
         <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', letterSpacing: '2px', fontWeight: 'bold' }}>POWERED BY</span>
@@ -263,6 +263,29 @@ function App() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'light';
   });
+  
+  const [siteSettings, setSiteSettings] = useState({
+    footerText: '© ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।',
+    telegramLink: 'https://t.me/zihanfakir'
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await axios.get('https://ecomace.onrender.com/api/settings');
+        if (response.data) {
+          setSiteSettings(prev => ({
+            ...prev,
+            footerText: response.data.footerText || prev.footerText,
+            telegramLink: response.data.telegramLink || prev.telegramLink
+          }));
+        }
+      } catch(err) {
+        console.error('Failed to fetch settings:', err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -280,7 +303,7 @@ function App() {
           <Router>
             <Routes>
               {/* Customer Storefront Routes */}
-              <Route element={<StoreLayout theme={theme} toggleTheme={toggleTheme} />}>
+              <Route element={<StoreLayout theme={theme} toggleTheme={toggleTheme} siteSettings={siteSettings} />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/product/:id" element={<ProductDetails />} />
                 <Route path="/cart" element={<Cart />} />
@@ -290,11 +313,11 @@ function App() {
               </Route>
 
             {/* Separate Admin Routes */}
-            <Route path="/admin" element={<AdminLayout theme={theme} toggleTheme={toggleTheme} />}>
+            <Route path="/admin" element={<AdminLayout theme={theme} toggleTheme={toggleTheme} siteSettings={siteSettings} />}>
               <Route index element={<AdminDashboard />} />
             </Route>
           </Routes>
-          <ChatWidget />
+          <ChatWidget siteSettings={siteSettings} />
           </Router>
         </CartProvider>
       </AuthProvider>
