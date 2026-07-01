@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Search } from 'lucide-react';
 import ProductCard from './ProductCard';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -19,6 +21,11 @@ const Home = () => {
     };
     fetchProducts();
   }, []);
+
+  const filteredProducts = products.filter(product => 
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="animate-fade-in" style={{ padding: '20px' }}>
@@ -41,18 +48,30 @@ const Home = () => {
       </div>
 
       <div id="products-section">
-        <h2 style={{ marginBottom: '20px', borderLeft: '4px solid var(--primary-accent)', paddingLeft: '10px' }}>Featured Products</h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '15px' }}>
+          <h2 style={{ borderLeft: '4px solid var(--primary-accent)', paddingLeft: '10px', margin: 0 }}>Featured Products</h2>
+          <div style={{ position: 'relative', flex: 1, maxWidth: '400px', minWidth: '250px' }}>
+            <Search size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+            <input 
+              type="text" 
+              placeholder="Search products..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%', padding: '10px 10px 10px 45px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', color: 'var(--text-primary)' }}
+            />
+          </div>
+        </div>
         
         {loading ? (
           <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Loading products...</p>
-        ) : products.length === 0 ? (
+        ) : filteredProducts.length === 0 ? (
           <div className="glass-panel" style={{ padding: '40px', textAlign: 'center' }}>
-            <h3 style={{ marginBottom: '10px' }}>No Products Available</h3>
-            <p style={{ color: 'var(--text-secondary)' }}>Go to the Admin Panel to add some digital products!</p>
+            <h3 style={{ marginBottom: '10px' }}>No Products Found</h3>
+            <p style={{ color: 'var(--text-secondary)' }}>Try adjusting your search criteria!</p>
           </div>
         ) : (
           <div className="products-grid">
-            {products.map(product => (
+            {filteredProducts.map(product => (
               <ProductCard key={product._id} product={product} />
             ))}
           </div>
