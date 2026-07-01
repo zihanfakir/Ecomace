@@ -208,19 +208,29 @@ const CustomerDashboard = () => {
                       order.items.map((item, idx) => (
                         <div key={idx}>
                           <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{item.productName} (x{item.quantity})</div>
-                          {item.keys && item.keys.map((k, i) => (
-                            <div key={i} style={{ display: 'inline-block', backgroundColor: 'var(--bg-color)', padding: '8px 15px', borderRadius: '8px', border: '1px dashed var(--primary-accent)', marginRight: '10px', marginBottom: '5px' }}>
-                              <code style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{k}</code>
-                            </div>
-                          ))}
-                        </div>
+                          {item.keys && item.keys.map((k, i) => {
+                            const isLink = k.startsWith('http://') || k.startsWith('https://');
+                            return (
+                              <div key={i} style={{ display: 'inline-block', backgroundColor: 'var(--bg-color)', padding: '8px 15px', borderRadius: '8px', border: '1px dashed var(--primary-accent)', marginRight: '10px', marginBottom: '5px', wordBreak: 'break-all', maxWidth: '100%' }}>
+                                {isLink ? (
+                                  <a href={k} target="_blank" rel="noopener noreferrer" style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--primary-accent)', textDecoration: 'underline' }}>{k}</a>
+                                ) : (
+                                  <code style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{k}</code>
+                                )}
+                              </div>
+                            );
+                          })}
                       ))
                     ) : (
                       // Legacy format support
                       <div>
                         <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{order.productName}</div>
-                        <div style={{ display: 'inline-block', backgroundColor: 'var(--bg-color)', padding: '8px 15px', borderRadius: '8px', border: '1px dashed var(--primary-accent)' }}>
-                          <code style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{order.soldKey}</code>
+                        <div style={{ display: 'inline-block', backgroundColor: 'var(--bg-color)', padding: '8px 15px', borderRadius: '8px', border: '1px dashed var(--primary-accent)', wordBreak: 'break-all', maxWidth: '100%' }}>
+                          {(order.soldKey && (order.soldKey.startsWith('http://') || order.soldKey.startsWith('https://'))) ? (
+                            <a href={order.soldKey} target="_blank" rel="noopener noreferrer" style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--primary-accent)', textDecoration: 'underline' }}>{order.soldKey}</a>
+                          ) : (
+                            <code style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{order.soldKey}</code>
+                          )}
                         </div>
                       </div>
                     )}

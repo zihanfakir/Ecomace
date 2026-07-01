@@ -367,7 +367,7 @@ const AdminDashboard = () => {
               <input type="text" placeholder="Icon Emoji (Fallback, e.g. 🎨)" value={newProduct.icon} onChange={e => setNewProduct({...newProduct, icon: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Keys / Accounts Stock (One per line)</label>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Keys / Links / Accounts Stock (One per line)</label>
                 <textarea 
                   rows={5}
                   placeholder={`example1@gmail.com:pass123\nABCD-EFGH-1234-5678`}
