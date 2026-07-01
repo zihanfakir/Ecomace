@@ -53,11 +53,11 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
   return (
   <div className="app-container">
     {siteSettings?.noticeText && (
-      <div style={{ backgroundColor: 'var(--primary-accent)', color: 'white', padding: '10px 20px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', zIndex: 1000, position: 'relative' }}>
+      <div style={{ backgroundColor: 'var(--primary-accent)', color: 'white', padding: '10px 20px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', position: 'relative', zIndex: 50 }}>
         <span>✨</span> {siteSettings.noticeText} <span>✨</span>
       </div>
     )}
-    <nav className="glass-panel navbar-container" style={{ margin: '10px 20px', padding: '8px 25px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', zIndex: 100 }}>
+    <nav className="glass-panel navbar-container" style={{ margin: '10px 20px', padding: '8px 25px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'sticky', top: '10px', zIndex: 1000 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
         <Link to="/" onClick={() => setIsMobileMenuOpen(false)} style={{ textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
