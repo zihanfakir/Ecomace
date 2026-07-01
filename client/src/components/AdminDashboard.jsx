@@ -27,6 +27,10 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { addToast } = useToast();
   
+  // Category Modal State
+  const [categoryModalProduct, setCategoryModalProduct] = useState(null);
+  const [categoryModalInput, setCategoryModalInput] = useState('');
+  
   // Settings state
   const [paymentMethods, setPaymentMethods] = useState({ bkash: '', nagad: '', rocket: '', upay: '', bybit: '', binance: '' });
   const [banners, setBanners] = useState([]);
@@ -247,18 +251,22 @@ const AdminDashboard = () => {
     setIsModalOpen(true);
   };
 
-  const handleSetCategory = async (product) => {
-    const category = window.prompt(`Enter category for ${product.name}:`, product.category || '');
-    if (category !== null) {
-      try {
-        await axios.put(`https://ecomace.onrender.com/api/products/${product._id}`, { ...product, category, keys: product.stockKeys }, {
-          headers: { 'Content-Type': 'application/json' }
-        });
-        fetchProducts();
-        addToast('Category updated successfully', 'success');
-      } catch (error) {
-        addToast('Failed to update category', 'error');
-      }
+  const handleSetCategory = (product) => {
+    setCategoryModalProduct(product);
+    setCategoryModalInput(product.category === 'Uncategorized' ? '' : (product.category || ''));
+  };
+
+  const submitCategoryModal = async () => {
+    if (!categoryModalProduct) return;
+    try {
+      await axios.put(`https://ecomace.onrender.com/api/products/${categoryModalProduct._id}`, { ...categoryModalProduct, category: categoryModalInput || 'Uncategorized', keys: categoryModalProduct.stockKeys }, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      fetchProducts();
+      addToast('Category updated successfully', 'success');
+      setCategoryModalProduct(null);
+    } catch (error) {
+      addToast('Failed to update category', 'error');
     }
   };
 
@@ -611,6 +619,34 @@ const AdminDashboard = () => {
           />
         )}
       </div>
+      {/* Category Input Modal */}
+      {categoryModalProduct && (
+        <div className="modal-overlay animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, backdropFilter: 'blur(5px)', padding: '20px' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '30px', borderRadius: '16px', position: 'relative' }}>
+            <button onClick={() => setCategoryModalProduct(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '5px' }}>
+              <X size={20} />
+            </button>
+            <h2 style={{ marginBottom: '20px', fontSize: '1.4rem' }}>Set Category</h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '15px', fontSize: '0.9rem' }}>Enter category for: <strong>{categoryModalProduct.name}</strong></p>
+            
+            <input 
+              type="text" 
+              value={categoryModalInput} 
+              onChange={(e) => setCategoryModalInput(e.target.value)}
+              placeholder="e.g. 💻 Software" 
+              autoFocus
+              onKeyDown={(e) => { if (e.key === 'Enter') submitCategoryModal(); }}
+              style={{ width: '100%', padding: '12px 15px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)', marginBottom: '20px', fontSize: '1rem' }}
+            />
+            
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setCategoryModalProduct(null)} style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: '500' }}>Cancel</button>
+              <button onClick={submitCategoryModal} className="btn-primary" style={{ padding: '10px 20px' }}>Save Category</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
