@@ -33,7 +33,8 @@ const AdminDashboard = () => {
   const [siteTextSettings, setSiteTextSettings] = useState({
     footerText: '© ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।',
     telegramLink: 'https://t.me/zihanfakir',
-    whatsappLink: 'https://wa.me/8801700000000'
+    whatsappLink: 'https://wa.me/8801700000000',
+    noticeText: ''
   });
   const [paymentSettingsLoading, setPaymentSettingsLoading] = useState(false);
 
@@ -67,11 +68,12 @@ const AdminDashboard = () => {
       if (response.data?.banners) {
         setBanners(response.data.banners);
       }
-      if (response.data?.footerText || response.data?.telegramLink || response.data?.whatsappLink) {
+      if (response.data?.footerText !== undefined || response.data?.telegramLink !== undefined || response.data?.whatsappLink !== undefined || response.data?.noticeText !== undefined) {
         setSiteTextSettings({
-          footerText: response.data.footerText || '© ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।',
-          telegramLink: response.data.telegramLink || 'https://t.me/zihanfakir',
-          whatsappLink: response.data.whatsappLink || 'https://wa.me/8801700000000'
+          footerText: response.data.footerText !== undefined ? response.data.footerText : '© ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।',
+          telegramLink: response.data.telegramLink !== undefined ? response.data.telegramLink : 'https://t.me/zihanfakir',
+          whatsappLink: response.data.whatsappLink !== undefined ? response.data.whatsappLink : 'https://wa.me/8801700000000',
+          noticeText: response.data.noticeText || ''
         });
       }
     } catch (error) {

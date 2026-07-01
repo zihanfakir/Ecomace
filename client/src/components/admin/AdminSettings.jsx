@@ -108,6 +108,10 @@ const AdminSettings = ({
       <div style={{ backgroundColor: 'var(--surface-color)', padding: '30px', borderRadius: '12px', marginBottom: '40px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
+            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Top Notice Bar Text (Leave empty to hide)</label>
+            <input type="text" value={siteTextSettings?.noticeText || ''} onChange={e => setSiteTextSettings({...siteTextSettings, noticeText: e.target.value})} placeholder="e.g. 10% discount on all products!" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} />
+          </div>
+          <div>
             <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Footer Copyright Text</label>
             <input type="text" value={siteTextSettings?.footerText || ''} onChange={e => setSiteTextSettings({...siteTextSettings, footerText: e.target.value})} placeholder="© 2026 Your Name. All rights reserved." style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} />
           </div>
