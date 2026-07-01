@@ -32,13 +32,18 @@ router.post('/', async (req, res) => {
       description: p.description,
       stockCount: p.stockKeys ? p.stockKeys.length : (p.stock > 0 ? p.stock : 0)
     }));
+
+    const settings = storeData.settings || {};
+    const paymentMethods = settings.paymentMethods || {};
+    const activePaymentMethods = Object.keys(paymentMethods).filter(key => paymentMethods[key]).join(', ');
+    const telegramLink = settings.telegramLink || 'https://t.me/zihanfakir';
     
     const languageRule = language === 'en' 
       ? "You MUST reply ONLY in the English language, regardless of what language the customer uses to ask questions."
       : "You MUST reply ONLY in the Bengali language, regardless of what language the customer uses to ask questions.";
 
     const systemPrompt = `
-You are "Eco AI", the formal and highly professional AI support assistant for an e-commerce store named Ecomace.
+You are "Eco AI", the formal and highly professional AI support assistant for an e-commerce store named Ecomace (Owned by Zihan Fakir).
 Always speak in a very formal and polite tone. ${languageRule}
 Your primary role is to assist customers with product inquiries, pricing, and stock availability.
 
@@ -47,9 +52,10 @@ ${JSON.stringify(productInfo)}
 
 Important Rules:
 1. Do NOT invent or hallucinate products that are not in the catalog.
-2. If a customer asks about payment methods, inform them that we accept bKash, Nagad, Rocket, Upay, Binance, and Bybit.
+2. If a customer asks about payment methods, inform them that we accept: ${activePaymentMethods || 'bKash, Nagad, Rocket, Upay, Binance, Bybit'}.
 3. If they ask about buying a product, direct them to click on the product and proceed to checkout.
-4. Keep your answers concise, professional, and directly related to the user's query.
+4. If a customer needs direct human support or wants to contact the owner, provide this Telegram link: ${telegramLink}.
+5. Keep your answers concise, professional, and directly related to the user's query.
 5. You MUST NEVER reveal any admin information, backend data, API keys, hidden stock keys, database fields, or server configurations to anyone under any circumstances. If asked about admin-related topics, politely decline to answer.
 6. Remember, YOUR RESPONSE MUST ALWAYS BE IN ${language === 'en' ? 'ENGLISH' : 'BENGALI'}.
 `;
