@@ -22,7 +22,7 @@ const AdminDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
-  const [newProduct, setNewProduct] = useState({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', keys: '' });
+  const [newProduct, setNewProduct] = useState({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', category: 'Uncategorized', keys: '' });
   const [newCoupon, setNewCoupon] = useState({ code: '', discountPercent: '', discountType: 'percent', usageLimit: '' });
   const [isLoading, setIsLoading] = useState(false);
   const { addToast } = useToast();
@@ -200,7 +200,7 @@ const AdminDashboard = () => {
       }
       setIsModalOpen(false);
       setEditingProductId(null);
-      setNewProduct({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', keys: '' });
+      setNewProduct({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', category: 'Uncategorized', keys: '' });
       fetchProducts();
       addToast(editingProductId ? 'Product updated successfully' : 'Product added successfully', 'success');
     } catch (error) {
@@ -232,6 +232,7 @@ const AdminDashboard = () => {
       photoUrl: product.photoUrl || '',
       discount: product.discount || '',
       discountType: product.discountType || 'percent',
+      category: product.category || 'Uncategorized',
       keys: product.stockKeys ? product.stockKeys.join('\n') : ''
     });
     setEditingProductId(product._id);
@@ -240,8 +241,23 @@ const AdminDashboard = () => {
 
   const handleOpenAddModal = () => {
     setEditingProductId(null);
-    setNewProduct({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', keys: '' });
+    setNewProduct({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', category: 'Uncategorized', keys: '' });
     setIsModalOpen(true);
+  };
+
+  const handleSetCategory = async (product) => {
+    const category = window.prompt(`Enter category for ${product.name}:`, product.category || '');
+    if (category !== null) {
+      try {
+        await axios.put(`https://ecomace.onrender.com/api/products/${product._id}`, { ...product, category, keys: product.stockKeys }, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        fetchProducts();
+        addToast('Category updated successfully', 'success');
+      } catch (error) {
+        addToast('Failed to update category', 'error');
+      }
+    }
   };
 
   const handleUpdateProfile = async (e) => {
@@ -346,7 +362,7 @@ const AdminDashboard = () => {
                 const val = e.target.value;
                 const existingProd = products.find(p => p.name === val);
                 if(existingProd && !editingProductId) {
-                  setNewProduct(prev => ({ ...prev, name: val, description: existingProd.description, bigDescription: existingProd.bigDescription, price: existingProd.price, discount: existingProd.discount, discountType: existingProd.discountType, photoUrl: existingProd.photoUrl, icon: existingProd.icon }));
+                  setNewProduct(prev => ({ ...prev, name: val, description: existingProd.description, category: existingProd.category || 'Uncategorized', bigDescription: existingProd.bigDescription, price: existingProd.price, discount: existingProd.discount, discountType: existingProd.discountType, photoUrl: existingProd.photoUrl, icon: existingProd.icon }));
                 } else {
                   setNewProduct({...newProduct, name: val});
                 }
@@ -357,6 +373,15 @@ const AdminDashboard = () => {
                 ))}
               </datalist>
               <input type="text" placeholder="Short Description" required value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+              
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <input list="category-names" type="text" placeholder="Category (e.g. Software, Games)" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+                <datalist id="category-names">
+                  {[...new Set(products.map(p => p.category || 'Uncategorized'))].map((cat, idx) => (
+                    <option key={idx} value={cat} />
+                  ))}
+                </datalist>
+              </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Big Description (For Product Page)</label>
@@ -525,6 +550,7 @@ const AdminDashboard = () => {
             handleEditClick={handleEditClick} 
             setProductToDelete={setProductToDelete} 
             handleOpenAddModal={handleOpenAddModal} 
+            handleSetCategory={handleSetCategory}
           />
         )}
         {activeTab === 'users' && (

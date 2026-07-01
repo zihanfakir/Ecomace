@@ -37,6 +37,7 @@ router.put('/:id', async (req, res) => {
       photoUrl: req.body.photoUrl,
       discount: req.body.discount,
       discountType: req.body.discountType || 'percent',
+      category: req.body.category || 'Uncategorized',
       bigDescription: req.body.bigDescription,
       stockKeys: keysArray
     };
@@ -96,6 +97,7 @@ router.post('/', express.json(), async (req, res) => {
       photoUrl: req.body.photoUrl,
       discount: req.body.discount || 0,
       discountType: req.body.discountType || 'percent',
+      category: req.body.category || 'Uncategorized',
       bigDescription: req.body.bigDescription || '',
       stockKeys: keysArray, // Store all available keys/accounts
       createdAt: new Date().toISOString()

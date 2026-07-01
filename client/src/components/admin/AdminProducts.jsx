@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Tag } from 'lucide-react';
 import ActionMenu from '../ActionMenu';
 
-const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOpenAddModal }) => {
+const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOpenAddModal, handleSetCategory }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -56,6 +56,11 @@ const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOp
               </div>
               <div>
                 {product.name}
+                {product.category && product.category !== 'Uncategorized' && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Tag size={12} /> {product.category}
+                  </div>
+                )}
                 {product.discount > 0 && <span style={{ marginLeft: '10px', fontSize: '0.75rem', backgroundColor: '#EF4444', color: 'white', padding: '2px 6px', borderRadius: '10px' }}>-{product.discount}{product.discountType === 'flat' ? '৳' : '%'}</span>}
               </div>
               <div>
@@ -76,6 +81,7 @@ const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOp
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <ActionMenu actions={[
                   { label: 'Edit Product', icon: <Edit size={16} />, onClick: () => handleEditClick(product) },
+                  { label: 'Set Category', icon: <Tag size={16} />, onClick: () => handleSetCategory(product) },
                   { label: 'Delete Product', icon: <Trash2 size={16} />, onClick: () => setProductToDelete(product._id), danger: true }
                 ]} />
               </div>
