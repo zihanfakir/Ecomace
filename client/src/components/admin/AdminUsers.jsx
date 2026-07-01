@@ -4,24 +4,39 @@ import { UserCheck, UserX, Search } from 'lucide-react';
 
 const AdminUsers = ({ users, orders, handleUpdateRole, currentUser }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
 
   return (
     <div>
       <h2 style={{ marginBottom: '30px' }}>Manage Users</h2>
-      <div style={{ marginBottom: '20px', position: 'relative' }}>
-        <Search size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-        <input 
-          type="text" 
-          placeholder="Search users by name or email..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: '100%', padding: '12px 12px 12px 45px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', color: 'var(--text-primary)' }}
-        />
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
+          <Search size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+          <input 
+            type="text" 
+            placeholder="Search users by name or email..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ width: '100%', padding: '12px 12px 12px 45px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', color: 'var(--text-primary)' }}
+          />
+        </div>
+        <select 
+          value={roleFilter} 
+          onChange={(e) => setRoleFilter(e.target.value)}
+          style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', color: 'var(--text-primary)', minWidth: '150px' }}
+        >
+          <option value="all">All Roles</option>
+          <option value="customer">Customer</option>
+          <option value="admin">Admin</option>
+          <option value="owner">Owner</option>
+        </select>
       </div>
 
       <div style={{ backgroundColor: 'var(--surface-color)', padding: '20px', borderRadius: '12px', overflowX: 'auto' }}>
