@@ -150,21 +150,40 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
     {location.pathname === '/' && banners.length > 0 && (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px', marginBottom: '20px' }}>
         <div style={{ position: 'relative', width: '100%', maxWidth: '1200px' }}>
-          {(() => {
-            const banner = banners[currentBannerIndex];
-            const content = (
-              <img src={banner.imageUrl} alt="Promo Banner" style={{ width: '100%', aspectRatio: '3 / 1', objectFit: 'cover', display: 'block', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', border: '1px solid var(--glass-border)', transition: 'opacity 0.5s ease-in-out' }} />
-            );
-            return banner.targetUrl ? (
-              <a href={banner.targetUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block', width: '100%' }}>
-                {content}
-              </a>
-            ) : (
-              <div style={{ width: '100%' }}>
-                {content}
-              </div>
-            );
-          })()}
+          <div style={{ position: 'relative', width: '100%', aspectRatio: '3 / 1', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', border: '1px solid var(--glass-border)' }}>
+            {banners.map((banner, idx) => {
+              const isActive = idx === currentBannerIndex;
+              const content = (
+                <img src={banner.imageUrl} alt={`Promo Banner ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              );
+              
+              const wrapStyle = {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                opacity: isActive ? 1 : 0,
+                visibility: isActive ? 'visible' : 'hidden',
+                transition: 'opacity 0.8s ease-in-out, visibility 0.8s',
+                zIndex: isActive ? 10 : 1
+              };
+
+              return (
+                <div key={idx} style={wrapStyle}>
+                  {banner.targetUrl ? (
+                    <a href={banner.targetUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block', width: '100%', height: '100%' }}>
+                      {content}
+                    </a>
+                  ) : (
+                    <div style={{ width: '100%', height: '100%' }}>
+                      {content}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
           
           {/* Dots Indicator */}
           {banners.length > 1 && (
