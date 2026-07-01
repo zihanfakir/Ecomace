@@ -34,6 +34,21 @@ const Home = () => {
 
   const categories = ['All', ...new Set(products.map(p => p.category || 'Uncategorized'))];
 
+  const getCategoryIcon = (cat) => {
+    const lcat = cat.toLowerCase();
+    if (lcat === 'all') return '✨';
+    if (lcat.includes('software')) return '💻';
+    if (lcat.includes('game')) return '🎮';
+    if (lcat.includes('sub')) return '📺';
+    if (lcat.includes('tool')) return '🛠️';
+    if (lcat.includes('design')) return '🎨';
+    if (lcat.includes('music') || lcat.includes('audio')) return '🎵';
+    if (lcat.includes('video')) return '🎥';
+    if (lcat.includes('book') || lcat.includes('pdf')) return '📚';
+    if (lcat.includes('course')) return '🎓';
+    return '📦';
+  };
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
                           product.description?.toLowerCase().includes(debouncedSearch.toLowerCase());
@@ -77,23 +92,47 @@ const Home = () => {
         </div>
 
         {/* Categories Filter */}
-        <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '20px', scrollbarWidth: 'none' }}>
+        <div className="categories-container" style={{ display: 'flex', gap: '15px', overflowX: 'auto', padding: '10px 5px 20px 5px', marginBottom: '20px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
           {categories.map((category, idx) => (
             <button
               key={idx}
               onClick={() => setActiveCategory(category)}
+              className={`category-btn ${activeCategory === category ? 'active' : ''}`}
               style={{
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: activeCategory === category ? 'none' : '1px solid var(--border-color)',
-                backgroundColor: activeCategory === category ? 'var(--primary-accent)' : 'var(--surface-color)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 22px',
+                borderRadius: '30px',
+                border: activeCategory === category ? '1px solid rgba(255,255,255,0.4)' : '1px solid var(--border-color)',
+                background: activeCategory === category 
+                  ? 'linear-gradient(135deg, var(--primary-accent), var(--secondary-accent))' 
+                  : 'var(--surface-color)',
                 color: activeCategory === category ? 'white' : 'var(--text-primary)',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                transition: 'all 0.3s ease',
-                fontWeight: activeCategory === category ? '600' : '400'
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                fontWeight: activeCategory === category ? '600' : '500',
+                boxShadow: activeCategory === category ? '0 8px 20px rgba(67, 24, 255, 0.3)' : '0 4px 10px rgba(0,0,0,0.02)',
+                backdropFilter: 'blur(10px)',
+                transform: 'scale(1)'
+              }}
+              onMouseEnter={(e) => {
+                if(activeCategory !== category) {
+                  e.currentTarget.style.transform = 'translateY(-3px)';
+                  e.currentTarget.style.boxShadow = '0 8px 15px rgba(0,0,0,0.08)';
+                  e.currentTarget.style.background = 'var(--bg-color)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if(activeCategory !== category) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.02)';
+                  e.currentTarget.style.background = 'var(--surface-color)';
+                }
               }}
             >
+              <span style={{ fontSize: '1.2rem' }}>{getCategoryIcon(category)}</span>
               {category}
             </button>
           ))}
