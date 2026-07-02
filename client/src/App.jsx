@@ -60,11 +60,13 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
     }
   };
 
+  const hasEmoji = siteSettings?.noticeText ? /\p{Extended_Pictographic}/u.test(siteSettings.noticeText) : false;
+
   return (
   <div className="app-container">
     {siteSettings?.noticeText && (
       <div style={{ backgroundColor: getNoticeBgColor(), color: 'white', padding: '10px 20px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', position: 'relative', zIndex: 50 }}>
-        <span>✨</span> {siteSettings.noticeText} <span>✨</span>
+        {!hasEmoji && <span>✨</span>} {siteSettings.noticeText} {!hasEmoji && <span>✨</span>}
       </div>
     )}
     <nav className="glass-panel navbar-container" style={{ margin: '10px 20px', padding: '8px 25px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'sticky', top: '10px', zIndex: 1000 }}>
@@ -314,7 +316,8 @@ function App() {
             footerText: response.data.footerText || prev.footerText,
             telegramLink: response.data.telegramLink || prev.telegramLink,
             whatsappLink: response.data.whatsappLink || prev.whatsappLink,
-            noticeText: response.data.noticeText || ''
+            noticeText: response.data.noticeText || '',
+            noticeColor: response.data.noticeColor || 'blue'
           }));
         }
       } catch(err) {
