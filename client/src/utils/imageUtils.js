@@ -50,20 +50,27 @@ export const uploadToImgBB = async (file, maxWidth = 800, quality = 0.7) => {
   // Hardcode the API key provided by the user to ensure it works on any deployment
   const apiKey = import.meta.env.VITE_IMGBB_API_KEY || 'd56dbc5ab20a283240dd980bfb387a1a';
 
-  // ImgBB requires application/x-www-form-urlencoded
-  const params = new URLSearchParams();
-  params.append('image', base64Data);
+  // Use FormData to send the base64 image data
+  const formData = new FormData();
+  formData.append('image', base64Data);
 
-  // Upload directly to ImgBB
-  const response = await axios.post(
-    `https://api.imgbb.com/1/upload?key=${apiKey}`,
-    params.toString(),
-    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-  );
+  // Upload directly to ImgBB using fetch to bypass axios interceptors
+  // which might add an 'Authorization' header and break CORS
+  const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+    method: 'POST',
+    body: formData
+  });
 
-  if (response.data && response.data.data && response.data.data.url) {
-    return response.data.data.url;
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`ImgBB upload failed: ${response.status} ${errorText}`);
+  }
+
+  const data = await response.json();
+
+  if (data && data.data && data.data.url) {
+    return data.data.url;
   } else {
-    throw new Error('ImgBB upload failed');
+    throw new Error('ImgBB upload failed: Invalid response format');
   }
 };
