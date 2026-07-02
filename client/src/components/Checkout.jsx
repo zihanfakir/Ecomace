@@ -93,12 +93,12 @@ const Checkout = () => {
       }
 
       let discount = 0;
-        if (coupon.discountType === 'flat') {
-          // H-7: Flat discount is an absolute value, capped at the applicable subtotal
-          discount = Math.min(coupon.discount, applicableSubtotal);
-        } else {
-          discount = Math.round(applicableSubtotal * (coupon.discount / 100));
-        }
+      if (coupon.discountType === 'flat') {
+        // H-7: Flat discount is an absolute value, capped at the applicable subtotal
+        discount = Math.min(coupon.discountPercent, applicableSubtotal);
+      } else {
+        discount = Math.round(applicableSubtotal * (coupon.discountPercent / 100));
+      }
       
       setCouponDiscount(discount);
       addToast(`Coupon applied! ${res.data.discountType === 'flat' ? '৳' : ''}${res.data.discountPercent}${res.data.discountType === 'flat' ? '' : '%'} off.`, 'success');

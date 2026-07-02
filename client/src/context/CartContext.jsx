@@ -49,16 +49,24 @@ export const CartProvider = ({ children }) => {
 
   const updateQuantity = (productId, amount) => {
     setCart((prevCart) => {
-      return prevCart.map((item) => {
-        if (item.product._id === productId) {
-          const newQty = item.quantity + amount;
-          const maxStock = item.product.stockKeys?.length || 0;
-          if (newQty > 0 && newQty <= maxStock) {
-            return { ...item, quantity: newQty };
-          }
-        }
-        return item;
-      });
+      const itemToUpdate = prevCart.find(item => item.product._id === productId);
+      if (!itemToUpdate) return prevCart;
+      
+      const newQty = itemToUpdate.quantity + amount;
+      
+      if (newQty <= 0) {
+        // addToast called here, but avoid infinite loops; it's safe since it's just a context call
+        return prevCart.filter(item => item.product._id !== productId);
+      }
+      
+      const maxStock = itemToUpdate.product.stockKeys?.length || 0;
+      if (newQty > maxStock) {
+        return prevCart;
+      }
+      
+      return prevCart.map((item) => 
+        item.product._id === productId ? { ...item, quantity: newQty } : item
+      );
     });
   };
 
