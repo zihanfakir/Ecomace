@@ -18,15 +18,17 @@ import { ToastProvider } from './context/ToastContext';
 import { useContext, useRef } from 'react';
 
 const NotificationBell = () => {
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const fetchNotifications = async () => {
-    if (!user) return;
+    if (!user || !token) return;
     try {
-      const response = await axios.get('https://ecomace.onrender.com/api/notifications');
+      const response = await axios.get('https://ecomace.onrender.com/api/notifications', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setNotifications(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       console.error('Failed to fetch notifications', err);
@@ -50,15 +52,21 @@ const NotificationBell = () => {
   }, []);
 
   const markAsRead = async (id) => {
+    if (!token) return;
     try {
-      await axios.put(`https://ecomace.onrender.com/api/notifications/${id}/read`);
+      await axios.put(`https://ecomace.onrender.com/api/notifications/${id}/read`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setNotifications(notifications.map(n => n._id === id ? { ...n, read: true } : n));
     } catch (err) {}
   };
 
   const markAllAsRead = async () => {
+    if (!token) return;
     try {
-      await axios.put('https://ecomace.onrender.com/api/notifications/read-all');
+      await axios.put('https://ecomace.onrender.com/api/notifications/read-all', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setNotifications(notifications.map(n => ({ ...n, read: true })));
     } catch (err) {}
   };
