@@ -160,6 +160,19 @@ router.post('/checkout', async (req, res) => {
     
     if (!data.orders) data.orders = [];
     data.orders.push(newOrder);
+    
+    // Add notification for admin
+    if (!data.notifications) data.notifications = [];
+    data.notifications.push({
+      _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+      target: 'admin',
+      type: 'order',
+      message: `New order ${newOrder._id} received for ৳ ${totalPrice}`,
+      link: '/admin',
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+    
     await writeData(data);
     
     // Hide keys in immediate checkout response
@@ -224,6 +237,21 @@ router.put('/:id/status', protect, admin, async (req, res) => {
     order.statusChangeCount += 1;
     
     data.orders[orderIndex] = order;
+    
+    // Notify customer
+    if (!data.notifications) data.notifications = [];
+    if (order.userId && order.userId !== 'guest') {
+      data.notifications.push({
+        _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+        target: order.userId,
+        type: 'order_update',
+        message: `Your order ${order._id} status is now: ${status}`,
+        link: '/dashboard',
+        read: false,
+        createdAt: new Date().toISOString()
+      });
+    }
+    
     await writeData(data);
     
     res.json(order);

@@ -62,6 +62,19 @@ router.post('/', protect, async (req, res) => {
     
     data.messages = data.messages || [];
     data.messages.push(newMessage);
+    
+    // Add notification for admin
+    if (!data.notifications) data.notifications = [];
+    data.notifications.push({
+      _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+      target: 'admin',
+      type: 'message',
+      message: `New support ticket: ${subject}`,
+      link: '/admin',
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+    
     await writeData(data);
     
     res.status(201).json(newMessage);
@@ -101,6 +114,20 @@ router.post('/:id/reply', protect, async (req, res) => {
     if (sender === 'user' && data.messages[msgIndex].status === 'closed') {
       data.messages[msgIndex].status = 'open';
     }
+    
+    // Add notification
+    if (!data.notifications) data.notifications = [];
+    const target = sender === 'admin' ? data.messages[msgIndex].userId : 'admin';
+    const link = sender === 'admin' ? '/dashboard' : '/admin';
+    data.notifications.push({
+      _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+      target,
+      type: 'message_reply',
+      message: `New reply on ticket: ${data.messages[msgIndex].subject}`,
+      link,
+      read: false,
+      createdAt: new Date().toISOString()
+    });
     
     await writeData(data);
     res.json(data.messages[msgIndex]);
