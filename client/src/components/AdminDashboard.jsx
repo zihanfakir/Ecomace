@@ -294,7 +294,8 @@ const AdminDashboard = () => {
         paymentMethods, banners, 
         footerText: siteTextSettings.footerText, 
         telegramLink: siteTextSettings.telegramLink,
-        whatsappLink: siteTextSettings.whatsappLink
+        whatsappLink: siteTextSettings.whatsappLink,
+        noticeText: siteTextSettings.noticeText
       });
       addToast('Settings updated successfully', 'success');
     } catch (error) {

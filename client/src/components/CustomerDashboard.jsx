@@ -216,8 +216,8 @@ const CustomerDashboard = () => {
                     fontSize: '0.8rem', 
                     fontWeight: 'bold',
                     textTransform: 'uppercase',
-                    backgroundColor: order.status === 'complete' ? 'rgba(16, 185, 129, 0.2)' : order.status === 'cancel' ? 'rgba(239, 68, 68, 0.2)' : order.status === 'processing' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                    color: order.status === 'complete' ? '#10B981' : order.status === 'cancel' ? '#EF4444' : order.status === 'processing' ? '#3B82F6' : '#F59E0B'
+                    backgroundColor: order.status === 'completed' ? 'rgba(16, 185, 129, 0.2)' : order.status === 'cancelled' ? 'rgba(239, 68, 68, 0.2)' : order.status === 'processing' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                    color: order.status === 'completed' ? '#10B981' : order.status === 'cancelled' ? '#EF4444' : order.status === 'processing' ? '#3B82F6' : '#F59E0B'
                   }}>
                     {order.status || 'pending'}
                   </span>
@@ -227,7 +227,7 @@ const CustomerDashboard = () => {
                   Placed on: {new Date(order.createdAt).toLocaleDateString()} via {order.paymentMethod}
                 </div>
 
-                {order.status === 'cancel' ? (
+                {order.status === 'cancelled' ? (
                   <p style={{ color: '#EF4444' }}>This order was cancelled. Please contact support if you believe this is an error.</p>
                 ) : (order.status === 'pending' || !order.status) ? (
                   <p style={{ color: '#F59E0B' }}>Your payment is currently being verified. Your keys will appear here once approved.</p>

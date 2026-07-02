@@ -81,7 +81,7 @@ const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user }
               <div style={{ fontSize: '0.85rem' }}>
                 {order.items && order.items.map((item, idx) => (
                   <div key={idx} style={{ marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    <span style={{ color: 'var(--primary-accent)', fontWeight: 'bold' }}>{item.quantity}x</span> {item.name || 'Unknown Item'}
+                    <span style={{ color: 'var(--primary-accent)', fontWeight: 'bold' }}>{item.quantity}x</span> {item.productName || item.name || 'Unknown Item'}
                   </div>
                 ))}
               </div>

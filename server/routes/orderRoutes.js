@@ -148,8 +148,8 @@ router.put('/:id/status', async (req, res) => {
     }
     
     // Logic for restoring keys if rejecting an order that was NOT already rejected
-    if (status === 'cancel' || status === 'rejected') {
-      if (order.status !== 'cancel' && order.status !== 'rejected') {
+    if (status === 'cancelled' || status === 'rejected') {
+      if (order.status !== 'cancelled' && order.status !== 'rejected') {
         // Restore keys to products
         if (order.items) {
           order.items.forEach(item => {
@@ -160,7 +160,7 @@ router.put('/:id/status', async (req, res) => {
           });
         }
       }
-    } else if (order.status === 'cancel' || order.status === 'rejected') {
+    } else if (order.status === 'cancelled' || order.status === 'rejected') {
       // If moving FROM a cancelled state to a processing/complete state, we should ideally deduct stock again.
       // But for simplicity, we just allow the status change. The keys were returned to stock.
       // In a real system, we'd check if stock is still available and re-deduct it.
