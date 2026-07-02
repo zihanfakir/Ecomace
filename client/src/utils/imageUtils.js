@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-const API_BASE = 'https://ecomace.onrender.com';
-
 /**
  * Compresses an image file and converts it to a base64 string.
  */
@@ -39,8 +37,8 @@ export const compressImage = (file, maxWidth = 800, quality = 0.7) => {
 };
 
 /**
- * Compresses an image and uploads it via server proxy to ImgBB.
- * Server-side proxy avoids CORS issues.
+ * Compresses an image and uploads it directly to ImgBB.
+ * Uploading directly from the client avoids backend sleep timeouts and CORS issues.
  */
 export const uploadToImgBB = async (file, maxWidth = 800, quality = 0.7) => {
   // Compress first to save bandwidth
@@ -49,16 +47,23 @@ export const uploadToImgBB = async (file, maxWidth = 800, quality = 0.7) => {
   // Remove the data URL prefix — ImgBB only wants the raw base64
   const base64Data = base64String.split(',')[1];
 
-  // Send to our server proxy which forwards to ImgBB
+  // Hardcode the API key provided by the user to ensure it works on any deployment
+  const apiKey = import.meta.env.VITE_IMGBB_API_KEY || 'd56dbc5ab20a283240dd980bfb387a1a';
+
+  // ImgBB requires application/x-www-form-urlencoded
+  const params = new URLSearchParams();
+  params.append('image', base64Data);
+
+  // Upload directly to ImgBB
   const response = await axios.post(
-    `${API_BASE}/api/upload`,
-    { image: base64Data },
-    { headers: { 'Content-Type': 'application/json' } }
+    `https://api.imgbb.com/1/upload?key=${apiKey}`,
+    params.toString(),
+    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
   );
 
-  if (response.data && response.data.url) {
-    return response.data.url;
+  if (response.data && response.data.data && response.data.data.url) {
+    return response.data.data.url;
   } else {
-    throw new Error('Invalid response from upload server');
+    throw new Error('ImgBB upload failed');
   }
 };
