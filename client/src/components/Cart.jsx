@@ -44,7 +44,7 @@ const Cart = () => {
                 </div>
               </div>
               
-              <div className="mobile-cart-controls" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: 'var(--bg-color)', padding: '5px', borderRadius: '8px' }}>
                   <button onClick={() => updateQuantity(item.product._id, -1)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-primary)', padding: '5px' }}><Minus size={16} /></button>
                   <span style={{ fontWeight: 'bold', width: '20px', textAlign: 'center' }}>{item.quantity}</span>
