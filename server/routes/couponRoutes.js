@@ -37,7 +37,7 @@ router.post('/', protect, admin, async (req, res) => {
         applicableType: req.body.applicableType || 'all',
         applicableTo: req.body.applicableTo || null,
         usageLimit: req.body.usageLimit ? parseInt(req.body.usageLimit, 10) : null,
-        minPurchaseAmount: req.body.minPurchaseAmount ? Number(req.body.minPurchaseAmount) : null,
+
         usageCount: 0,
         isActive: true,
         createdAt: new Date().toISOString()
@@ -64,7 +64,7 @@ router.put('/:id', protect, admin, async (req, res) => {
       const updatedCoupon = {
         ...data.coupons[index],
         ...req.body,
-        minPurchaseAmount: req.body.minPurchaseAmount !== undefined ? (req.body.minPurchaseAmount ? Number(req.body.minPurchaseAmount) : null) : data.coupons[index].minPurchaseAmount
+
       };
       
       if (updatedCoupon.discountType === 'percent' && Number(updatedCoupon.discountPercent) > 100) {

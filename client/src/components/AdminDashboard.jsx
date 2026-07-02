@@ -25,7 +25,7 @@ const AdminDashboard = () => {
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
   const [newProduct, setNewProduct] = useState({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', category: 'Uncategorized', keys: '' });
-  const [newCoupon, setNewCoupon] = useState({ code: '', discountPercent: '', discountType: 'percent', usageLimit: '', minPurchaseAmount: '', applicableType: 'all', applicableTo: '' });
+  const [newCoupon, setNewCoupon] = useState({ code: '', discountPercent: '', discountType: 'percent', usageLimit: '', applicableType: 'all', applicableTo: '' });
   const [isLoading, setIsLoading] = useState(false);
   const { addToast } = useToast();
   
@@ -193,7 +193,7 @@ const AdminDashboard = () => {
     try {
       await axios.post('https://ecomace.onrender.com/api/coupons', newCoupon);
       setIsCouponModalOpen(false);
-      setNewCoupon({ code: '', discountPercent: '', discountType: 'percent', usageLimit: '', minPurchaseAmount: '', applicableType: 'all', applicableTo: '' });
+      setNewCoupon({ code: '', discountPercent: '', discountType: 'percent', usageLimit: '', applicableType: 'all', applicableTo: '' });
       fetchCoupons();
       addToast('Coupon created successfully', 'success');
     } catch (error) {
@@ -548,7 +548,7 @@ const AdminDashboard = () => {
                   </select>
                 )}
               </div>
-              <input type="number" placeholder="Min Purchase Amount (Optional, e.g. 500)" value={newCoupon.minPurchaseAmount} onChange={e => setNewCoupon({...newCoupon, minPurchaseAmount: e.target.value})} style={{ padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)' }} />
+
               <input type="number" placeholder="Usage Limit (Optional, e.g. 100)" value={newCoupon.usageLimit} onChange={e => setNewCoupon({...newCoupon, usageLimit: e.target.value})} style={{ padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)' }} />
               <button type="submit" className="btn-primary" disabled={isLoading} style={{ marginTop: '10px' }}>
                 {isLoading ? 'Creating...' : 'Create Coupon'}
