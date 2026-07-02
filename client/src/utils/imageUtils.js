@@ -55,8 +55,11 @@ export const uploadToImgBB = async (file, maxWidth = 800, quality = 0.7) => {
     // ImgBB expects the raw base64 data without the data URL prefix
     const base64Data = base64String.split(',')[1];
     
-    const response = await axios.post('https://ecomace.onrender.com/api/upload', {
-      image: base64Data
+    const formData = new FormData();
+    formData.append('image', base64Data);
+
+    const response = await axios.post('https://ecomace.onrender.com/api/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
     });
     
     if (response.data && response.data.url) {

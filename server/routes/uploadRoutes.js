@@ -15,14 +15,13 @@ router.post('/', protect, async (req, res) => {
       return res.status(500).json({ message: 'Server configuration error: ImgBB API key is missing' });
     }
 
-    // Use native fetch to proxy the upload to ImgBB
+    // Use native fetch and FormData to proxy the upload to ImgBB
+    const formData = new FormData();
+    formData.append('image', image);
+
     const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      // URLSearchParams automatically encodes the base64 string safely
-      body: new URLSearchParams({ image })
+      body: formData
     });
 
     const data = await response.json();

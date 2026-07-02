@@ -480,7 +480,8 @@ const AdminDashboard = () => {
                           addToast('Image uploaded successfully', 'success');
                         } catch (error) {
                           console.error('Image upload failed', error);
-                          addToast('Failed to upload image', 'error');
+                          const errorMsg = error.response?.data?.message || error.message || 'Failed to upload image';
+                          addToast(errorMsg, 'error');
                         }
                       }
                     }}
