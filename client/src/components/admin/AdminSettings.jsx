@@ -1,17 +1,20 @@
 import React from 'react';
 import { Save, Plus, Trash2, Power, PowerOff, X } from 'lucide-react';
 import ActionMenu from '../ActionMenu';
+import { useToast } from '../../context/ToastContext';
 
 const AdminSettings = ({ 
   user, profileData, setProfileData, handleUpdateProfile, profileLoading, message,
   paymentMethods, setPaymentMethods, banners, handleUpdateBanner, handleAddBanner, handleRemoveBanner,
   siteTextSettings, setSiteTextSettings, handleUpdatePaymentSettings, paymentSettingsLoading 
 }) => {
+  const { addToast } = useToast();
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert('Image must be smaller than 5MB');
+        addToast('Image must be smaller than 5MB', 'error');
         return;
       }
       const reader = new FileReader();
