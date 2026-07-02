@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+const API_BASE = 'https://ecomace.onrender.com';
+
 /**
  * Compresses an image file and converts it to a base64 string.
  */
@@ -26,6 +28,7 @@ export const compressImage = (file, maxWidth = 800, quality = 0.7) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
+        // Convert to base64 JPEG
         const base64String = canvas.toDataURL('image/jpeg', quality);
         resolve(base64String);
       };
@@ -36,33 +39,26 @@ export const compressImage = (file, maxWidth = 800, quality = 0.7) => {
 };
 
 /**
- * Compresses an image and uploads it directly to ImgBB.
+ * Compresses an image and uploads it via server proxy to ImgBB.
+ * Server-side proxy avoids CORS issues.
  */
 export const uploadToImgBB = async (file, maxWidth = 800, quality = 0.7) => {
-  const apiKey = import.meta.env.VITE_IMGBB_API_KEY;
-  if (!apiKey) {
-    throw new Error('ImgBB API key is not configured. Please set VITE_IMGBB_API_KEY.');
-  }
-
-  // Compress the image
+  // Compress first to save bandwidth
   const base64String = await compressImage(file, maxWidth, quality);
 
-  // ImgBB expects raw base64 without the data URL prefix
+  // Remove the data URL prefix — ImgBB only wants the raw base64
   const base64Data = base64String.split(',')[1];
 
-  // Upload directly to ImgBB using application/x-www-form-urlencoded
-  const params = new URLSearchParams();
-  params.append('image', base64Data);
-
+  // Send to our server proxy which forwards to ImgBB
   const response = await axios.post(
-    `https://api.imgbb.com/1/upload?key=${apiKey}`,
-    params,
-    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+    `${API_BASE}/api/upload`,
+    { image: base64Data },
+    { headers: { 'Content-Type': 'application/json' } }
   );
 
-  if (response.data && response.data.success && response.data.data?.url) {
-    return response.data.data.url;
+  if (response.data && response.data.url) {
+    return response.data.url;
   } else {
-    throw new Error(response.data?.error?.message || 'ImgBB upload failed');
+    throw new Error('Invalid response from upload server');
   }
 };

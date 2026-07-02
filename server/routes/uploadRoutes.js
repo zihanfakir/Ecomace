@@ -5,27 +5,26 @@ const router = express.Router();
 router.post('/', protect, async (req, res) => {
   try {
     const { image } = req.body;
-    
+
     if (!image) {
       return res.status(400).json({ message: 'No image data provided' });
     }
 
-    const apiKey = process.env.IMGBB_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ message: 'Server configuration error: ImgBB API key is missing' });
-    }
+    // Use env variable if set, otherwise fall back to default key
+    const apiKey = process.env.IMGBB_API_KEY || 'd56dbc5ab20a283240dd980bfb387a1a';
 
-    // Use native fetch and FormData to proxy the upload to ImgBB
-    const formData = new FormData();
-    formData.append('image', image);
+    // ImgBB requires application/x-www-form-urlencoded with base64 image
+    const params = new URLSearchParams();
+    params.append('image', image);
 
     const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
       method: 'POST',
-      body: formData
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
     });
 
     const data = await response.json();
-    
+
     if (data.success) {
       res.json({ url: data.data.url });
     } else {
