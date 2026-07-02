@@ -14,7 +14,42 @@ if (!process.env.JWT_SECRET) {
 
 // Connect to MongoDB
 const { connectDB } = require('./data/db');
-connectDB().catch(console.error);
+connectDB().then(async () => {
+  // Auto-migration Logic (Run once on startup if needed)
+  try {
+    const mongoose = require('mongoose');
+    const db = mongoose.connection.db;
+    const storeCollection = db.collection('stores');
+    const mainDoc = await storeCollection.findOne({ docId: 'main' });
+    
+    if (mainDoc) {
+      console.log("Found legacy monolithic database. Starting auto-migration...");
+      const state = mainDoc.state;
+      
+      const User = require('./models/User');
+      const Product = require('./models/Product');
+      const Order = require('./models/Order');
+      const Coupon = require('./models/Coupon');
+      const Message = require('./models/Message');
+      const Notification = require('./models/Notification');
+      const Setting = require('./models/Setting');
+      
+      if (state.users && state.users.length > 0) { await User.deleteMany({}); await User.insertMany(state.users); }
+      if (state.products && state.products.length > 0) { await Product.deleteMany({}); await Product.insertMany(state.products); }
+      if (state.orders && state.orders.length > 0) { await Order.deleteMany({}); await Order.insertMany(state.orders); }
+      if (state.coupons && state.coupons.length > 0) { await Coupon.deleteMany({}); await Coupon.insertMany(state.coupons); }
+      if (state.messages && state.messages.length > 0) { await Message.deleteMany({}); await Message.insertMany(state.messages); }
+      if (state.notifications && state.notifications.length > 0) { await Notification.deleteMany({}); await Notification.insertMany(state.notifications); }
+      if (state.settings) { await Setting.deleteMany({}); await Setting.create({ settingType: 'global', state: state.settings }); }
+      
+      // Mark as migrated so it doesn't run again
+      await storeCollection.updateOne({ docId: 'main' }, { $set: { docId: 'main_migrated' } });
+      console.log("Auto-migration completed successfully!");
+    }
+  } catch (err) {
+    console.error("Auto-migration failed:", err);
+  }
+}).catch(console.error);
 
 // Middleware
 app.use(cors({ origin: ['http://localhost:5173', 'https://ecomace.onrender.com', 'https://ecomace.vercel.app'] }));
