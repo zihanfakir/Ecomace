@@ -65,26 +65,26 @@ const Checkout = () => {
       let applicableSubtotal = 0;
       
       if (coupon.applicableType === 'product') {
-        const applicableItems = cart.filter(item => item._id === coupon.applicableTo);
+        const applicableItems = cart.filter(item => item.product._id === coupon.applicableTo);
         if (applicableItems.length === 0) {
           throw new Error('This coupon is not valid for the items in your cart');
         }
         applicableSubtotal = applicableItems.reduce((acc, item) => {
-          let price = item.price;
-          if (item.discount > 0) {
-            price = item.discountType === 'flat' ? Math.max(0, item.price - item.discount) : Math.round(item.price - (item.price * (item.discount / 100)));
+          let price = item.product.price;
+          if (item.product.discount > 0) {
+            price = item.product.discountType === 'flat' ? Math.max(0, item.product.price - item.product.discount) : Math.round(item.product.price - (item.product.price * (item.product.discount / 100)));
           }
           return acc + (price * item.quantity);
         }, 0);
       } else if (coupon.applicableType === 'category') {
-        const applicableItems = cart.filter(item => item.category === coupon.applicableTo);
+        const applicableItems = cart.filter(item => item.product.category === coupon.applicableTo);
         if (applicableItems.length === 0) {
           throw new Error('This coupon is not valid for the items in your cart');
         }
         applicableSubtotal = applicableItems.reduce((acc, item) => {
-          let price = item.price;
-          if (item.discount > 0) {
-            price = item.discountType === 'flat' ? Math.max(0, item.price - item.discount) : Math.round(item.price - (item.price * (item.discount / 100)));
+          let price = item.product.price;
+          if (item.product.discount > 0) {
+            price = item.product.discountType === 'flat' ? Math.max(0, item.product.price - item.product.discount) : Math.round(item.product.price - (item.product.price * (item.product.discount / 100)));
           }
           return acc + (price * item.quantity);
         }, 0);
