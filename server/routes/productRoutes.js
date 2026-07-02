@@ -1,5 +1,5 @@
 const express = require('express');
-const { readData, writeData } = require('../data/db');
+const { readData, writeData, withTransaction } = require('../data/db');
 const { protect, admin } = require('../middleware/auth');
 const jwt = require('jsonwebtoken');
 
@@ -8,55 +8,55 @@ const router = express.Router();
 // Edit product (Admin)
 router.put('/:id', protect, admin, async (req, res) => {
   try {
-    const data = await readData();
-    const productIndex = data.products.findIndex(p => p._id === req.params.id);
-    
-    if (productIndex === -1) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-    
-    // Parse keys from multiline text if it's a string, or keep it if it's already an array/undefined
-    let keysArray = data.products[productIndex].stockKeys;
-    if (typeof req.body.keys === 'string') {
-      keysArray = req.body.keys ? req.body.keys.split('\n').map(k => k.trim()).filter(k => k) : [];
-    } else if (Array.isArray(req.body.keys)) {
-      keysArray = req.body.keys;
-    }
+    const response = await withTransaction(async (data) => {
+      const productIndex = data.products.findIndex(p => p._id === req.params.id);
+      
+      if (productIndex === -1) {
+        return { modified: false, response: { status: 404, body: { message: 'Product not found' } } };
+      }
+      
+      // Parse keys from multiline text if it's a string, or keep it if it's already an array/undefined
+      let keysArray = data.products[productIndex].stockKeys;
+      if (typeof req.body.keys === 'string') {
+        keysArray = req.body.keys ? req.body.keys.split('\n').map(k => k.trim()).filter(k => k) : [];
+      } else if (Array.isArray(req.body.keys)) {
+        keysArray = req.body.keys;
+      }
 
-    // Update fields
-    // Update fields only if provided in req.body
-    const newPrice = req.body.price !== undefined ? req.body.price : data.products[productIndex].price;
-    const newDiscount = req.body.discount !== undefined ? req.body.discount : data.products[productIndex].discount;
-    const newDiscountType = req.body.discountType !== undefined ? req.body.discountType : data.products[productIndex].discountType;
-    
-    if (newPrice < 0) {
-      return res.status(400).json({ message: 'Price cannot be negative' });
-    }
-    if (newDiscount < 0) {
-      return res.status(400).json({ message: 'Discount cannot be negative' });
-    }
-    if (newDiscountType === 'percent' && Number(newDiscount) > 100) {
-      return res.status(400).json({ message: 'Percentage discount cannot exceed 100%' });
-    }
+      // Update fields
+      const newPrice = req.body.price !== undefined ? req.body.price : data.products[productIndex].price;
+      const newDiscount = req.body.discount !== undefined ? req.body.discount : data.products[productIndex].discount;
+      const newDiscountType = req.body.discountType !== undefined ? req.body.discountType : data.products[productIndex].discountType;
+      
+      if (newPrice < 0) {
+        return { modified: false, response: { status: 400, body: { message: 'Price cannot be negative' } } };
+      }
+      if (newDiscount < 0) {
+        return { modified: false, response: { status: 400, body: { message: 'Discount cannot be negative' } } };
+      }
+      if (newDiscountType === 'percent' && Number(newDiscount) > 100) {
+        return { modified: false, response: { status: 400, body: { message: 'Percentage discount cannot exceed 100%' } } };
+      }
 
-    const updatedProduct = {
-      ...data.products[productIndex],
-      name: req.body.name !== undefined ? req.body.name : data.products[productIndex].name,
-      description: req.body.description !== undefined ? req.body.description : data.products[productIndex].description,
-      price: req.body.price !== undefined ? req.body.price : data.products[productIndex].price,
-      icon: req.body.icon !== undefined ? req.body.icon : data.products[productIndex].icon,
-      photoUrl: req.body.photoUrl !== undefined ? req.body.photoUrl : data.products[productIndex].photoUrl,
-      discount: req.body.discount !== undefined ? req.body.discount : data.products[productIndex].discount,
-      discountType: req.body.discountType !== undefined ? req.body.discountType : data.products[productIndex].discountType,
-      category: req.body.category !== undefined ? req.body.category : data.products[productIndex].category,
-      bigDescription: req.body.bigDescription !== undefined ? req.body.bigDescription : data.products[productIndex].bigDescription,
-      stockKeys: keysArray
-    };
+      const updatedProduct = {
+        ...data.products[productIndex],
+        name: req.body.name !== undefined ? req.body.name : data.products[productIndex].name,
+        description: req.body.description !== undefined ? req.body.description : data.products[productIndex].description,
+        price: req.body.price !== undefined ? req.body.price : data.products[productIndex].price,
+        icon: req.body.icon !== undefined ? req.body.icon : data.products[productIndex].icon,
+        photoUrl: req.body.photoUrl !== undefined ? req.body.photoUrl : data.products[productIndex].photoUrl,
+        discount: req.body.discount !== undefined ? req.body.discount : data.products[productIndex].discount,
+        discountType: req.body.discountType !== undefined ? req.body.discountType : data.products[productIndex].discountType,
+        category: req.body.category !== undefined ? req.body.category : data.products[productIndex].category,
+        bigDescription: req.body.bigDescription !== undefined ? req.body.bigDescription : data.products[productIndex].bigDescription,
+        stockKeys: keysArray
+      };
+      
+      data.products[productIndex] = updatedProduct;
+      return { modified: true, data, response: { status: 200, body: updatedProduct } };
+    });
     
-    data.products[productIndex] = updatedProduct;
-    await writeData(data);
-    
-    res.json(updatedProduct);
+    res.status(response.status).json(response.body);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -65,17 +65,18 @@ router.put('/:id', protect, admin, async (req, res) => {
 // Delete product (Admin)
 router.delete('/:id', protect, admin, async (req, res) => {
   try {
-    const data = await readData();
-    const productIndex = data.products.findIndex(p => p._id === req.params.id);
+    const response = await withTransaction(async (data) => {
+      const productIndex = data.products.findIndex(p => p._id === req.params.id);
+      
+      if (productIndex === -1) {
+        return { modified: false, response: { status: 404, body: { message: 'Product not found' } } };
+      }
+      
+      data.products.splice(productIndex, 1);
+      return { modified: true, data, response: { status: 200, body: { message: 'Product deleted successfully' } } };
+    });
     
-    if (productIndex === -1) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-    
-    data.products.splice(productIndex, 1);
-    await writeData(data);
-    
-    res.json({ message: 'Product deleted successfully' });
+    res.status(response.status).json(response.body);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -153,40 +154,40 @@ router.get('/:id', async (req, res) => {
 // Create a new product (License Keys/Accounts)
 router.post('/', protect, admin, express.json(), async (req, res) => {
   try {
-    const data = await readData();
+    const response = await withTransaction(async (data) => {
+      // Parse keys from multiline text
+      const keysArray = req.body.keys ? req.body.keys.split('\n').map(k => k.trim()).filter(k => k) : [];
+
+      if (req.body.price !== undefined && req.body.price < 0) {
+        return { modified: false, response: { status: 400, body: { message: 'Price cannot be negative' } } };
+      }
+      if (req.body.discount !== undefined && req.body.discount < 0) {
+        return { modified: false, response: { status: 400, body: { message: 'Discount cannot be negative' } } };
+      }
+      if ((req.body.discountType || 'percent') === 'percent' && Number(req.body.discount || 0) > 100) {
+        return { modified: false, response: { status: 400, body: { message: 'Percentage discount cannot exceed 100%' } } };
+      }
+
+      const newProduct = {
+        _id: Date.now().toString() + Math.random().toString(36).substring(7),
+        name: req.body.name,
+        description: req.body.description,
+        price: req.body.price,
+        icon: req.body.icon,
+        photoUrl: req.body.photoUrl,
+        discount: req.body.discount || 0,
+        discountType: req.body.discountType || 'percent',
+        category: req.body.category || 'Uncategorized',
+        bigDescription: req.body.bigDescription || '',
+        stockKeys: keysArray, // Store all available keys/accounts
+        createdAt: new Date().toISOString()
+      };
+
+      data.products.push(newProduct);
+      return { modified: true, data, response: { status: 201, body: newProduct } };
+    });
     
-    // Parse keys from multiline text
-    const keysArray = req.body.keys ? req.body.keys.split('\n').map(k => k.trim()).filter(k => k) : [];
-
-    if (req.body.price !== undefined && req.body.price < 0) {
-      return res.status(400).json({ message: 'Price cannot be negative' });
-    }
-    if (req.body.discount !== undefined && req.body.discount < 0) {
-      return res.status(400).json({ message: 'Discount cannot be negative' });
-    }
-    if ((req.body.discountType || 'percent') === 'percent' && Number(req.body.discount || 0) > 100) {
-      return res.status(400).json({ message: 'Percentage discount cannot exceed 100%' });
-    }
-
-    const newProduct = {
-      _id: Date.now().toString() + Math.random().toString(36).substring(7),
-      name: req.body.name,
-      description: req.body.description,
-      price: req.body.price,
-      icon: req.body.icon,
-      photoUrl: req.body.photoUrl,
-      discount: req.body.discount || 0,
-      discountType: req.body.discountType || 'percent',
-      category: req.body.category || 'Uncategorized',
-      bigDescription: req.body.bigDescription || '',
-      stockKeys: keysArray, // Store all available keys/accounts
-      createdAt: new Date().toISOString()
-    };
-
-    data.products.push(newProduct);
-    await writeData(data);
-    
-    res.status(201).json(newProduct);
+    res.status(response.status).json(response.body);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
