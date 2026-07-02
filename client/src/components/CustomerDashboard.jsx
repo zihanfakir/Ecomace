@@ -97,19 +97,16 @@ const CustomerDashboard = () => {
 
     try {
       await axios.post('https://ecomace.onrender.com/api/messages', {
-        userId: user._id,
-        userName: user.name,
-        userEmail: user.email,
-        userPhone: newTicket.phone,
         subject: newTicket.subject,
-        text: newTicket.text
+        text: newTicket.text,
+        userPhone: newTicket.phone
       });
       setNewTicket({ subject: '', text: '', phone: '' });
       setActiveTicket(null);
       fetchTickets();
       addToast('Support ticket created', 'success');
     } catch (error) {
-      addToast('Failed to create ticket', 'error');
+      addToast(error.response?.data?.message || 'Failed to create ticket', 'error');
     }
   };
 

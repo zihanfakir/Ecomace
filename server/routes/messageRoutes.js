@@ -32,7 +32,7 @@ router.get('/user/:userId', protect, async (req, res) => {
 router.post('/', protect, async (req, res) => {
   try {
     const data = await readData();
-    const { subject, text, userName } = req.body;
+    const { subject, text, userName, userPhone } = req.body;
     
     // Use verified userId from token instead of trusting client
     const userId = req.user._id;
@@ -46,7 +46,7 @@ router.post('/', protect, async (req, res) => {
       userId,
       userName: userName || req.user.name || 'User',
       userEmail: req.user.email || 'unknown@example.com',
-      userPhone: req.user.phone || 'N/A',
+      userPhone: userPhone || req.user.phone || 'N/A',
       subject: subject,
       status: 'open',
       createdAt: new Date().toISOString(),
