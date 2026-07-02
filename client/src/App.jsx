@@ -65,8 +65,10 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
   return (
   <div className="app-container">
     {siteSettings?.noticeText && (
-      <div style={{ backgroundColor: getNoticeBgColor(), color: 'white', padding: '10px 20px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', position: 'relative', zIndex: 50 }}>
-        {!hasEmoji && <span>✨</span>} {siteSettings.noticeText} {!hasEmoji && <span>✨</span>}
+      <div style={{ backgroundColor: getNoticeBgColor(), color: 'white', padding: '10px 0', fontSize: '0.9rem', fontWeight: '500', position: 'relative', zIndex: 50, overflow: 'hidden', whiteSpace: 'nowrap' }}>
+        <div className="notice-marquee">
+          {!hasEmoji && <span>✨</span>} <span style={{ margin: '0 8px' }}>{siteSettings.noticeText}</span> {!hasEmoji && <span>✨</span>}
+        </div>
       </div>
     )}
     <nav className="glass-panel navbar-container" style={{ margin: '10px 20px', padding: '8px 25px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'sticky', top: '10px', zIndex: 1000 }}>
