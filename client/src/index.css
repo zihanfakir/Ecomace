@@ -311,19 +311,19 @@ body {
   top: 0; left: 0; right: 0; bottom: 0;
   background-color: rgba(0,0,0,0.6);
   display: flex;
-  align-items: flex-start;
+  align-items: center; /* center vertically when small */
   justify-content: center;
   z-index: 500;
-  overflow-y: auto;
   padding: 20px;
   backdrop-filter: blur(4px);
 }
 
 .modal-content {
-  margin: 40px auto;
   position: relative;
   width: 100%;
   max-width: 400px;
+  max-height: 90vh; /* restrict height */
+  overflow-y: auto; /* scroll inside the modal */
   background-color: var(--bg-color);
   padding: 30px;
   border-radius: 16px;
