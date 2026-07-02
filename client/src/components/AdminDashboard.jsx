@@ -367,8 +367,8 @@ const AdminDashboard = () => {
       
       {/* Add Product Modal */}
       {isModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
-          <div className="glass-panel" style={{ padding: '30px', width: '100%', maxWidth: '500px', backgroundColor: 'var(--bg-color)', maxHeight: '90vh', overflowY: 'auto', overflowX: 'hidden', boxSizing: 'border-box' }}>
+        <div className="modal-overlay">
+          <div className="glass-panel modal-content" style={{ maxWidth: '500px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
               <h2>{editingProductId ? 'Edit Product' : 'Add License/Account Product'}</h2>
               <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}><X /></button>
@@ -445,8 +445,8 @@ const AdminDashboard = () => {
 
       {/* Add Coupon Modal */}
       {isCouponModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
-          <div className="glass-panel" style={{ padding: '30px', width: '100%', maxWidth: '400px', backgroundColor: 'var(--bg-color)' }}>
+        <div className="modal-overlay">
+          <div className="glass-panel modal-content">
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
               <h2>Create Coupon</h2>
               <button onClick={() => setIsCouponModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}><X /></button>
@@ -494,8 +494,8 @@ const AdminDashboard = () => {
 
       {/* Delete Confirmation Modal */}
       {productToDelete && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 200, backdropFilter: 'blur(4px)' }}>
-          <div className="glass-panel animate-fade-in" style={{ padding: '30px', width: '100%', maxWidth: '400px', backgroundColor: 'var(--bg-color)', textAlign: 'center' }}>
+        <div className="modal-overlay">
+          <div className="glass-panel modal-content animate-fade-in" style={{ textAlign: 'center' }}>
             <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'rgba(239, 68, 68, 0.1)', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 20px' }}>
               <X size={32} color="#EF4444" />
             </div>
@@ -511,8 +511,8 @@ const AdminDashboard = () => {
 
       {/* Delete Order Confirmation Modal */}
       {orderToDelete && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 200, backdropFilter: 'blur(4px)' }}>
-          <div className="glass-panel animate-fade-in" style={{ padding: '30px', width: '100%', maxWidth: '400px', backgroundColor: 'var(--bg-color)', textAlign: 'center' }}>
+        <div className="modal-overlay">
+          <div className="glass-panel modal-content animate-fade-in" style={{ textAlign: 'center' }}>
             <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'rgba(239, 68, 68, 0.1)', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 20px' }}>
               <X size={32} color="#EF4444" />
             </div>
@@ -528,8 +528,8 @@ const AdminDashboard = () => {
 
       {/* Delete Coupon Confirmation Modal */}
       {couponToDelete && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 200, backdropFilter: 'blur(4px)' }}>
-          <div className="glass-panel animate-fade-in" style={{ padding: '30px', width: '100%', maxWidth: '400px', backgroundColor: 'var(--bg-color)', textAlign: 'center' }}>
+        <div className="modal-overlay">
+          <div className="glass-panel modal-content animate-fade-in" style={{ textAlign: 'center' }}>
             <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'rgba(239, 68, 68, 0.1)', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 20px' }}>
               <X size={32} color="#EF4444" />
             </div>
@@ -651,8 +651,8 @@ const AdminDashboard = () => {
       </div>
       {/* Category Input Modal */}
       {categoryModalProduct && (
-        <div className="modal-overlay animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, backdropFilter: 'blur(5px)', padding: '20px' }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '30px', borderRadius: '16px', position: 'relative' }}>
+        <div className="modal-overlay animate-fade-in" style={{ zIndex: 1100 }}>
+          <div className="glass-panel modal-content" style={{ position: 'relative' }}>
             <button onClick={() => setCategoryModalProduct(null)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '5px' }}>
               <X size={20} />
             </button>
