@@ -10,6 +10,8 @@ import AdminCoupons from './admin/AdminCoupons';
 import AdminOrders from './admin/AdminOrders';
 import AdminSupport from './admin/AdminSupport';
 import AdminSettings from './admin/AdminSettings';
+import ActionMenu from './ActionMenu';
+import { compressImage } from '../utils/imageUtils';
 
 const AdminDashboard = () => {
   const { user, updateUser } = useContext(AuthContext);
@@ -447,7 +449,28 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              <input type="text" placeholder="Product Photo URL (e.g. logo link)" value={newProduct.photoUrl} onChange={e => setNewProduct({...newProduct, photoUrl: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input type="text" placeholder="Product Photo URL (or upload)" value={newProduct.photoUrl} onChange={e => setNewProduct({...newProduct, photoUrl: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--primary-accent)', color: 'white', padding: '0 15px', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '0.9rem' }}>
+                  Upload
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    style={{ display: 'none' }}
+                    onChange={async (e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        try {
+                          const base64 = await compressImage(file, 800, 0.7);
+                          setNewProduct({...newProduct, photoUrl: base64});
+                        } catch (error) {
+                          console.error('Image compression failed', error);
+                        }
+                      }
+                    }}
+                  />
+                </label>
+              </div>
               <input type="text" placeholder="Icon Emoji (Fallback, e.g. 🎨)" value={newProduct.icon} onChange={e => setNewProduct({...newProduct, icon: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>

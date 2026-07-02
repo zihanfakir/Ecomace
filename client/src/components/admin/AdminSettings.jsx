@@ -2,6 +2,7 @@ import React from 'react';
 import { Save, Plus, Trash2, Power, PowerOff, X } from 'lucide-react';
 import ActionMenu from '../ActionMenu';
 import { useToast } from '../../context/ToastContext';
+import { compressImage } from '../../utils/imageUtils';
 
 const AdminSettings = ({ 
   user, profileData, setProfileData, handleUpdateProfile, profileLoading, message,
@@ -10,18 +11,19 @@ const AdminSettings = ({
 }) => {
   const { addToast } = useToast();
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
         addToast('Image must be smaller than 5MB', 'error');
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileData(prev => ({ ...prev, photoUrl: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        const base64 = await compressImage(file, 400, 0.7); // 400px is enough for profile
+        setProfileData(prev => ({ ...prev, photoUrl: base64 }));
+      } catch (error) {
+        addToast('Failed to process image', 'error');
+      }
     }
   };
 
@@ -170,7 +172,28 @@ const AdminSettings = ({
                 {/* Inputs stacked nicely */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '200px' }}>
                   <div>
-                    <input type="text" value={banner.imageUrl} onChange={e => handleUpdateBanner(banner.id || index, 'imageUrl', e.target.value)} placeholder="Image URL (e.g. https://example.com/banner.png)" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)' }} />
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input type="text" value={banner.imageUrl} onChange={e => handleUpdateBanner(banner.id || index, 'imageUrl', e.target.value)} placeholder="Image URL (or upload image)" style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)' }} />
+                    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--primary-accent)', color: 'white', padding: '0 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', fontSize: '0.9rem' }}>
+                      Upload
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        style={{ display: 'none' }}
+                        onChange={async (e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            try {
+                              const base64 = await compressImage(file, 1200, 0.7);
+                              handleUpdateBanner(banner.id || index, 'imageUrl', base64);
+                            } catch (error) {
+                              console.error('Image compression failed', error);
+                            }
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
                   </div>
                   <div>
                     <input type="text" value={banner.targetUrl} onChange={e => handleUpdateBanner(banner.id || index, 'targetUrl', e.target.value)} placeholder="Target Link (e.g. https://example.com/promo)" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)' }} />
