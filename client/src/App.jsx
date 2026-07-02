@@ -27,7 +27,7 @@ const NotificationBell = () => {
     if (!user) return;
     try {
       const response = await axios.get('https://ecomace.onrender.com/api/notifications');
-      setNotifications(response.data);
+      setNotifications(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       console.error('Failed to fetch notifications', err);
     }
@@ -63,7 +63,8 @@ const NotificationBell = () => {
     } catch (err) {}
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+  const unreadCount = safeNotifications.filter(n => !n.read).length;
 
   if (!user) return null;
 
@@ -93,20 +94,27 @@ const NotificationBell = () => {
             )}
           </div>
           
-          {notifications.length === 0 ? (
+          {safeNotifications.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No notifications yet</div>
           ) : (
-            notifications.map((n) => (
-              <div 
+            safeNotifications.map((n) => (
+              <Link 
+                to={n.link || '#'}
                 key={n._id} 
-                onClick={() => { if (!n.read) markAsRead(n._id); }}
+                onClick={() => { 
+                  if (!n.read) markAsRead(n._id);
+                  setIsOpen(false);
+                }}
                 style={{ 
                   padding: '10px', 
                   borderRadius: '8px', 
                   backgroundColor: n.read ? 'transparent' : 'rgba(67, 24, 255, 0.1)',
                   border: n.read ? '1px solid var(--border-color)' : '1px solid var(--primary-accent)',
                   cursor: 'pointer',
-                  transition: 'background 0.2s'
+                  transition: 'background 0.2s',
+                  textDecoration: 'none',
+                  display: 'block',
+                  color: 'inherit'
                 }}
               >
                 <div style={{ fontSize: '0.9rem', marginBottom: '5px', fontWeight: n.read ? '400' : '500' }}>{n.message}</div>
@@ -114,7 +122,7 @@ const NotificationBell = () => {
                   <span>{new Date(n.createdAt).toLocaleDateString()}</span>
                   {!n.read && <span style={{ color: 'var(--primary-accent)', fontWeight: 'bold' }}>New</span>}
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </div>
