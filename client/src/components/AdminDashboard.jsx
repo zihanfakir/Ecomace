@@ -62,7 +62,33 @@ const AdminDashboard = () => {
     fetchCoupons();
     fetchTickets();
     fetchSettings();
+
+    // Polling for new orders every 15 seconds
+    const interval = setInterval(() => {
+      fetchOrdersSilently();
+    }, 15000);
+    
+    return () => clearInterval(interval);
   }, []);
+
+  const fetchOrdersSilently = async () => {
+    try {
+      const response = await axios.get('https://ecomace.onrender.com/api/orders');
+      setOrders(prevOrders => {
+        if (prevOrders.length > 0 && response.data.length > prevOrders.length) {
+           addToast('🔔 New Order Received!', 'success');
+           // Try to play a notification sound
+           try {
+             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+             audio.play().catch(e => {});
+           } catch(e) {}
+        }
+        return response.data;
+      });
+    } catch (error) {
+      console.error('Error polling orders:', error);
+    }
+  };
 
   const fetchSettings = async () => {
     try {
