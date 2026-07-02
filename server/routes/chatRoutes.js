@@ -17,11 +17,7 @@ router.post('/', async (req, res) => {
     }
 
     // Load store context
-    const dataPath = path.join(__dirname, '../data.json');
-    let storeData = { products: [], settings: {} };
-    if (fs.existsSync(dataPath)) {
-      storeData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-    }
+    const storeData = await readData();
 
     // Prepare a safe product list (no keys)
     const productInfo = (storeData.products || []).map(p => ({
