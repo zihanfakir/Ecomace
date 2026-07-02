@@ -165,7 +165,7 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
     </nav>
 
     {location.pathname === '/' && banners.length > 0 && (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px', marginTop: '15px', marginBottom: '20px' }}>
         <div style={{ position: 'relative', width: '100%', maxWidth: '1200px' }}>
           <div style={{ position: 'relative', width: '100%', aspectRatio: '3 / 1', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', border: '1px solid var(--glass-border)' }}>
             {banners.map((banner, idx) => {
