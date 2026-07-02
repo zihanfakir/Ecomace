@@ -60,13 +60,45 @@ const Checkout = () => {
     if (!couponCode) return;
     try {
       const res = await axios.post('https://ecomace.onrender.com/api/coupons/validate', { code: couponCode });
-      const subtotal = getCartTotal();
-      let discount = 0;
-      if (res.data.discountType === 'flat') {
-        discount = res.data.discountPercent;
+      const coupon = res.data;
+      
+      let applicableSubtotal = 0;
+      
+      if (coupon.applicableType === 'product') {
+        const applicableItems = cart.filter(item => item._id === coupon.applicableTo);
+        if (applicableItems.length === 0) {
+          throw new Error('This coupon is not valid for the items in your cart');
+        }
+        applicableSubtotal = applicableItems.reduce((acc, item) => {
+          let price = item.price;
+          if (item.discount > 0) {
+            price = item.discountType === 'flat' ? Math.max(0, item.price - item.discount) : Math.round(item.price - (item.price * (item.discount / 100)));
+          }
+          return acc + (price * item.quantity);
+        }, 0);
+      } else if (coupon.applicableType === 'category') {
+        const applicableItems = cart.filter(item => item.category === coupon.applicableTo);
+        if (applicableItems.length === 0) {
+          throw new Error('This coupon is not valid for the items in your cart');
+        }
+        applicableSubtotal = applicableItems.reduce((acc, item) => {
+          let price = item.price;
+          if (item.discount > 0) {
+            price = item.discountType === 'flat' ? Math.max(0, item.price - item.discount) : Math.round(item.price - (item.price * (item.discount / 100)));
+          }
+          return acc + (price * item.quantity);
+        }, 0);
       } else {
-        discount = Math.round(subtotal * (res.data.discountPercent / 100));
+        applicableSubtotal = getCartTotal();
       }
+
+      let discount = 0;
+      if (coupon.discountType === 'flat') {
+        discount = Math.min(coupon.discountPercent, applicableSubtotal); // cap flat discount to applicable subtotal
+      } else {
+        discount = Math.round(applicableSubtotal * (coupon.discountPercent / 100));
+      }
+      
       setCouponDiscount(discount);
       addToast(`Coupon applied! ${res.data.discountType === 'flat' ? '৳' : ''}${res.data.discountPercent}${res.data.discountType === 'flat' ? '' : '%'} off.`, 'success');
     } catch (err) {

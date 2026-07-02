@@ -33,6 +33,8 @@ router.post('/', async (req, res) => {
       code: req.body.code.toUpperCase(),
       discountPercent: req.body.discountPercent,
       discountType: req.body.discountType || 'percent',
+      applicableType: req.body.applicableType || 'all',
+      applicableTo: req.body.applicableTo || null,
       usageLimit: req.body.usageLimit ? parseInt(req.body.usageLimit, 10) : null,
       usageCount: 0,
       isActive: true,

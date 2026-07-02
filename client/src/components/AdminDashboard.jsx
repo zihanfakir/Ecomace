@@ -23,7 +23,7 @@ const AdminDashboard = () => {
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
   const [newProduct, setNewProduct] = useState({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', category: 'Uncategorized', keys: '' });
-  const [newCoupon, setNewCoupon] = useState({ code: '', discountPercent: '', discountType: 'percent', usageLimit: '' });
+  const [newCoupon, setNewCoupon] = useState({ code: '', discountPercent: '', discountType: 'percent', usageLimit: '', applicableType: 'all', applicableTo: '' });
   const [isLoading, setIsLoading] = useState(false);
   const { addToast } = useToast();
   
@@ -161,7 +161,7 @@ const AdminDashboard = () => {
     try {
       await axios.post('https://ecomace.onrender.com/api/coupons', newCoupon);
       setIsCouponModalOpen(false);
-      setNewCoupon({ code: '', discountPercent: '', discountType: 'percent' });
+      setNewCoupon({ code: '', discountPercent: '', discountType: 'percent', usageLimit: '', applicableType: 'all', applicableTo: '' });
       fetchCoupons();
       addToast('Coupon created successfully', 'success');
     } catch (error) {
@@ -460,6 +460,29 @@ const AdminDashboard = () => {
                   <option value="flat">৳</option>
                 </select>
               </div>
+              <div style={{ display: 'flex', gap: '5px' }}>
+                <select value={newCoupon.applicableType} onChange={e => setNewCoupon({...newCoupon, applicableType: e.target.value, applicableTo: ''})} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)' }}>
+                  <option value="all">All Products</option>
+                  <option value="category">Specific Category</option>
+                  <option value="product">Specific Product</option>
+                </select>
+                {newCoupon.applicableType === 'category' && (
+                  <select value={newCoupon.applicableTo} onChange={e => setNewCoupon({...newCoupon, applicableTo: e.target.value})} style={{ flex: 2, padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)' }} required>
+                    <option value="">Select Category</option>
+                    {[...new Set(products.map(p => p.category))].map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                )}
+                {newCoupon.applicableType === 'product' && (
+                  <select value={newCoupon.applicableTo} onChange={e => setNewCoupon({...newCoupon, applicableTo: e.target.value})} style={{ flex: 2, padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)' }} required>
+                    <option value="">Select Product</option>
+                    {products.map(p => (
+                      <option key={p._id} value={p._id}>{p.name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
               <input type="number" placeholder="Usage Limit (Optional, e.g. 100)" value={newCoupon.usageLimit} onChange={e => setNewCoupon({...newCoupon, usageLimit: e.target.value})} style={{ padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--surface-color)', color: 'var(--text-primary)' }} />
               <button type="submit" className="btn-primary" disabled={isLoading} style={{ marginTop: '10px' }}>
                 {isLoading ? 'Creating...' : 'Create Coupon'}
@@ -580,6 +603,7 @@ const AdminDashboard = () => {
         {activeTab === 'coupons' && (
           <AdminCoupons 
             coupons={coupons} 
+            products={products}
             setIsCouponModalOpen={setIsCouponModalOpen} 
             handleToggleCoupon={handleToggleCoupon} 
             setCouponToDelete={setCouponToDelete} 

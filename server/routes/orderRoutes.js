@@ -66,6 +66,7 @@ router.post('/checkout', async (req, res) => {
       purchasedItems.push({
         productId: product._id,
         productName: product.name,
+        category: product.category,
         quantity: item.quantity,
         price: finalPrice,
         keys: keys
@@ -80,10 +81,28 @@ router.post('/checkout', async (req, res) => {
     if (couponCode) {
       const coupon = (data.coupons || []).find(c => c.code.toUpperCase() === couponCode.toUpperCase() && c.isActive);
       if (coupon) {
-        if (coupon.discountType === 'flat') {
-          discountAmount = coupon.discountPercent; // this holds the value
+        let applicableSubtotal = 0;
+        
+        if (coupon.applicableType === 'product') {
+          const applicableItems = purchasedItems.filter(item => item.productId === coupon.applicableTo);
+          if (applicableItems.length === 0) {
+            return res.status(400).json({ message: 'Coupon is not valid for any items in cart' });
+          }
+          applicableSubtotal = applicableItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        } else if (coupon.applicableType === 'category') {
+          const applicableItems = purchasedItems.filter(item => item.category === coupon.applicableTo);
+          if (applicableItems.length === 0) {
+            return res.status(400).json({ message: 'Coupon is not valid for any items in cart' });
+          }
+          applicableSubtotal = applicableItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
         } else {
-          discountAmount = Math.round(subtotal * (coupon.discountPercent / 100));
+          applicableSubtotal = subtotal;
+        }
+
+        if (coupon.discountType === 'flat') {
+          discountAmount = Math.min(coupon.discountPercent, applicableSubtotal); 
+        } else {
+          discountAmount = Math.round(applicableSubtotal * (coupon.discountPercent / 100));
         }
         
         // Increment usage count
