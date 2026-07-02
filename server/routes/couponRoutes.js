@@ -59,10 +59,16 @@ router.put('/:id', protect, admin, async (req, res) => {
     
     if (index === -1) return res.status(404).json({ message: 'Coupon not found' });
     
-    data.coupons[index] = {
+    const updatedCoupon = {
       ...data.coupons[index],
       ...req.body
     };
+    
+    if (updatedCoupon.discountType === 'percent' && Number(updatedCoupon.discountPercent) > 100) {
+      return res.status(400).json({ message: 'Percentage discount cannot exceed 100%' });
+    }
+    
+    data.coupons[index] = updatedCoupon;
     
     await writeData(data);
     res.json(data.coupons[index]);

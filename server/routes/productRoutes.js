@@ -25,6 +25,20 @@ router.put('/:id', protect, admin, async (req, res) => {
 
     // Update fields
     // Update fields only if provided in req.body
+    const newPrice = req.body.price !== undefined ? req.body.price : data.products[productIndex].price;
+    const newDiscount = req.body.discount !== undefined ? req.body.discount : data.products[productIndex].discount;
+    const newDiscountType = req.body.discountType !== undefined ? req.body.discountType : data.products[productIndex].discountType;
+    
+    if (newPrice < 0) {
+      return res.status(400).json({ message: 'Price cannot be negative' });
+    }
+    if (newDiscount < 0) {
+      return res.status(400).json({ message: 'Discount cannot be negative' });
+    }
+    if (newDiscountType === 'percent' && Number(newDiscount) > 100) {
+      return res.status(400).json({ message: 'Percentage discount cannot exceed 100%' });
+    }
+
     const updatedProduct = {
       ...data.products[productIndex],
       name: req.body.name !== undefined ? req.body.name : data.products[productIndex].name,
@@ -143,6 +157,16 @@ router.post('/', protect, admin, express.json(), async (req, res) => {
     
     // Parse keys from multiline text
     const keysArray = req.body.keys ? req.body.keys.split('\n').map(k => k.trim()).filter(k => k) : [];
+
+    if (req.body.price !== undefined && req.body.price < 0) {
+      return res.status(400).json({ message: 'Price cannot be negative' });
+    }
+    if (req.body.discount !== undefined && req.body.discount < 0) {
+      return res.status(400).json({ message: 'Discount cannot be negative' });
+    }
+    if ((req.body.discountType || 'percent') === 'percent' && Number(req.body.discount || 0) > 100) {
+      return res.status(400).json({ message: 'Percentage discount cannot exceed 100%' });
+    }
 
     const newProduct = {
       _id: Date.now().toString() + Math.random().toString(36).substring(7),

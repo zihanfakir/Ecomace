@@ -48,6 +48,9 @@ router.post('/checkout', protect, async (req, res) => {
 
     // Verify stock and prepare items
     for (const item of cartItems) {
+      if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+        return res.status(400).json({ message: 'Invalid quantity' });
+      }
       const productIndex = data.products.findIndex(p => p._id === item.product._id);
       if (productIndex === -1) {
         return res.status(404).json({ message: `Product ${item.product.name} not found` });
@@ -63,6 +66,7 @@ router.post('/checkout', protect, async (req, res) => {
           finalPrice = Math.max(0, product.price - product.discount);
         } else {
           finalPrice = Math.round(product.price - (product.price * (product.discount / 100)));
+          finalPrice = Math.max(0, finalPrice);
         }
       }
       subtotal += finalPrice * item.quantity;
@@ -89,6 +93,10 @@ router.post('/checkout', protect, async (req, res) => {
     let discountAmount = 0;
     if (couponCode) {
       const coupon = (data.coupons || []).find(c => c.code.toUpperCase() === couponCode.toUpperCase() && c.isActive);
+      if (!coupon) {
+        return res.status(400).json({ message: 'Invalid or inactive coupon code' });
+      }
+      
       if (coupon) {
         if (coupon.usageLimit && (coupon.usageCount || 0) >= coupon.usageLimit) {
           return res.status(400).json({ message: 'Coupon usage limit reached' });
