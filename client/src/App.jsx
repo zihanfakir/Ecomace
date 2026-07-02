@@ -15,7 +15,7 @@ import ChatWidget from './components/ChatWidget';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { CartProvider, CartContext } from './context/CartContext';
 import { ToastProvider } from './context/ToastContext';
-import { useContext } from 'react';
+import { useContext, useRef } from 'react';
 
 const NotificationBell = () => {
   const { user } = useContext(AuthContext);
