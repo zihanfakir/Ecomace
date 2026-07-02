@@ -119,7 +119,7 @@ router.post('/checkout', protect, async (req, res) => {
           applicableSubtotal = subtotal;
         }
 
-        if (coupon.minPurchaseAmount && subtotal < coupon.minPurchaseAmount) {
+        if (coupon.minPurchaseAmount && applicableSubtotal < coupon.minPurchaseAmount) {
           return { modified: false, response: { status: 400, body: { message: `Minimum purchase of ৳${coupon.minPurchaseAmount} required for this coupon` } } };
         }
 
