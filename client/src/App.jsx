@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { Sun, Moon, ShoppingBag, Menu, X, User, Bell, BellRing } from 'lucide-react';
+import { Sun, Moon, ShoppingBag, Menu, X, User, Bell, BellRing, MoreVertical } from 'lucide-react';
 import axios from 'axios';
 import './index.css';
 
@@ -240,7 +240,7 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
         </div>
 
         <div className="mobile-menu-btn" style={{ display: 'none' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {user ? (
               <Link to={(user.role === 'admin' || user.role === 'owner') ? '/admin' : '/dashboard'} onClick={() => setIsMobileMenuOpen(false)} style={{ color: 'var(--text-primary)', display: 'flex' }}>
                 <User size={24} />
@@ -260,29 +260,29 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
               )}
             </Link>
 
-            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex' }}>
-              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', padding: '4px' }}>
+              {isMobileMenuOpen ? <X size={26} /> : <MoreVertical size={26} />}
             </button>
           </div>
         </div>
       </div>
 
       {isMobileMenuOpen && (
-        <div className="mobile-menu-dropdown" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '15px', paddingTop: '15px', borderTop: '1px solid var(--glass-border)', marginTop: '10px' }}>
+        <div className="mobile-menu-dropdown animate-slide-up" style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--surface-color)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column', gap: '15px', padding: '20px', borderBottom: 'var(--glass-border)', boxShadow: '0 15px 30px rgba(0,0,0,0.1)', zIndex: 999 }}>
           {user && (
             <>
-              <Link to={(user.role === 'admin' || user.role === 'owner') ? '/admin' : '/dashboard'} onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', textDecoration: 'none', fontWeight: '500', padding: '10px', background: 'var(--surface-color)', borderRadius: '8px' }}>
-                {(user.role === 'admin' || user.role === 'owner') ? 'Admin Panel' : 'My Dashboard'}
+              <Link to={(user.role === 'admin' || user.role === 'owner') ? '/admin' : '/dashboard'} onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)', textDecoration: 'none', fontWeight: '500', padding: '12px 15px', background: 'rgba(0,0,0,0.03)', borderRadius: '12px', fontSize: '1.1rem' }}>
+                <User size={20} /> {(user.role === 'admin' || user.role === 'owner') ? 'Admin Panel' : 'My Dashboard'}
               </Link>
-              <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} style={{ background: 'var(--surface-color)', border: 'var(--glass-border)', padding: '12px 15px', borderRadius: '8px', cursor: 'pointer', color: 'var(--text-primary)', textAlign: 'left', fontWeight: '500' }}>Logout</button>
+              <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} style={{ background: 'rgba(239, 68, 68, 0.1)', border: 'none', padding: '12px 15px', borderRadius: '12px', cursor: 'pointer', color: '#EF4444', textAlign: 'left', fontWeight: '500', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>Logout</button>
             </>
           )}
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
-            <span style={{fontWeight: '500'}}>Toggle Theme</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', background: 'rgba(0,0,0,0.03)', borderRadius: '12px' }}>
+            <span style={{fontWeight: '500', fontSize: '1.1rem'}}>Dark Mode</span>
             <button 
               onClick={toggleTheme} 
-              style={{ background: 'transparent', border: 'var(--glass-border)', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px', borderRadius: '50%', backgroundColor: 'var(--surface-color)' }}
+              style={{ background: 'var(--bg-color)', border: 'var(--glass-border)', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px', borderRadius: '50%', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}
             >
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>

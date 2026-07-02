@@ -26,7 +26,7 @@ const ActionMenu = ({ actions }) => {
           background: 'none',
           border: 'none',
           cursor: 'pointer',
-          padding: '5px',
+          padding: '10px',
           color: 'var(--text-secondary)',
           display: 'flex',
           alignItems: 'center',

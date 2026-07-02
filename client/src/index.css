@@ -180,6 +180,12 @@ body {
   .mobile-grid-1 { grid-template-columns: 1fr !important; }
   .hero-title { font-size: 2.2rem !important; }
   
+  .mobile-cart-controls {
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px !important;
+  }
+  
   /* Product Card Mobile Adjustments */
   .product-card-content {
     padding: 10px !important;
@@ -214,6 +220,11 @@ body {
     width: 100%;
     justify-content: center;
   }
+  .product-card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px !important;
+  }
 }
 
 .product-card-content {
@@ -245,6 +256,15 @@ body {
   font-size: 0.8rem;
   margin-top: 2px;
 }
+.product-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  gap: 8px;
+}
+
 .product-cart-btn {
   padding: 8px 16px;
   font-size: 0.9rem;

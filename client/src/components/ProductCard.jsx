@@ -42,7 +42,7 @@ const ProductCard = ({ product, delayIndex = 0 }) => {
           <h3 className="product-card-title">{product.name}</h3>
           <p className="product-card-desc">{product.description}</p>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', gap: '8px' }}>
+        <div className="product-card-footer">
           <div>
             {product.discount > 0 ? (
               <>
