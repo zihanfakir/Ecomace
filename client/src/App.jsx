@@ -50,10 +50,20 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
     return () => clearInterval(interval);
   }, [banners.length]);
   
+  const getNoticeBgColor = () => {
+    switch(siteSettings?.noticeColor) {
+      case 'red': return '#EF4444';
+      case 'green': return '#10B981';
+      case 'yellow': return '#F59E0B';
+      case 'blue': 
+      default: return 'var(--primary-accent)';
+    }
+  };
+
   return (
   <div className="app-container">
     {siteSettings?.noticeText && (
-      <div style={{ backgroundColor: 'var(--primary-accent)', color: 'white', padding: '10px 20px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', position: 'relative', zIndex: 50 }}>
+      <div style={{ backgroundColor: getNoticeBgColor(), color: 'white', padding: '10px 20px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', position: 'relative', zIndex: 50 }}>
         <span>✨</span> {siteSettings.noticeText} <span>✨</span>
       </div>
     )}

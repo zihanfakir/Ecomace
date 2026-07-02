@@ -38,7 +38,8 @@ const AdminDashboard = () => {
     footerText: '© ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।',
     telegramLink: 'https://t.me/zihanfakir',
     whatsappLink: 'https://wa.me/8801700000000',
-    noticeText: ''
+    noticeText: '',
+    noticeColor: 'blue'
   });
   const [paymentSettingsLoading, setPaymentSettingsLoading] = useState(false);
 
@@ -77,7 +78,8 @@ const AdminDashboard = () => {
           footerText: response.data.footerText !== undefined ? response.data.footerText : '© ২০২৬ জিহান ফকির (Zihan Fakir)। সর্বস্বত্ব সংরক্ষিত।',
           telegramLink: response.data.telegramLink !== undefined ? response.data.telegramLink : 'https://t.me/zihanfakir',
           whatsappLink: response.data.whatsappLink !== undefined ? response.data.whatsappLink : 'https://wa.me/8801700000000',
-          noticeText: response.data.noticeText || ''
+          noticeText: response.data.noticeText || '',
+          noticeColor: response.data.noticeColor || 'blue'
         });
       }
     } catch (error) {
@@ -295,7 +297,8 @@ const AdminDashboard = () => {
         footerText: siteTextSettings.footerText, 
         telegramLink: siteTextSettings.telegramLink,
         whatsappLink: siteTextSettings.whatsappLink,
-        noticeText: siteTextSettings.noticeText
+        noticeText: siteTextSettings.noticeText,
+        noticeColor: siteTextSettings.noticeColor
       });
       addToast('Settings updated successfully', 'success');
     } catch (error) {

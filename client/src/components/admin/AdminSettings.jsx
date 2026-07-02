@@ -109,7 +109,15 @@ const AdminSettings = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
             <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Top Notice Bar Text (Leave empty to hide)</label>
-            <input type="text" value={siteTextSettings?.noticeText || ''} onChange={e => setSiteTextSettings({...siteTextSettings, noticeText: e.target.value})} placeholder="e.g. 10% discount on all products!" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} />
+            <input type="text" value={siteTextSettings?.noticeText || ''} onChange={e => setSiteTextSettings({...siteTextSettings, noticeText: e.target.value})} placeholder="e.g. 10% discount on all products!" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-color)', color: 'var(--text-primary)', marginBottom: '10px' }} />
+            
+            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Notice Bar Color</label>
+            <select value={siteTextSettings?.noticeColor || 'blue'} onChange={e => setSiteTextSettings({...siteTextSettings, noticeColor: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-color)', color: 'var(--text-primary)' }}>
+              <option value="blue">Blue (Default)</option>
+              <option value="red">Red</option>
+              <option value="green">Green</option>
+              <option value="yellow">Yellow</option>
+            </select>
           </div>
           <div>
             <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Footer Copyright Text</label>
