@@ -117,6 +117,8 @@ router.post('/checkout', protect, async (req, res) => {
         } else {
           discountAmount = Math.round(applicableSubtotal * (coupon.discountPercent / 100));
         }
+        // Cap discount to applicable subtotal
+        discountAmount = Math.min(discountAmount, applicableSubtotal);
         
         // Increment usage count
         const couponIndex = data.coupons.findIndex(c => c.code.toUpperCase() === couponCode.toUpperCase());
