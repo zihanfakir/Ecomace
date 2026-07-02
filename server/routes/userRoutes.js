@@ -1,24 +1,30 @@
 const express = require('express');
 const { readData, writeData } = require('../data/db');
+const bcrypt = require('bcryptjs');
+const { protect, admin } = require('../middleware/auth');
 
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
-
-const dataFilePath = path.join(__dirname, '../data.json');
 
 // Get all users
-router.get('/', async (req, res) => {
+router.get('/', protect, admin, async (req, res) => {
   try {
     const data = await readData();
-    res.json(data.users || []);
+    const safeUsers = (data.users || []).map(u => ({
+      _id: u._id,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      photoUrl: u.photoUrl,
+      createdAt: u.createdAt
+    }));
+    res.json(safeUsers);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
 // Update user details
-router.put('/:id', async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   try {
     const data = await readData();
     const userIndex = data.users.findIndex(u => u._id === req.params.id);
@@ -37,12 +43,10 @@ router.put('/:id', async (req, res) => {
     
     // Role protection logic
     if (req.body.role && req.body.role !== data.users[userIndex].role) {
-      if (!req.body.requesterId) {
-        return res.status(403).json({ message: 'Requester ID is required for role changes' });
-      }
-      const requester = data.users.find(u => u._id === req.body.requesterId);
-      if (!requester) {
-        return res.status(403).json({ message: 'Unauthorized' });
+      const requester = req.user; // from protect middleware
+      
+      if (!requester || (requester.role !== 'admin' && requester.role !== 'owner')) {
+        return res.status(403).json({ message: 'Only admins or owners can change roles' });
       }
       
       const targetUser = data.users[userIndex];
@@ -68,7 +72,8 @@ router.put('/:id', async (req, res) => {
     
     // Only update password if provided
     if (req.body.password && req.body.password.trim() !== '') {
-      updatedUser.password = req.body.password;
+      const salt = await bcrypt.genSalt(10);
+      updatedUser.password = await bcrypt.hash(req.body.password, salt);
     }
     
     data.users[userIndex] = updatedUser;

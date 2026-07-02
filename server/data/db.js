@@ -21,6 +21,32 @@ const connectDB = async () => {
   console.log('MongoDB Connected successfully');
 };
 
+class Mutex {
+  constructor() {
+    this.queue = [];
+    this.locked = false;
+  }
+
+  async acquire() {
+    if (!this.locked) {
+      this.locked = true;
+      return;
+    }
+    return new Promise(resolve => this.queue.push(resolve));
+  }
+
+  release() {
+    if (this.queue.length > 0) {
+      const nextResolve = this.queue.shift();
+      nextResolve();
+    } else {
+      this.locked = false;
+    }
+  }
+}
+
+const dbMutex = new Mutex();
+
 const readData = async () => {
   await connectDB();
   let doc = await Store.findOne({ docId: 'main' });
@@ -37,4 +63,19 @@ const writeData = async (data) => {
   await Store.findOneAndUpdate({ docId: 'main' }, { state: data }, { upsert: true });
 };
 
-module.exports = { connectDB, readData, writeData, Store };
+// Safe wrapper for atomic operations
+const withTransaction = async (operation) => {
+  await dbMutex.acquire();
+  try {
+    const data = await readData();
+    const result = await operation(data);
+    if (result.modified) {
+      await writeData(result.data);
+    }
+    return result.response;
+  } finally {
+    dbMutex.release();
+  }
+};
+
+module.exports = { connectDB, readData, writeData, withTransaction, Store, dbMutex };

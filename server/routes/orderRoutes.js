@@ -1,14 +1,11 @@
 const express = require('express');
 const { readData, writeData } = require('../data/db');
+const { protect, admin } = require('../middleware/auth');
 
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 
-const dataFilePath = path.join(__dirname, '../data.json');
-
-// Get all orders (Admin only ideally, but we'll leave it open for now and handle protection in frontend)
-router.get('/', async (req, res) => {
+// Get all orders (Admin only)
+router.get('/', protect, admin, async (req, res) => {
   try {
     const data = await readData();
     res.json(data.orders || []);
@@ -18,7 +15,10 @@ router.get('/', async (req, res) => {
 });
 
 // Get orders by specific user
-router.get('/user/:userId', async (req, res) => {
+router.get('/user/:userId', protect, async (req, res) => {
+  if (req.user._id !== req.params.userId && req.user.role !== 'admin' && req.user.role !== 'owner') {
+    return res.status(403).json({ message: 'Not authorized to view these orders' });
+  }
   try {
     const data = await readData();
     const userOrders = (data.orders || []).filter(o => o.userId === req.params.userId);
@@ -81,6 +81,10 @@ router.post('/checkout', async (req, res) => {
     if (couponCode) {
       const coupon = (data.coupons || []).find(c => c.code.toUpperCase() === couponCode.toUpperCase() && c.isActive);
       if (coupon) {
+        if (coupon.usageLimit && (coupon.usageCount || 0) >= coupon.usageLimit) {
+          return res.status(400).json({ message: 'Coupon usage limit reached' });
+        }
+        
         let applicableSubtotal = 0;
         
         if (coupon.applicableType === 'product') {
@@ -141,7 +145,7 @@ router.post('/checkout', async (req, res) => {
 });
 
 // Update order status (Approve/Reject)
-router.put('/:id/status', async (req, res) => {
+router.put('/:id/status', protect, admin, async (req, res) => {
   try {
     const { status } = req.body;
     const data = await readData();
@@ -199,7 +203,7 @@ router.put('/:id/status', async (req, res) => {
 });
 
 // Delete Order
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protect, admin, async (req, res) => {
   try {
     const data = await readData();
     const orderIndex = data.orders.findIndex(o => o._id === req.params.id);

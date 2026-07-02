@@ -1,14 +1,11 @@
 const express = require('express');
 const { readData, writeData } = require('../data/db');
+const { protect, admin } = require('../middleware/auth');
 
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 
-const dataFilePath = path.join(__dirname, '../data.json');
-
-// Get all coupons
-router.get('/', async (req, res) => {
+// Get all coupons (Admin)
+router.get('/', protect, admin, async (req, res) => {
   try {
     const data = await readData();
     res.json(data.coupons || []);
@@ -17,8 +14,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Create new coupon
-router.post('/', async (req, res) => {
+// Create new coupon (Admin)
+router.post('/', protect, admin, async (req, res) => {
   try {
     const data = await readData();
     if (!data.coupons) data.coupons = [];
@@ -49,8 +46,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update/Toggle coupon status
-router.put('/:id', async (req, res) => {
+// Update/Toggle coupon status (Admin)
+router.put('/:id', protect, admin, async (req, res) => {
   try {
     const data = await readData();
     const index = data.coupons.findIndex(c => c._id === req.params.id);
@@ -69,8 +66,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete coupon
-router.delete('/:id', async (req, res) => {
+// Delete coupon (Admin)
+router.delete('/:id', protect, admin, async (req, res) => {
   try {
     const data = await readData();
     const index = data.coupons.findIndex(c => c._id === req.params.id);
@@ -99,13 +96,11 @@ router.post('/validate', async (req, res) => {
     }
     
     if (!coupon.isActive) {
-      return res.status(400).json({ message: 'This coupon is no longer active' });
+      return res.status(400).json({ message: 'Coupon is inactive' });
     }
-    
-    if (coupon.usageLimit !== null && coupon.usageLimit !== undefined) {
-      if ((coupon.usageCount || 0) >= coupon.usageLimit) {
-        return res.status(400).json({ message: 'Coupon usage limit reached' });
-      }
+
+    if (coupon.usageLimit && (coupon.usageCount || 0) >= coupon.usageLimit) {
+      return res.status(400).json({ message: 'Coupon usage limit reached' });
     }
     
     res.json(coupon);

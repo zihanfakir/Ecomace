@@ -1,16 +1,12 @@
 const express = require('express');
 const { readData, writeData } = require('../data/db');
+const { protect, admin } = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
 
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 
-const dataFilePath = path.join(__dirname, '../data.json');
-
-// Helper to read data
-// Helper to write data
 // Edit product (Admin)
-router.put('/:id', async (req, res) => {
+router.put('/:id', protect, admin, async (req, res) => {
   try {
     const data = await readData();
     const productIndex = data.products.findIndex(p => p._id === req.params.id);
@@ -52,7 +48,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete product (Admin)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protect, admin, async (req, res) => {
   try {
     const data = await readData();
     const productIndex = data.products.findIndex(p => p._id === req.params.id);
@@ -74,14 +70,38 @@ router.delete('/:id', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const data = await readData();
-    res.json(data.products);
+    let isAdmin = false;
+    
+    // Optionally check if requester is admin
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      const token = req.headers.authorization.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key');
+        const user = data.users.find(u => u._id === decoded.id);
+        if (user && (user.role === 'admin' || user.role === 'owner')) {
+          isAdmin = true;
+        }
+      } catch (e) {
+        // Ignore token errors for public route
+      }
+    }
+
+    const safeProducts = data.products.map(p => {
+      if (isAdmin) return p;
+      return {
+        ...p,
+        stockKeys: p.stockKeys ? new Array(p.stockKeys.length).fill('HIDDEN_KEY') : []
+      };
+    });
+
+    res.json(safeProducts);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
 // Create a new product (License Keys/Accounts)
-router.post('/', express.json(), async (req, res) => {
+router.post('/', protect, admin, express.json(), async (req, res) => {
   try {
     const data = await readData();
     
