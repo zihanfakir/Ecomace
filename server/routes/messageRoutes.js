@@ -28,23 +28,26 @@ router.get('/user/:userId', protect, async (req, res) => {
   }
 });
 
-// Create a new support ticket
-router.post('/', async (req, res) => {
+// Create a new ticket (User)
+router.post('/', protect, async (req, res) => {
   try {
     const data = await readData();
-    const { userId, userName, userEmail, userPhone, subject, text } = req.body;
+    const { subject, text, userName } = req.body;
     
-    if (!userId || !text) {
-      return res.status(400).json({ message: 'User ID and message text are required' });
+    // Use verified userId from token instead of trusting client
+    const userId = req.user._id;
+
+    if (!userId || !subject || !text) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
-    
+
     const newMessage = {
-      _id: Date.now().toString() + Math.random().toString(36).substring(7),
+      _id: 'MSG-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
       userId,
-      userName: userName || 'Unknown User',
-      userEmail: userEmail || 'unknown@example.com',
-      userPhone: userPhone || 'N/A',
-      subject: subject || 'Support Request',
+      userName: userName || req.user.name || 'User',
+      userEmail: req.user.email || 'unknown@example.com',
+      userPhone: req.user.phone || 'N/A',
+      subject: subject,
       status: 'open',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
