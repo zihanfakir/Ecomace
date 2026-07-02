@@ -76,7 +76,7 @@ router.get('/', async (req, res) => {
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       const token = req.headers.authorization.split(' ')[1];
       try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = data.users.find(u => u._id === decoded.id);
         if (user && (user.role === 'admin' || user.role === 'owner')) {
           isAdmin = true;
@@ -129,51 +129,6 @@ router.post('/', protect, admin, express.json(), async (req, res) => {
     res.status(201).json(newProduct);
   } catch (err) {
     res.status(400).json({ message: err.message });
-  }
-});
-
-// Buy a product (decrease stock and return a key)
-router.post('/:id/buy', async (req, res) => {
-  try {
-    const data = await readData();
-    const productIndex = data.products.findIndex(p => p._id === req.params.id);
-
-    if (productIndex === -1) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-
-    const product = data.products[productIndex];
-
-    if (!product.stockKeys || product.stockKeys.length === 0) {
-      return res.status(400).json({ message: 'Out of stock' });
-    }
-
-    // Get the first key and remove it from stock
-    const soldKey = product.stockKeys.shift();
-    
-    // Create an order record
-    const { userId, paymentMethod, paymentDetails } = req.body;
-    const order = {
-      _id: 'ORD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-      userId: userId || 'guest',
-      productId: product._id,
-      productName: product.name,
-      price: product.price, // or final price if we send it
-      soldKey: soldKey,
-      paymentMethod: paymentMethod || 'bkash',
-      paymentDetails: paymentDetails || {},
-      createdAt: new Date().toISOString()
-    };
-    
-    if (!data.orders) data.orders = [];
-    data.orders.push(order);
-
-    // Save updated data
-    await writeData(data);
-
-    res.json({ key: soldKey, order });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
   }
 });
 

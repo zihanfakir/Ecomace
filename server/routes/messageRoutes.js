@@ -1,14 +1,11 @@
 const express = require('express');
 const { readData, writeData } = require('../data/db');
+const { protect, admin } = require('../middleware/auth');
 
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
-
-const dataPath = path.join(__dirname, '../data.json');
 
 // Get all messages (Admin)
-router.get('/', async (req, res) => {
+router.get('/', protect, admin, async (req, res) => {
   try {
     const data = await readData();
     res.json(data.messages || []);
@@ -18,7 +15,10 @@ router.get('/', async (req, res) => {
 });
 
 // Get messages for a specific user
-router.get('/user/:userId', async (req, res) => {
+router.get('/user/:userId', protect, async (req, res) => {
+  if (req.user._id !== req.params.userId && req.user.role !== 'admin' && req.user.role !== 'owner') {
+    return res.status(403).json({ message: 'Not authorized to view these messages' });
+  }
   try {
     const data = await readData();
     const userMessages = (data.messages || []).filter(m => m.userId === req.params.userId);
@@ -68,10 +68,13 @@ router.post('/', async (req, res) => {
 });
 
 // Reply to a ticket (Admin or User)
-router.post('/:id/reply', async (req, res) => {
+router.post('/:id/reply', protect, async (req, res) => {
   try {
     const data = await readData();
-    const { sender, text } = req.body; // sender should be 'user' or 'admin'
+    const { text } = req.body;
+    
+    // Strictly set sender based on authenticated token, ignoring client request
+    const sender = (req.user.role === 'admin' || req.user.role === 'owner') ? 'admin' : 'user';
     
     if (!sender || !text) {
       return res.status(400).json({ message: 'Sender and text are required' });
@@ -103,8 +106,8 @@ router.post('/:id/reply', async (req, res) => {
   }
 });
 
-// Change ticket status (Admin)
-router.put('/:id/status', async (req, res) => {
+// Update ticket status (Admin)
+router.put('/:id/status', protect, admin, async (req, res) => {
   try {
     const data = await readData();
     const { status } = req.body;

@@ -1,14 +1,9 @@
 const express = require('express');
 const { readData, writeData } = require('../data/db');
+const { protect, admin } = require('../middleware/auth');
 
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 
-const dataFilePath = path.join(__dirname, '../data.json');
-
-// Helper to read data
-// Helper to write data
 // Get settings
 router.get('/', async (req, res) => {
   try {
@@ -34,7 +29,7 @@ router.get('/', async (req, res) => {
 });
 
 // Update settings (Admin)
-router.put('/', async (req, res) => {
+router.put('/', protect, admin, async (req, res) => {
   try {
     const data = await readData();
     data.settings = { ...data.settings, ...req.body };

@@ -25,6 +25,10 @@ router.get('/', protect, admin, async (req, res) => {
 
 // Update user details
 router.put('/:id', protect, async (req, res) => {
+  if (req.user._id !== req.params.id && req.user.role !== 'admin' && req.user.role !== 'owner') {
+    return res.status(403).json({ message: 'Not authorized to update this user' });
+  }
+
   try {
     const data = await readData();
     const userIndex = data.users.findIndex(u => u._id === req.params.id);

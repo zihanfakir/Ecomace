@@ -8,12 +8,17 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET is not defined. Server cannot start.");
+  process.exit(1);
+}
+
 // Connect to MongoDB
 const { connectDB } = require('./data/db');
 connectDB().catch(console.error);
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: ['http://localhost:5173', 'https://ecomace.onrender.com'] }));
 app.use(express.json());
 
 // Basic Route

@@ -21,7 +21,16 @@ router.get('/user/:userId', protect, async (req, res) => {
   }
   try {
     const data = await readData();
-    const userOrders = (data.orders || []).filter(o => o.userId === req.params.userId);
+    const userOrders = (data.orders || []).filter(o => o.userId === req.params.userId).map(o => {
+      // Hide keys for non-completed orders to prevent pre-payment key theft
+      if (o.status !== 'completed' && o.status !== 'approved') {
+        return {
+          ...o,
+          items: (o.items || []).map(item => ({ ...item, keys: [] }))
+        };
+      }
+      return o;
+    });
     res.json(userOrders);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -120,9 +129,24 @@ router.post('/checkout', async (req, res) => {
     const totalPrice = subtotal - discountAmount;
 
     // Create Order Record
+    let verifiedUserId = userId || 'guest';
+    
+    // Verify token if present to prevent impersonation
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      try {
+        const token = req.headers.authorization.split(' ')[1];
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        verifiedUserId = decoded.id;
+      } catch (e) {
+        // Fallback to guest if token is invalid, but don't trust client-side userId
+        verifiedUserId = 'guest';
+      }
+    }
+
     const newOrder = {
       _id: 'ORD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-      userId: userId || 'guest',
+      userId: verifiedUserId,
       customerDetails: customerDetails || {},
       paymentMethod: paymentMethod || 'bkash',
       paymentDetails: paymentDetails || {},
@@ -138,7 +162,13 @@ router.post('/checkout', async (req, res) => {
     data.orders.push(newOrder);
     await writeData(data);
     
-    res.json({ message: 'Checkout successful', order: newOrder });
+    // Hide keys in immediate checkout response
+    const safeOrder = {
+      ...newOrder,
+      items: newOrder.items.map(item => ({ ...item, keys: [] }))
+    };
+    
+    res.json({ message: 'Checkout successful', order: safeOrder });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
