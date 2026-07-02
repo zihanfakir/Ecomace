@@ -386,6 +386,7 @@ const AdminLayout = ({ theme, toggleTheme, siteSettings }) => {
     <nav style={{ padding: '15px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--surface-color)', borderBottom: 'var(--glass-border)' }}>
       <h2 style={{ color: 'var(--primary-accent)', margin: 0 }}>Ecomace Admin Center</h2>
       <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+        <NotificationBell />
         <Link to="/" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: '500' }}>View Store</Link>
         <button onClick={logout} style={{ background: 'var(--surface-color)', border: 'var(--glass-border)', padding: '8px 15px', borderRadius: '8px', cursor: 'pointer', color: 'var(--text-primary)' }}>Logout</button>
         <button 
