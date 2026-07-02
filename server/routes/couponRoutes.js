@@ -61,7 +61,8 @@ router.put('/:id', protect, admin, async (req, res) => {
     
     const updatedCoupon = {
       ...data.coupons[index],
-      ...req.body
+      ...req.body,
+      minPurchaseAmount: req.body.minPurchaseAmount !== undefined ? (req.body.minPurchaseAmount ? Number(req.body.minPurchaseAmount) : null) : data.coupons[index].minPurchaseAmount
     };
     
     if (updatedCoupon.discountType === 'percent' && Number(updatedCoupon.discountPercent) > 100) {
