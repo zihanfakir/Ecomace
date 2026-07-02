@@ -3,6 +3,7 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Package, Settings, Save, X } from 'lucide-react';
+import { compressImage } from '../utils/imageUtils';
 
 const CustomerDashboard = () => {
   const { user, updateUser } = useContext(AuthContext);
@@ -30,7 +31,7 @@ const CustomerDashboard = () => {
   const fetchTickets = async () => {
     try {
       const response = await axios.get(`https://ecomace.onrender.com/api/messages/user/${user._id}`);
-      setTickets(response.data);
+      setTickets(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching tickets:', error);
     }
@@ -40,7 +41,7 @@ const CustomerDashboard = () => {
     const fetchOrders = async () => {
       try {
         const response = await axios.get(`https://ecomace.onrender.com/api/orders/user/${user._id}`);
-        setOrders(response.data);
+        setOrders(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Error fetching orders:', error);
       } finally {
@@ -54,18 +55,19 @@ const CustomerDashboard = () => {
     }
   }, [user]);
   
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setMessage('Image must be smaller than 5MB');
+        addToast('Image must be smaller than 5MB', 'error');
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileData(prev => ({ ...prev, photoUrl: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        const base64 = await compressImage(file, 400, 0.7);
+        setProfileData(prev => ({ ...prev, photoUrl: base64 }));
+      } catch (error) {
+        addToast('Failed to process image', 'error');
+      }
     }
   };
 

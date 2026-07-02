@@ -22,7 +22,7 @@ const Home = () => {
     const fetchProducts = async () => {
       try {
         const response = await axios.get('https://ecomace.onrender.com/api/products');
-        setProducts(response.data);
+        setProducts(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {

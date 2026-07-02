@@ -77,15 +77,15 @@ const AdminDashboard = () => {
     try {
       const response = await axios.get('https://ecomace.onrender.com/api/orders');
       setOrders(prevOrders => {
-        if (prevOrders.length > 0 && response.data.length > prevOrders.length) {
+        const newData = Array.isArray(response.data) ? response.data : [];
+        if (prevOrders.length > 0 && newData.length > prevOrders.length) {
            addToast('🔔 New Order Received!', 'success');
-           // Try to play a notification sound
            try {
              const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
              audio.play().catch(e => {});
            } catch(e) {}
         }
-        return response.data;
+        return newData;
       });
     } catch (error) {
       console.error('Error polling orders:', error);
@@ -118,7 +118,7 @@ const AdminDashboard = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get('https://ecomace.onrender.com/api/products');
-      setProducts(response.data);
+      setProducts(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching products:', error);
     }
@@ -127,7 +127,7 @@ const AdminDashboard = () => {
   const fetchUsers = async () => {
     try {
       const response = await axios.get('https://ecomace.onrender.com/api/users');
-      setUsers(response.data);
+      setUsers(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching users:', error);
     }
@@ -136,7 +136,7 @@ const AdminDashboard = () => {
   const fetchOrders = async () => {
     try {
       const response = await axios.get('https://ecomace.onrender.com/api/orders');
-      setOrders(response.data);
+      setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching orders:', error);
     }
@@ -145,7 +145,7 @@ const AdminDashboard = () => {
   const fetchCoupons = async () => {
     try {
       const response = await axios.get('https://ecomace.onrender.com/api/coupons');
-      setCoupons(response.data);
+      setCoupons(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching coupons:', error);
     }
@@ -154,7 +154,7 @@ const AdminDashboard = () => {
   const fetchTickets = async () => {
     try {
       const response = await axios.get('https://ecomace.onrender.com/api/messages');
-      setTickets(response.data);
+      setTickets(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching tickets:', error);
     }
