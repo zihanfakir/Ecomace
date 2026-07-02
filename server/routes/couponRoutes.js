@@ -25,6 +25,10 @@ router.post('/', protect, admin, async (req, res) => {
       return res.status(400).json({ message: 'Coupon code already exists' });
     }
 
+    if (req.body.discountType === 'percent' && Number(req.body.discountPercent) > 100) {
+      return res.status(400).json({ message: 'Percentage discount cannot exceed 100%' });
+    }
+
     const newCoupon = {
       _id: Date.now().toString() + Math.random().toString(36).substring(7),
       code: req.body.code.toUpperCase(),
@@ -33,6 +37,7 @@ router.post('/', protect, admin, async (req, res) => {
       applicableType: req.body.applicableType || 'all',
       applicableTo: req.body.applicableTo || null,
       usageLimit: req.body.usageLimit ? parseInt(req.body.usageLimit, 10) : null,
+      minPurchaseAmount: req.body.minPurchaseAmount ? Number(req.body.minPurchaseAmount) : null,
       usageCount: 0,
       isActive: true,
       createdAt: new Date().toISOString()

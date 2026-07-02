@@ -92,6 +92,10 @@ const Checkout = () => {
         applicableSubtotal = getCartTotal();
       }
 
+      if (coupon.minPurchaseAmount && applicableSubtotal < coupon.minPurchaseAmount) {
+        throw new Error(`Minimum purchase of ৳${coupon.minPurchaseAmount} required for this coupon`);
+      }
+
       let discount = 0;
       if (coupon.discountType === 'flat') {
         discount = Math.min(coupon.discountPercent, applicableSubtotal);
