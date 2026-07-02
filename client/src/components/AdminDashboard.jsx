@@ -11,7 +11,7 @@ import AdminOrders from './admin/AdminOrders';
 import AdminSupport from './admin/AdminSupport';
 import AdminSettings from './admin/AdminSettings';
 import ActionMenu from './ActionMenu';
-import { compressImage } from '../utils/imageUtils';
+import { uploadToImgBB } from '../utils/imageUtils';
 
 const AdminDashboard = () => {
   const { user, updateUser } = useContext(AuthContext);
@@ -291,7 +291,10 @@ const AdminDashboard = () => {
   const submitCategoryModal = async () => {
     if (!categoryModalProduct) return;
     try {
-      await axios.put(`https://ecomace.onrender.com/api/products/${categoryModalProduct._id}`, { ...categoryModalProduct, category: categoryModalInput || 'Uncategorized', keys: categoryModalProduct.stockKeys }, {
+      // H-4: Only send the category field — avoid stale client-state overwriting server stock
+      await axios.put(`https://ecomace.onrender.com/api/products/${categoryModalProduct._id}`, { 
+        category: categoryModalInput || 'Uncategorized'
+      }, {
         headers: { 'Content-Type': 'application/json' }
       });
       fetchProducts();
@@ -307,7 +310,12 @@ const AdminDashboard = () => {
     setProfileLoading(true);
     setMessage('');
     try {
-      const response = await axios.put(`https://ecomace.onrender.com/api/users/${user._id}`, profileData);
+      // H-2: Strip empty password before sending to avoid unnecessary over-the-wire exposure
+      const payload = { ...profileData };
+      if (!payload.password || payload.password.trim() === '') {
+        delete payload.password;
+      }
+      const response = await axios.put(`https://ecomace.onrender.com/api/users/${user._id}`, payload);
       updateUser(response.data);
       setMessage('Admin profile updated successfully!');
       setProfileData({ ...profileData, password: '' }); // clear password field
@@ -461,10 +469,14 @@ const AdminDashboard = () => {
                       const file = e.target.files[0];
                       if (file) {
                         try {
-                          const base64 = await compressImage(file, 800, 0.7);
-                          setNewProduct({...newProduct, photoUrl: base64});
+                          addToast('Uploading product image...', 'info');
+                          const url = await uploadToImgBB(file, 800, 0.7);
+                          // M-1: Functional updater avoids stale closure over newProduct
+                          setNewProduct(prev => ({...prev, photoUrl: url}));
+                          addToast('Image uploaded successfully', 'success');
                         } catch (error) {
-                          console.error('Image compression failed', error);
+                          console.error('Image upload failed', error);
+                          addToast('Failed to upload image', 'error');
                         }
                       }
                     }}
@@ -610,19 +622,19 @@ const AdminDashboard = () => {
         
         <h3 style={{ marginBottom: '10px', paddingLeft: '10px', borderLeft: '3px solid var(--primary-accent)' }}>Admin Menu</h3>
         
-        <button onClick={() => setActiveTab('products')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'products' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'products' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
+        <button onClick={() => { setActiveTab('products'); setMessage(''); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'products' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'products' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
           <Package size={18} /> Products
         </button>
-        <button onClick={() => setActiveTab('users')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'users' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'users' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
+        <button onClick={() => { setActiveTab('users'); setMessage(''); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'users' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'users' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
           <Users size={18} /> Users
         </button>
-        <button onClick={() => setActiveTab('coupons')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'coupons' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'coupons' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
+        <button onClick={() => { setActiveTab('coupons'); setMessage(''); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'coupons' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'coupons' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
           <Tag size={18} /> Coupons
         </button>
-        <button onClick={() => setActiveTab('history')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'history' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'history' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
+        <button onClick={() => { setActiveTab('history'); setMessage(''); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'history' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'history' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
           <History size={18} /> Order History
         </button>
-        <button onClick={() => setActiveTab('messages')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'messages' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'messages' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
+        <button onClick={() => { setActiveTab('messages'); setMessage(''); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'messages' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'messages' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
           <MessageSquare size={18} /> Messages
         </button>
         <button onClick={() => setActiveTab('settings')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'settings' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'settings' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>

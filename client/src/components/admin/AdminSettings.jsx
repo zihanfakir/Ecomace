@@ -2,7 +2,7 @@ import React from 'react';
 import { Save, Plus, Trash2, Power, PowerOff, X } from 'lucide-react';
 import ActionMenu from '../ActionMenu';
 import { useToast } from '../../context/ToastContext';
-import { compressImage } from '../../utils/imageUtils';
+import { uploadToImgBB } from '../../utils/imageUtils';
 
 const AdminSettings = ({ 
   user, profileData, setProfileData, handleUpdateProfile, profileLoading, message,
@@ -19,10 +19,13 @@ const AdminSettings = ({
         return;
       }
       try {
-        const base64 = await compressImage(file, 400, 0.7); // 400px is enough for profile
-        setProfileData(prev => ({ ...prev, photoUrl: base64 }));
+        addToast('Uploading image...', 'info');
+        const url = await uploadToImgBB(file, 800, 0.7);
+        setProfileData({...profileData, photoUrl: url});
+        addToast('Image uploaded successfully', 'success');
       } catch (error) {
-        addToast('Failed to process image', 'error');
+        console.error('Image upload failed', error);
+        addToast('Failed to upload image', 'error');
       }
     }
   };
@@ -181,10 +184,13 @@ const AdminSettings = ({
                           const file = e.target.files[0];
                           if (file) {
                             try {
-                              const base64 = await compressImage(file, 1200, 0.7);
-                              handleUpdateBanner(banner.id || index, 'imageUrl', base64);
+                              addToast('Uploading banner...', 'info');
+                              const url = await uploadToImgBB(file, 1200, 0.7);
+                              handleUpdateBanner(banner.id || index, 'imageUrl', url);
+                              addToast('Banner uploaded successfully', 'success');
                             } catch (error) {
-                              console.error('Image compression failed', error);
+                              console.error('Banner upload failed', error);
+                              addToast('Failed to upload banner', 'error');
                             }
                           }
                         }}

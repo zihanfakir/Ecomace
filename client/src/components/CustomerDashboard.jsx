@@ -3,7 +3,7 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Package, Settings, Save, X } from 'lucide-react';
-import { compressImage } from '../utils/imageUtils';
+import { uploadToImgBB } from '../utils/imageUtils';
 
 const CustomerDashboard = () => {
   const { user, updateUser } = useContext(AuthContext);
@@ -63,9 +63,12 @@ const CustomerDashboard = () => {
         return;
       }
       try {
-        const base64 = await compressImage(file, 400, 0.7);
-        setProfileData(prev => ({ ...prev, photoUrl: base64 }));
+        addToast('Uploading image...', 'info');
+        const url = await uploadToImgBB(file, 800, 0.7);
+        setProfileData(prev => ({ ...prev, photoUrl: url }));
+        addToast('Image uploaded successfully', 'success');
       } catch (error) {
+        console.error('Image upload failed', error);
         addToast('Failed to process image', 'error');
       }
     }
