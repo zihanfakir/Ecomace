@@ -18,7 +18,7 @@ const { connectDB } = require('./data/db');
 connectDB().catch(console.error);
 
 // Middleware
-app.use(cors({ origin: ['http://localhost:5173', 'https://ecomace.onrender.com'] }));
+app.use(cors({ origin: ['http://localhost:5173', 'https://ecomace.onrender.com', 'https://ecomace.vercel.app'] }));
 app.use(express.json());
 
 // Basic Route
