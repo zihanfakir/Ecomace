@@ -136,6 +136,7 @@ const AdminDashboard = () => {
     try {
       await axios.put(`https://ecomace.onrender.com/api/orders/${orderId}/status`, { status });
       fetchOrders();
+      fetchProducts();
     } catch (error) {
       addToast(error.response?.data?.message || 'Failed to update order status', 'error');
     }
@@ -147,6 +148,7 @@ const AdminDashboard = () => {
       await axios.delete(`https://ecomace.onrender.com/api/orders/${orderToDelete}`);
       setOrderToDelete(null);
       fetchOrders();
+      fetchProducts();
       addToast('Order deleted successfully', 'success');
     } catch (error) {
       addToast('Failed to delete order', 'error');

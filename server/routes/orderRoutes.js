@@ -188,6 +188,19 @@ router.delete('/:id', async (req, res) => {
     if (orderIndex === -1) {
       return res.status(404).json({ message: 'Order not found' });
     }
+    const order = data.orders[orderIndex];
+    
+    // Restore keys to products if order was not already cancelled or rejected
+    if (order.status !== 'cancelled' && order.status !== 'rejected') {
+      if (order.items) {
+        order.items.forEach(item => {
+          const productIndex = data.products.findIndex(p => p._id === item.productId);
+          if (productIndex !== -1 && item.keys && item.keys.length > 0) {
+            data.products[productIndex].stockKeys = [...data.products[productIndex].stockKeys, ...item.keys];
+          }
+        });
+      }
+    }
     
     data.orders.splice(orderIndex, 1);
     await writeData(data);
