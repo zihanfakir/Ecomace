@@ -303,7 +303,8 @@ function App() {
             ...prev,
             footerText: response.data.footerText || prev.footerText,
             telegramLink: response.data.telegramLink || prev.telegramLink,
-            whatsappLink: response.data.whatsappLink || prev.whatsappLink
+            whatsappLink: response.data.whatsappLink || prev.whatsappLink,
+            noticeText: response.data.noticeText || ''
           }));
         }
       } catch(err) {
