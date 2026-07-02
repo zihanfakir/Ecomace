@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 /**
  * Compresses an image file and converts it to a base64 string.
  * @param {File} file - The image file to compress.
@@ -53,23 +55,17 @@ export const uploadToImgBB = async (file, maxWidth = 800, quality = 0.7) => {
     // ImgBB expects the raw base64 data without the data URL prefix
     const base64Data = base64String.split(',')[1];
     
-    const formData = new FormData();
-    formData.append('image', base64Data);
-    
-    // Using the provided API key
-    const response = await fetch(`https://api.imgbb.com/1/upload?key=d56dbc5ab20a283240dd980bfb387a1a`, {
-      method: 'POST',
-      body: formData
+    const response = await axios.post('https://ecomace.onrender.com/api/upload', {
+      image: base64Data
     });
     
-    const data = await response.json();
-    if (data.success) {
-      return data.data.url; // Return the direct URL to the image
+    if (response.data && response.data.url) {
+      return response.data.url;
     } else {
-      throw new Error(data.error?.message || 'ImgBB upload failed');
+      throw new Error('Invalid response from upload proxy');
     }
   } catch (error) {
-    console.error('Upload to ImgBB error:', error);
+    console.error('Upload to ImgBB proxy error:', error);
     throw error;
   }
 };
