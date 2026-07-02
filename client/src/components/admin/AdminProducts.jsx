@@ -5,6 +5,7 @@ import ActionMenu from '../ActionMenu';
 const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOpenAddModal, handleSetCategory }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [stockFilter, setStockFilter] = useState('all');
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -13,9 +14,19 @@ const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOp
     return () => clearTimeout(handler);
   }, [searchTerm]);
   
-  const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(debouncedSearch.toLowerCase())
-  );
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+    
+    let matchesStock = true;
+    const stockCount = product.stockKeys?.length || 0;
+    
+    if (stockFilter === 'in_stock') matchesStock = stockCount > 0;
+    else if (stockFilter === 'out_of_stock') matchesStock = stockCount === 0;
+    else if (stockFilter === 'low_stock') matchesStock = stockCount > 0 && stockCount <= 5;
+    else if (stockFilter === 'high_stock') matchesStock = stockCount > 5;
+
+    return matchesSearch && matchesStock;
+  });
 
   return (
     <div>
@@ -26,15 +37,28 @@ const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOp
         </button>
       </div>
       
-      <div style={{ marginBottom: '20px', position: 'relative' }}>
-        <Search size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-        <input 
-          type="text" 
-          placeholder="Search products by name..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: '100%', padding: '12px 12px 12px 45px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', color: 'var(--text-primary)' }}
-        />
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
+          <Search size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+          <input 
+            type="text" 
+            placeholder="Search products by name..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ width: '100%', padding: '12px 12px 12px 45px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', color: 'var(--text-primary)', boxSizing: 'border-box' }}
+          />
+        </div>
+        <select 
+          value={stockFilter} 
+          onChange={(e) => setStockFilter(e.target.value)}
+          style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', color: 'var(--text-primary)', minWidth: '150px' }}
+        >
+          <option value="all">All Products</option>
+          <option value="in_stock">In Stock (&gt;0)</option>
+          <option value="low_stock">Low Stock (1-5)</option>
+          <option value="high_stock">High Stock (&gt;5)</option>
+          <option value="out_of_stock">Out of Stock (0)</option>
+        </select>
       </div>
       
       <div style={{ backgroundColor: 'var(--surface-color)', padding: '20px', borderRadius: '12px' }}>

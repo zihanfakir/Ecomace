@@ -58,6 +58,12 @@ const Home = () => {
                           product.description?.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchesCategory = activeCategory === 'All' || (product.category || 'Uncategorized') === activeCategory;
     return matchesSearch && matchesCategory;
+  }).sort((a, b) => {
+    const aOut = !a.stockKeys || a.stockKeys.length === 0;
+    const bOut = !b.stockKeys || b.stockKeys.length === 0;
+    if (aOut && !bOut) return 1;
+    if (!aOut && bOut) return -1;
+    return 0;
   });
 
   return (
