@@ -201,7 +201,7 @@ const Checkout = () => {
               {cart.map((item, idx) => (
                 <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px solid var(--border-color)' }}>
                   <div>{item.product.name} (x{item.quantity})</div>
-                  <div>৳ {Math.round((item.product.discount > 0 ? item.product.price - (item.product.price * (item.product.discount / 100)) : item.product.price) * item.quantity)}</div>
+                  <div>৳ {Math.round((item.product.discount > 0 ? (item.product.discountType === 'flat' ? Math.max(0, item.product.price - item.product.discount) : item.product.price - (item.product.price * (item.product.discount / 100))) : item.product.price) * item.quantity)}</div>
                 </div>
               ))}
             </div>
