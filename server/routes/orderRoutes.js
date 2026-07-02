@@ -1,14 +1,18 @@
 const express = require('express');
-const { readData, writeData, withTransaction } = require('../data/db');
 const { protect, admin } = require('../middleware/auth');
+const mongoose = require('mongoose');
+const Order = require('../models/Order');
+const Product = require('../models/Product');
+const Coupon = require('../models/Coupon');
+const Notification = require('../models/Notification');
 
 const router = express.Router();
 
 // Get all orders (Admin only)
 router.get('/', protect, admin, async (req, res) => {
   try {
-    const data = await readData();
-    res.json(data.orders || []);
+    const orders = await Order.find({}).sort({ createdAt: -1 });
+    res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -20,298 +24,292 @@ router.get('/user/:userId', protect, async (req, res) => {
     return res.status(403).json({ message: 'Not authorized to view these orders' });
   }
   try {
-    const data = await readData();
-    const userOrders = (data.orders || []).filter(o => o.userId === req.params.userId).map(o => {
-      // Hide keys for non-completed orders to prevent pre-payment key theft
-      if (o.status !== 'completed' && o.status !== 'approved') {
+    const userOrders = await Order.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+    const safeOrders = userOrders.map(o => {
+      const orderObj = o.toObject ? o.toObject() : o;
+      if (orderObj.status !== 'completed' && orderObj.status !== 'approved') {
         return {
-          ...o,
-          items: (o.items || []).map(item => ({ ...item, keys: [] }))
+          ...orderObj,
+          items: (orderObj.items || []).map(item => ({ ...item, keys: [] }))
         };
       }
-      return o;
+      return orderObj;
     });
-    res.json(userOrders);
+    res.json(safeOrders);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Checkout (Process multiple products from cart) — requires authentication
+// Checkout (Process multiple products from cart)
 router.post('/checkout', protect, async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { cartItems, customerDetails, paymentMethod, paymentDetails, couponCode } = req.body;
     
-    const response = await withTransaction(async (data) => {
-      let subtotal = 0;
-      const purchasedItems = [];
+    let subtotal = 0;
+    const purchasedItems = [];
 
-      // Verify stock and prepare items
-      for (const item of cartItems) {
-        if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
-          return { modified: false, response: { status: 400, body: { message: 'Invalid quantity' } } };
-        }
-        const productIndex = data.products.findIndex(p => p._id === item.product._id);
-        if (productIndex === -1) {
-          return { modified: false, response: { status: 404, body: { message: `Product ${item.product.name} not found` } } };
-        }
-        const product = data.products[productIndex];
-        if (!product.stockKeys || product.stockKeys.length < item.quantity) {
-          return { modified: false, response: { status: 400, body: { message: `Not enough stock for ${product.name}` } } };
-        }
-
-        let finalPrice = product.price;
-        if (product.discount > 0) {
-          if (product.discountType === 'flat') {
-            finalPrice = Math.max(0, product.price - product.discount);
-          } else {
-            finalPrice = Math.round(product.price - (product.price * (product.discount / 100)));
-            finalPrice = Math.max(0, finalPrice);
-          }
-        }
-        subtotal += finalPrice * item.quantity;
-        
-        const keys = [];
-        for (let i = 0; i < item.quantity; i++) {
-          keys.push(product.stockKeys.shift());
-        }
-        
-        purchasedItems.push({
-          productId: product._id,
-          productName: product.name,
-          category: product.category,
-          quantity: item.quantity,
-          price: finalPrice,
-          keys: keys
-        });
-        
-        // Update product stock
-        data.products[productIndex] = product;
+    // Verify stock and prepare items
+    for (const item of cartItems) {
+      if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+        throw new Error('Invalid quantity');
+      }
+      const product = await Product.findById(item.product._id).session(session);
+      if (!product) {
+        throw new Error(`Product ${item.product.name} not found`);
+      }
+      if (!product.stockKeys || product.stockKeys.length < item.quantity) {
+        throw new Error(`Not enough stock for ${product.name}`);
       }
 
-      // Apply Coupon
-      let discountAmount = 0;
-      if (couponCode) {
-        const coupon = (data.coupons || []).find(c => c.code.toUpperCase() === couponCode.toUpperCase() && c.isActive);
-        if (!coupon) {
-          return { modified: false, response: { status: 400, body: { message: 'Invalid or inactive coupon code' } } };
-        }
-        
-        if (coupon.usageLimit && (coupon.usageCount || 0) >= coupon.usageLimit) {
-          return { modified: false, response: { status: 400, body: { message: 'Coupon usage limit reached' } } };
-        }
-        
-        let applicableSubtotal = 0;
-        
-        if (coupon.applicableType === 'product') {
-          const applicableItems = purchasedItems.filter(item => item.productId === coupon.applicableTo);
-          if (applicableItems.length === 0) {
-            return { modified: false, response: { status: 400, body: { message: 'Coupon is not valid for any items in cart' } } };
-          }
-          applicableSubtotal = applicableItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-        } else if (coupon.applicableType === 'category') {
-          const applicableItems = purchasedItems.filter(item => item.category === coupon.applicableTo);
-          if (applicableItems.length === 0) {
-            return { modified: false, response: { status: 400, body: { message: 'Coupon is not valid for any items in cart' } } };
-          }
-          applicableSubtotal = applicableItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+      let finalPrice = product.price;
+      if (product.discount > 0) {
+        if (product.discountType === 'flat') {
+          finalPrice = Math.max(0, product.price - product.discount);
         } else {
-          applicableSubtotal = subtotal;
-        }
-
-
-
-        if (coupon.discountType === 'flat') {
-          discountAmount = Math.min(coupon.discountPercent, applicableSubtotal); 
-        } else {
-          discountAmount = Math.round(applicableSubtotal * (coupon.discountPercent / 100));
-        }
-        // Cap discount to applicable subtotal
-        discountAmount = Math.min(discountAmount, applicableSubtotal);
-        
-        // Increment usage count
-        const couponIndex = data.coupons.findIndex(c => c.code.toUpperCase() === couponCode.toUpperCase());
-        if (couponIndex !== -1) {
-          data.coupons[couponIndex].usageCount = (data.coupons[couponIndex].usageCount || 0) + 1;
+          finalPrice = Math.round(product.price - (product.price * (product.discount / 100)));
+          finalPrice = Math.max(0, finalPrice);
         }
       }
+      subtotal += finalPrice * item.quantity;
       
-      const totalPrice = subtotal - discountAmount;
-
-      // Use authenticated user ID from the protect middleware
-      const verifiedUserId = req.user._id;
-
-      const newOrder = {
-        _id: 'ORD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-        userId: verifiedUserId,
-        customerDetails: customerDetails || {},
-        paymentMethod: paymentMethod || 'bkash',
-        paymentDetails: paymentDetails || {},
-        couponApplied: couponCode ? { code: couponCode, discountAmount } : null,
-        items: purchasedItems,
-        subtotal,
-        totalPrice,
-        status: 'pending',
-        createdAt: new Date().toISOString()
-      };
+      const keys = [];
+      for (let i = 0; i < item.quantity; i++) {
+        keys.push(product.stockKeys.shift());
+      }
       
-      if (!data.orders) data.orders = [];
-      data.orders.push(newOrder);
-      
-      // Add notification for admin
-      if (!data.notifications) data.notifications = [];
-      data.notifications.push({
-        _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-        target: 'admin',
-        type: 'order',
-        message: `New order ${newOrder._id} received for ৳ ${totalPrice}`,
-        link: '/admin',
-        read: false,
-        createdAt: new Date().toISOString()
+      purchasedItems.push({
+        productId: product._id,
+        productName: product.name,
+        category: product.category,
+        quantity: item.quantity,
+        price: finalPrice,
+        keys: keys
       });
       
-      // Hide keys in immediate checkout response
-      const safeOrder = {
-        ...newOrder,
-        items: newOrder.items.map(item => ({ ...item, keys: [] }))
-      };
+      await product.save({ session });
+    }
 
-      return { modified: true, data, response: { status: 200, body: { message: 'Checkout successful', order: safeOrder } } };
+    // Apply Coupon
+    let discountAmount = 0;
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${couponCode}$`, 'i') }, isActive: true }).session(session);
+      if (!coupon) {
+        throw new Error('Invalid or inactive coupon code');
+      }
+      
+      if (coupon.usageLimit && (coupon.usageCount || 0) >= coupon.usageLimit) {
+        throw new Error('Coupon usage limit reached');
+      }
+      
+      let applicableSubtotal = 0;
+      
+      if (coupon.applicableType === 'product') {
+        const applicableItems = purchasedItems.filter(item => item.productId === coupon.applicableTo);
+        if (applicableItems.length === 0) {
+          throw new Error('Coupon is not valid for any items in cart');
+        }
+        applicableSubtotal = applicableItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+      } else if (coupon.applicableType === 'category') {
+        const applicableItems = purchasedItems.filter(item => item.category === coupon.applicableTo);
+        if (applicableItems.length === 0) {
+          throw new Error('Coupon is not valid for any items in cart');
+        }
+        applicableSubtotal = applicableItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+      } else {
+        applicableSubtotal = subtotal;
+      }
+
+      if (coupon.discountType === 'flat') {
+        discountAmount = Math.min(coupon.discountPercent, applicableSubtotal); 
+      } else {
+        discountAmount = Math.round(applicableSubtotal * (coupon.discountPercent / 100));
+      }
+      // Cap discount to applicable subtotal
+      discountAmount = Math.min(discountAmount, applicableSubtotal);
+      
+      coupon.usageCount = (coupon.usageCount || 0) + 1;
+      await coupon.save({ session });
+    }
+    
+    const totalPrice = subtotal - discountAmount;
+
+    const newOrder = new Order({
+      _id: 'ORD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+      userId: req.user._id,
+      customerName: customerDetails.name || req.user.name || 'Guest',
+      customerPhone: customerDetails.phone,
+      customerDetails: customerDetails || {},
+      paymentMethod: paymentMethod || 'bkash',
+      paymentDetails: paymentDetails || {},
+      transactionId: paymentDetails?.transactionId || 'N/A',
+      paymentPhone: paymentDetails?.phone || '',
+      couponApplied: couponCode ? { code: couponCode, discountAmount } : null,
+      items: purchasedItems,
+      subtotal,
+      totalPrice,
+      status: 'pending'
+    });
+    
+    await newOrder.save({ session });
+    
+    const newNotification = new Notification({
+      _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+      target: 'admin',
+      type: 'order',
+      title: 'New Order',
+      message: `New order ${newOrder._id} received for ৳ ${totalPrice}`,
+      link: '/admin'
     });
 
-    res.status(response.status).json(response.body);
+    await newNotification.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+    
+    const orderObj = newOrder.toObject();
+    const safeOrder = {
+      ...orderObj,
+      items: orderObj.items.map(item => ({ ...item, keys: [] }))
+    };
+
+    res.status(200).json({ message: 'Checkout successful', order: safeOrder });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    await session.abortTransaction();
+    session.endSession();
+    res.status(400).json({ message: err.message });
   }
 });
 
 // Update order status (Approve/Reject)
 router.put('/:id/status', protect, admin, async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { status } = req.body;
     
-    const response = await withTransaction(async (data) => {
-      const orderIndex = data.orders.findIndex(o => o._id === req.params.id);
-      
-      if (orderIndex === -1) {
-        return { modified: false, response: { status: 404, body: { message: 'Order not found' } } };
-      }
-      
-      const order = data.orders[orderIndex];
-      
-      // Initialize change count if not present
-      if (order.statusChangeCount === undefined) {
-        order.statusChangeCount = 0;
-      }
+    const order = await Order.findById(req.params.id).session(session);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+    
+    if (order.statusChangeCount === undefined) {
+      order.statusChangeCount = 0;
+    }
 
-      if (order.status === status) {
-        return { modified: false, response: { status: 400, body: { message: 'Status is already ' + status } } };
-      }
-      
-      if (order.statusChangeCount >= 5) {
-        return { modified: false, response: { status: 400, body: { message: 'Order status can only be changed up to 5 times' } } };
-      }
-      
-      // Logic for restoring keys if rejecting an order that was NOT already rejected
-      if (status === 'cancelled' || status === 'rejected') {
-        if (order.status !== 'cancelled' && order.status !== 'rejected') {
-          // Restore keys to products
-          if (order.items) {
-            order.items.forEach(item => {
-              const productIndex = data.products.findIndex(p => p._id === item.productId);
-              if (productIndex !== -1 && item.keys && item.keys.length > 0) {
-                data.products[productIndex].stockKeys = [...data.products[productIndex].stockKeys, ...item.keys];
-              }
-            });
-          }
-          // M-11: Decrement coupon usageCount when cancelling an order that used a coupon
-          if (order.couponApplied?.code) {
-            const couponIndex = (data.coupons || []).findIndex(c => c.code.toUpperCase() === order.couponApplied.code.toUpperCase());
-            if (couponIndex !== -1 && data.coupons[couponIndex].usageCount > 0) {
-              data.coupons[couponIndex].usageCount -= 1;
-            }
-          }
-        }
-      } else if (order.status === 'cancelled' || order.status === 'rejected') {
-        // H-3: Moving FROM a cancelled state back to active — re-deduct stock keys
+    if (order.status === status) {
+      throw new Error('Status is already ' + status);
+    }
+    
+    if (order.statusChangeCount >= 5) {
+      throw new Error('Order status can only be changed up to 5 times');
+    }
+    
+    if (status === 'cancelled' || status === 'rejected') {
+      if (order.status !== 'cancelled' && order.status !== 'rejected') {
+        // Restore keys to products
         if (order.items) {
           for (const item of order.items) {
-            const productIndex = data.products.findIndex(p => p._id === item.productId);
-            if (productIndex !== -1 && item.keys && item.keys.length > 0) {
-              const product = data.products[productIndex];
-              const availableKeys = product.stockKeys || [];
-              const keysStillAvailable = item.keys.every(k => availableKeys.includes(k));
-              if (!keysStillAvailable) {
-                return { modified: false, response: { status: 400, body: { message: `Cannot re-approve order: some stock keys for "${item.productName}" have already been re-sold. Please issue a manual replacement.` } } };
-              }
-              item.keys.forEach(k => {
-                const idx = product.stockKeys.indexOf(k);
-                if (idx !== -1) product.stockKeys.splice(idx, 1);
-              });
-              data.products[productIndex] = product;
+            const product = await Product.findById(item.productId).session(session);
+            if (product && item.keys && item.keys.length > 0) {
+              product.stockKeys = [...product.stockKeys, ...item.keys];
+              await product.save({ session });
             }
           }
         }
+        if (order.couponApplied?.code) {
+          const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${order.couponApplied.code}$`, 'i') } }).session(session);
+          if (coupon && coupon.usageCount > 0) {
+            coupon.usageCount -= 1;
+            await coupon.save({ session });
+          }
+        }
       }
-      
-      order.status = status;
-      order.statusChangeCount += 1;
-      
-      data.orders[orderIndex] = order;
-      
-      // Notify customer
-      if (!data.notifications) data.notifications = [];
-      if (order.userId && order.userId !== 'guest') {
-        data.notifications.push({
-          _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-          target: order.userId,
-          type: 'order_update',
-          message: `Your order ${order._id} status is now: ${status}`,
-          link: '/dashboard',
-          read: false,
-          createdAt: new Date().toISOString()
-        });
+    } else if (order.status === 'cancelled' || order.status === 'rejected') {
+      if (order.items) {
+        for (const item of order.items) {
+          const product = await Product.findById(item.productId).session(session);
+          if (product && item.keys && item.keys.length > 0) {
+            const availableKeys = product.stockKeys || [];
+            const keysStillAvailable = item.keys.every(k => availableKeys.includes(k));
+            if (!keysStillAvailable) {
+              throw new Error(`Cannot re-approve order: some stock keys for "${item.productName}" have already been re-sold. Please issue a manual replacement.`);
+            }
+            item.keys.forEach(k => {
+              const idx = product.stockKeys.indexOf(k);
+              if (idx !== -1) product.stockKeys.splice(idx, 1);
+            });
+            await product.save({ session });
+          }
+        }
       }
-      
-      return { modified: true, data, response: { status: 200, body: order } };
-    });
+    }
     
-    res.status(response.status).json(response.body);
+    order.status = status;
+    order.statusChangeCount += 1;
+    
+    await order.save({ session });
+    
+    if (order.userId && order.userId !== 'guest') {
+      const newNotification = new Notification({
+        _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+        target: order.userId,
+        type: 'order_update',
+        title: 'Order Status Update',
+        message: `Your order ${order._id} status is now: ${status}`,
+        link: '/dashboard'
+      });
+      await newNotification.save({ session });
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+    
+    res.status(200).json(order);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    await session.abortTransaction();
+    session.endSession();
+    res.status(400).json({ message: err.message });
   }
 });
 
 // Delete Order
 router.delete('/:id', protect, admin, async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const response = await withTransaction(async (data) => {
-      const orderIndex = data.orders.findIndex(o => o._id === req.params.id);
-      
-      if (orderIndex === -1) {
-        return { modified: false, response: { status: 404, body: { message: 'Order not found' } } };
-      }
-      const order = data.orders[orderIndex];
-      
-      // Restore keys to products if order was not already cancelled or rejected
-      if (order.status !== 'cancelled' && order.status !== 'rejected') {
-        if (order.items) {
-          order.items.forEach(item => {
-            const productIndex = data.products.findIndex(p => p._id === item.productId);
-            if (productIndex !== -1 && item.keys && item.keys.length > 0) {
-              data.products[productIndex].stockKeys = [...data.products[productIndex].stockKeys, ...item.keys];
-            }
-          });
+    const order = await Order.findById(req.params.id).session(session);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+    
+    if (order.status !== 'cancelled' && order.status !== 'rejected') {
+      if (order.items) {
+        for (const item of order.items) {
+          const product = await Product.findById(item.productId).session(session);
+          if (product && item.keys && item.keys.length > 0) {
+            product.stockKeys = [...product.stockKeys, ...item.keys];
+            await product.save({ session });
+          }
         }
       }
-      
-      data.orders.splice(orderIndex, 1);
-      return { modified: true, data, response: { status: 200, body: { message: 'Order deleted successfully' } } };
-    });
+    }
     
-    res.status(response.status).json(response.body);
+    await Order.findByIdAndDelete(req.params.id).session(session);
+    
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({ message: 'Order deleted successfully' });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    await session.abortTransaction();
+    session.endSession();
+    res.status(400).json({ message: err.message });
   }
 });
 

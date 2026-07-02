@@ -1,10 +1,9 @@
 const express = require('express');
-const { readData, writeData } = require('../data/db');
-
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+const Product = require('../models/Product');
+const Setting = require('../models/Setting');
 
 // Initialize Gemini with provided key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -17,19 +16,20 @@ router.post('/', async (req, res) => {
     }
 
     // Load store context
-    const storeData = await readData();
+    const products = await Product.find({});
+    let settingDoc = await Setting.findOne({ settingType: 'global' });
+    const settings = settingDoc ? (settingDoc.state || {}) : {};
 
     // Prepare a safe product list (no keys)
-    const productInfo = (storeData.products || []).map(p => ({
+    const productInfo = products.map(p => ({
       name: p.name,
       price: p.price,
       discount: p.discount,
       discountType: p.discountType,
       description: p.description,
-      stockCount: p.stockKeys ? p.stockKeys.length : (p.stock > 0 ? p.stock : 0)
+      stockCount: p.stockKeys ? p.stockKeys.length : 0
     }));
 
-    const settings = storeData.settings || {};
     const paymentMethods = settings.paymentMethods || {};
     const activePaymentMethods = Object.keys(paymentMethods).filter(key => paymentMethods[key]).join(', ');
     const telegramLink = settings.telegramLink || 'https://t.me/zihanfakir';

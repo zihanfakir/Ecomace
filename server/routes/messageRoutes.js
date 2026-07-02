@@ -1,14 +1,16 @@
 const express = require('express');
-const { readData, writeData } = require('../data/db');
 const { protect, admin } = require('../middleware/auth');
+const mongoose = require('mongoose');
+const Message = require('../models/Message');
+const Notification = require('../models/Notification');
 
 const router = express.Router();
 
 // Get all messages (Admin)
 router.get('/', protect, admin, async (req, res) => {
   try {
-    const data = await readData();
-    res.json(data.messages || []);
+    const messages = await Message.find({}).sort({ updatedAt: -1 });
+    res.json(messages);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -20,8 +22,7 @@ router.get('/user/:userId', protect, async (req, res) => {
     return res.status(403).json({ message: 'Not authorized to view these messages' });
   }
   try {
-    const data = await readData();
-    const userMessages = (data.messages || []).filter(m => m.userId === req.params.userId);
+    const userMessages = await Message.find({ userId: req.params.userId }).sort({ updatedAt: -1 });
     res.json(userMessages);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -31,8 +32,7 @@ router.get('/user/:userId', protect, async (req, res) => {
 // Create a new ticket (User)
 router.post('/', protect, async (req, res) => {
   try {
-    const data = await readData();
-    const { subject, text, userName, userPhone } = req.body;
+    const { subject, text, userPhone } = req.body;
     
     // Use verified userId from token instead of trusting client
     const userId = req.user._id;
@@ -41,16 +41,12 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const newMessage = {
+    const newMessage = new Message({
       _id: 'MSG-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
       userId,
-      userName: userName || req.user.name || 'User',
-      userEmail: req.user.email || 'unknown@example.com',
       userPhone: userPhone || req.user.phone || 'N/A',
       subject: subject,
       status: 'open',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
       conversation: [
         {
           sender: 'user',
@@ -58,24 +54,20 @@ router.post('/', protect, async (req, res) => {
           timestamp: new Date().toISOString()
         }
       ]
-    };
+    });
     
-    data.messages = data.messages || [];
-    data.messages.push(newMessage);
+    await newMessage.save();
     
     // Add notification for admin
-    if (!data.notifications) data.notifications = [];
-    data.notifications.push({
+    const newNotification = new Notification({
       _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
       target: 'admin',
       type: 'message',
+      title: 'New Support Ticket',
       message: `New support ticket: ${subject}`,
-      link: '/admin',
-      read: false,
-      createdAt: new Date().toISOString()
+      link: '/admin'
     });
-    
-    await writeData(data);
+    await newNotification.save();
     
     res.status(201).json(newMessage);
   } catch (err) {
@@ -86,24 +78,22 @@ router.post('/', protect, async (req, res) => {
 // Reply to a ticket (Admin or User)
 router.post('/:id/reply', protect, async (req, res) => {
   try {
-    const data = await readData();
     const { text } = req.body;
     
     // Strictly set sender based on authenticated token, ignoring client request
     const sender = (req.user.role === 'admin' || req.user.role === 'owner') ? 'admin' : 'user';
     
-    if (!sender || !text) {
-      return res.status(400).json({ message: 'Sender and text are required' });
+    if (!text) {
+      return res.status(400).json({ message: 'Text is required' });
     }
     
-    const msgIndex = (data.messages || []).findIndex(m => m._id === req.params.id);
-    if (msgIndex === -1) {
+    const message = await Message.findById(req.params.id);
+    if (!message) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
     
     // Ownership check: only the ticket owner or an admin can reply
-    const ticket = data.messages[msgIndex];
-    const isOwner = ticket.userId === req.user._id;
+    const isOwner = message.userId === req.user._id;
     const isAdmin = req.user.role === 'admin' || req.user.role === 'owner';
     if (!isOwner && !isAdmin) {
       return res.status(403).json({ message: 'Not authorized to reply to this ticket' });
@@ -115,30 +105,30 @@ router.post('/:id/reply', protect, async (req, res) => {
       timestamp: new Date().toISOString()
     };
     
-    data.messages[msgIndex].conversation.push(reply);
-    data.messages[msgIndex].updatedAt = new Date().toISOString();
+    message.conversation.push(reply);
+    message.updatedAt = new Date().toISOString();
     
     // Automatically reopen if a user replies to a closed ticket
-    if (sender === 'user' && data.messages[msgIndex].status === 'closed') {
-      data.messages[msgIndex].status = 'open';
+    if (sender === 'user' && message.status === 'closed') {
+      message.status = 'open';
     }
     
+    await message.save();
+    
     // Add notification
-    if (!data.notifications) data.notifications = [];
-    const target = sender === 'admin' ? data.messages[msgIndex].userId : 'admin';
+    const target = sender === 'admin' ? message.userId : 'admin';
     const link = sender === 'admin' ? '/dashboard' : '/admin';
-    data.notifications.push({
+    const newNotification = new Notification({
       _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
       target,
       type: 'message_reply',
-      message: `New reply on ticket: ${data.messages[msgIndex].subject}`,
-      link,
-      read: false,
-      createdAt: new Date().toISOString()
+      title: 'Ticket Reply',
+      message: `New reply on ticket: ${message.subject}`,
+      link
     });
+    await newNotification.save();
     
-    await writeData(data);
-    res.json(data.messages[msgIndex]);
+    res.json(message);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -147,19 +137,18 @@ router.post('/:id/reply', protect, async (req, res) => {
 // Update ticket status (Admin)
 router.put('/:id/status', protect, admin, async (req, res) => {
   try {
-    const data = await readData();
     const { status } = req.body;
     
-    const msgIndex = (data.messages || []).findIndex(m => m._id === req.params.id);
-    if (msgIndex === -1) {
+    const message = await Message.findById(req.params.id);
+    if (!message) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
     
-    data.messages[msgIndex].status = status;
-    data.messages[msgIndex].updatedAt = new Date().toISOString();
+    message.status = status;
+    message.updatedAt = new Date().toISOString();
     
-    await writeData(data);
-    res.json(data.messages[msgIndex]);
+    await message.save();
+    res.json(message);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

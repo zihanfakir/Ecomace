@@ -1,28 +1,39 @@
 const express = require('express');
-const { readData, writeData, withTransaction } = require('../data/db');
 const { protect, admin } = require('../middleware/auth');
+const mongoose = require('mongoose');
+const Setting = require('../models/Setting');
+const User = require('../models/User');
+const Product = require('../models/Product');
+const Order = require('../models/Order');
+const Coupon = require('../models/Coupon');
+const Message = require('../models/Message');
+const Notification = require('../models/Notification');
 
 const router = express.Router();
 
 // Get settings
 router.get('/', async (req, res) => {
   try {
-    const data = await readData();
-    if (!data.settings) {
-      data.settings = {
-        paymentMethods: {
-          bkash: '',
-          nagad: '',
-          rocket: '',
-          upay: '',
-          bybit: '',
-          binance: ''
-        },
-        banners: []
-      };
-      await writeData(data);
+    let settingDoc = await Setting.findOne({ settingType: 'global' });
+    
+    if (!settingDoc) {
+      settingDoc = new Setting({
+        settingType: 'global',
+        state: {
+          paymentMethods: {
+            bkash: '',
+            nagad: '',
+            rocket: '',
+            upay: '',
+            bybit: '',
+            binance: ''
+          },
+          banners: []
+        }
+      });
+      await settingDoc.save();
     }
-    res.json(data.settings);
+    res.json(settingDoc.state || {});
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -31,13 +42,92 @@ router.get('/', async (req, res) => {
 // Update settings (Admin)
 router.put('/', protect, admin, async (req, res) => {
   try {
-    const response = await withTransaction(async (data) => {
-      data.settings = { ...data.settings, ...req.body };
-      return { modified: true, data, response: { status: 200, body: data.settings } };
-    });
-    res.status(response.status).json(response.body);
+    let settingDoc = await Setting.findOne({ settingType: 'global' });
+    
+    if (!settingDoc) {
+      settingDoc = new Setting({
+        settingType: 'global',
+        state: {}
+      });
+    }
+    
+    settingDoc.state = { ...(settingDoc.state || {}), ...req.body };
+    settingDoc.markModified('state'); // Ensure Mongoose knows the Mixed type was modified
+    await settingDoc.save();
+    
+    res.json(settingDoc.state);
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+// Trigger database migration (Admin)
+router.post('/migrate', protect, admin, async (req, res) => {
+  try {
+    const db = mongoose.connection.db;
+    const storeCollection = db.collection('stores');
+    const mainDoc = await storeCollection.findOne({ docId: 'main' });
+    
+    if (!mainDoc) {
+      return res.status(400).json({ message: 'No monolithic "main" document found. Nothing to migrate.' });
+    }
+
+    const state = mainDoc.state;
+
+    let log = [];
+
+    // 1. Users
+    if (state.users && state.users.length > 0) {
+      await User.deleteMany({});
+      await User.insertMany(state.users);
+      log.push(`Migrated ${state.users.length} users.`);
+    }
+
+    // 2. Products
+    if (state.products && state.products.length > 0) {
+      await Product.deleteMany({});
+      await Product.insertMany(state.products);
+      log.push(`Migrated ${state.products.length} products.`);
+    }
+
+    // 3. Orders
+    if (state.orders && state.orders.length > 0) {
+      await Order.deleteMany({});
+      await Order.insertMany(state.orders);
+      log.push(`Migrated ${state.orders.length} orders.`);
+    }
+
+    // 4. Coupons
+    if (state.coupons && state.coupons.length > 0) {
+      await Coupon.deleteMany({});
+      await Coupon.insertMany(state.coupons);
+      log.push(`Migrated ${state.coupons.length} coupons.`);
+    }
+
+    // 5. Messages
+    if (state.messages && state.messages.length > 0) {
+      await Message.deleteMany({});
+      await Message.insertMany(state.messages);
+      log.push(`Migrated ${state.messages.length} messages.`);
+    }
+
+    // 6. Notifications
+    if (state.notifications && state.notifications.length > 0) {
+      await Notification.deleteMany({});
+      await Notification.insertMany(state.notifications);
+      log.push(`Migrated ${state.notifications.length} notifications.`);
+    }
+
+    // 7. Settings
+    if (state.settings) {
+      await Setting.deleteMany({});
+      await Setting.create({ settingType: 'global', state: state.settings });
+      log.push('Migrated settings.');
+    }
+
+    res.json({ message: 'Migration completed successfully.', log });
+  } catch (err) {
+    res.status(500).json({ message: 'Migration failed: ' + err.message });
   }
 });
 
