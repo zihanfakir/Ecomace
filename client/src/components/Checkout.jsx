@@ -108,7 +108,7 @@ const Checkout = () => {
       setCouponDiscount(discount);
       addToast(`Coupon applied! ${res.data.discountType === 'flat' ? '৳' : ''}${res.data.discountPercent}${res.data.discountType === 'flat' ? '' : '%'} off.`, 'success');
     } catch (err) {
-      addToast(err.response?.data?.message || 'Invalid Coupon', 'error');
+      addToast(err.response?.data?.message || err.message || 'Invalid Coupon', 'error');
       setCouponDiscount(0);
       setCouponCode('');
     }
