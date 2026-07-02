@@ -171,15 +171,10 @@ const CustomerDashboard = () => {
             <div>
               <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Profile Picture URL</label>
               <input type="text" value={profileData.photoUrl} onChange={e => setProfileData({...profileData, photoUrl: e.target.value})} placeholder="https://example.com/image.png" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'var(--glass-border)', background: 'var(--bg-color)', color: 'var(--text-primary)' }} />
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>OR Upload Image:</span>
-                <input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}
-                />
-              </div>
+              <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--surface-color)', border: '1px solid var(--primary-accent)', color: 'var(--primary-accent)', padding: '5px 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', fontSize: '0.8rem', marginTop: '10px', width: 'fit-content' }}>
+                Upload Image
+                <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+              </label>
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>New Password (leave blank to keep current)</label>
