@@ -24,17 +24,18 @@ router.put('/:id', protect, admin, async (req, res) => {
     }
 
     // Update fields
+    // Update fields only if provided in req.body
     const updatedProduct = {
       ...data.products[productIndex],
-      name: req.body.name,
-      description: req.body.description,
-      price: req.body.price,
-      icon: req.body.icon,
-      photoUrl: req.body.photoUrl,
-      discount: req.body.discount,
-      discountType: req.body.discountType || 'percent',
-      category: req.body.category || 'Uncategorized',
-      bigDescription: req.body.bigDescription,
+      name: req.body.name !== undefined ? req.body.name : data.products[productIndex].name,
+      description: req.body.description !== undefined ? req.body.description : data.products[productIndex].description,
+      price: req.body.price !== undefined ? req.body.price : data.products[productIndex].price,
+      icon: req.body.icon !== undefined ? req.body.icon : data.products[productIndex].icon,
+      photoUrl: req.body.photoUrl !== undefined ? req.body.photoUrl : data.products[productIndex].photoUrl,
+      discount: req.body.discount !== undefined ? req.body.discount : data.products[productIndex].discount,
+      discountType: req.body.discountType !== undefined ? req.body.discountType : data.products[productIndex].discountType,
+      category: req.body.category !== undefined ? req.body.category : data.products[productIndex].category,
+      bigDescription: req.body.bigDescription !== undefined ? req.body.bigDescription : data.products[productIndex].bigDescription,
       stockKeys: keysArray
     };
     
