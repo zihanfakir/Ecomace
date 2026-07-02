@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const mongoose = require('mongoose');
 
 dotenv.config();
 
@@ -53,6 +52,13 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
+
+// Global error handler — must be registered AFTER all routes
+// Catches any errors passed via next(err) or thrown in async routes
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err.stack || err.message);
+  res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

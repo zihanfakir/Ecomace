@@ -8,7 +8,7 @@ import { useToast } from '../context/ToastContext';
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const { cart, getCartTotal, clearCart } = useContext(CartContext);
   const { addToast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState('bkash');
@@ -93,11 +93,12 @@ const Checkout = () => {
       }
 
       let discount = 0;
-      if (coupon.discountType === 'flat') {
-        discount = Math.min(coupon.discountPercent, applicableSubtotal); // cap flat discount to applicable subtotal
-      } else {
-        discount = Math.round(applicableSubtotal * (coupon.discountPercent / 100));
-      }
+        if (coupon.discountType === 'flat') {
+          // H-7: Flat discount is an absolute value, capped at the applicable subtotal
+          discount = Math.min(coupon.discount, applicableSubtotal);
+        } else {
+          discount = Math.round(applicableSubtotal * (coupon.discount / 100));
+        }
       
       setCouponDiscount(discount);
       addToast(`Coupon applied! ${res.data.discountType === 'flat' ? '৳' : ''}${res.data.discountPercent}${res.data.discountType === 'flat' ? '' : '%'} off.`, 'success');
@@ -137,12 +138,13 @@ const Checkout = () => {
     setIsProcessing(true);
     try {
       const response = await axios.post(`https://ecomace.onrender.com/api/orders/checkout`, {
-        userId: user?._id,
         cartItems: cart,
         customerDetails,
         paymentMethod,
         paymentDetails,
         couponCode: couponDiscount > 0 ? couponCode : null
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       setOrderResult(response.data.order);
       setIsSuccess(true);

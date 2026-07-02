@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Outlet, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Sun, Moon, ShoppingBag, Menu, X, User, Bell, BellRing } from 'lucide-react';
 import axios from 'axios';
 import './index.css';
@@ -39,7 +39,7 @@ const NotificationBell = () => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 15000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, token]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -329,9 +329,9 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
             })}
           </div>
           
-          {/* Dots Indicator */}
+          {/* Dots Indicator — placed OUTSIDE the overflow:hidden container to prevent clipping */}
           {banners.length > 1 && (
-            <div style={{ position: 'absolute', bottom: '15px', left: '0', right: '0', display: 'flex', justifyContent: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '10px' }}>
               {banners.map((_, idx) => (
                 <button
                   key={idx}
@@ -341,7 +341,7 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
                     height: '10px',
                     borderRadius: '50%',
                     border: 'none',
-                    backgroundColor: idx === currentBannerIndex ? 'var(--primary-accent)' : 'rgba(255, 255, 255, 0.6)',
+                    backgroundColor: idx === currentBannerIndex ? 'var(--primary-accent)' : 'rgba(128, 128, 128, 0.4)',
                     cursor: 'pointer',
                     boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
                     transition: 'all 0.3s ease'
@@ -373,16 +373,21 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
 
 const ProtectedAdminRoute = ({ children }) => {
   const { user } = useContext(AuthContext);
-  if (!user || (user.role !== 'admin' && user.role !== 'owner')) {
-    return <div style={{ padding: '50px', textAlign: 'center' }}><h2>Access Denied</h2><Link to="/">Go Home</Link></div>;
+  const location = useLocation();
+  if (!user) {
+    return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
+  }
+  if (user.role !== 'admin' && user.role !== 'owner') {
+    return <Navigate to="/" replace />;
   }
   return children;
 };
 
 const ProtectedCustomerRoute = ({ children }) => {
   const { user } = useContext(AuthContext);
+  const location = useLocation();
   if (!user) {
-    return <div style={{ padding: '50px', textAlign: 'center' }}><h2>Please Login</h2><Link to="/auth">Login</Link></div>;
+    return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
   return children;
 };
@@ -478,6 +483,7 @@ function App() {
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/dashboard" element={<ProtectedCustomerRoute><CustomerDashboard /></ProtectedCustomerRoute>} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
 
             {/* Separate Admin Routes */}

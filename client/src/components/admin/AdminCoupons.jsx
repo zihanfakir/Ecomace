@@ -13,7 +13,7 @@ const AdminCoupons = ({ coupons, products, setIsCouponModalOpen, handleToggleCou
       </div>
       
       <div style={{ backgroundColor: 'var(--surface-color)', padding: '20px', borderRadius: '12px' }}>
-        <div className="mobile-table-header" style={{ gridTemplateColumns: '1fr 1fr 1.5fr 1fr 1fr 0.5fr', fontWeight: 'bold', paddingBottom: '15px', borderBottom: '1px solid var(--border-color)', marginBottom: '15px' }}>
+        <div className="mobile-table-header" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.5fr 1fr 1fr 0.5fr', fontWeight: 'bold', paddingBottom: '15px', borderBottom: '1px solid var(--border-color)', marginBottom: '15px' }}>
           <div>Coupon Code</div>
           <div>Discount</div>
           <div>Applies To</div>
@@ -41,7 +41,7 @@ const AdminCoupons = ({ coupons, products, setIsCouponModalOpen, handleToggleCou
                 </span>
               </div>
               <div>
-                {coupon.usedCount || 0} / {coupon.usageLimit || '∞'}
+                {coupon.usageCount || 0} / {coupon.usageLimit || '∞'}
               </div>
               <div>
                 <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.85rem', backgroundColor: coupon.isActive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: coupon.isActive ? '#10B981' : '#EF4444' }}>

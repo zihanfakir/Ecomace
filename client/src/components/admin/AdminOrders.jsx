@@ -44,6 +44,7 @@ const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user }
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
+            <option value="processing">Processing</option>
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
           </select>
@@ -75,7 +76,7 @@ const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user }
                 <strong style={{ display: 'block', color: 'var(--text-primary)' }}>{order.customerDetails?.email || 'N/A'}</strong>
                 <span style={{ color: 'var(--text-secondary)' }}>{order.customerDetails?.phone || 'N/A'}</span>
                 <br />
-                <span style={{ fontSize: '0.8rem', color: 'var(--primary-accent)' }}>{order.paymentMethod?.toUpperCase() || 'N/A'} {order.paymentMethod === 'binance' || order.paymentMethod === 'bybit' ? '' : '- ' + (order.transactionId || 'N/A')}</span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--primary-accent)' }}>{order.paymentMethod?.toUpperCase() || 'N/A'} {order.paymentMethod === 'binance' || order.paymentMethod === 'bybit' ? '' : '- ' + (order.paymentDetails?.transactionId || 'N/A')}</span>
               </div>
               
               <div style={{ fontSize: '0.85rem' }}>

@@ -37,10 +37,10 @@ router.get('/user/:userId', protect, async (req, res) => {
   }
 });
 
-// Checkout (Process multiple products from cart)
-router.post('/checkout', async (req, res) => {
+// Checkout (Process multiple products from cart) — requires authentication
+router.post('/checkout', protect, async (req, res) => {
   try {
-    const { cartItems, userId, customerDetails, paymentMethod, paymentDetails, couponCode } = req.body;
+    const { cartItems, customerDetails, paymentMethod, paymentDetails, couponCode } = req.body;
     const data = await readData();
     
     let subtotal = 0;
@@ -128,21 +128,8 @@ router.post('/checkout', async (req, res) => {
     
     const totalPrice = subtotal - discountAmount;
 
-    // Create Order Record
-    let verifiedUserId = userId || 'guest';
-    
-    // Verify token if present to prevent impersonation
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      try {
-        const token = req.headers.authorization.split(' ')[1];
-        const jwt = require('jsonwebtoken');
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        verifiedUserId = decoded.id;
-      } catch (e) {
-        // Fallback to guest if token is invalid, but don't trust client-side userId
-        verifiedUserId = 'guest';
-      }
-    }
+    // Use authenticated user ID from the protect middleware — never trust client-supplied userId
+    const verifiedUserId = req.user._id;
 
     const newOrder = {
       _id: 'ORD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
@@ -225,12 +212,39 @@ router.put('/:id/status', protect, admin, async (req, res) => {
             }
           });
         }
+        // M-11: Decrement coupon usageCount when cancelling an order that used a coupon
+        if (order.couponApplied?.code) {
+          const couponIndex = (data.coupons || []).findIndex(c => c.code.toUpperCase() === order.couponApplied.code.toUpperCase());
+          if (couponIndex !== -1 && data.coupons[couponIndex].usageCount > 0) {
+            data.coupons[couponIndex].usageCount -= 1;
+          }
+        }
       }
     } else if (order.status === 'cancelled' || order.status === 'rejected') {
-      // If moving FROM a cancelled state to a processing/complete state, we should ideally deduct stock again.
-      // But for simplicity, we just allow the status change. The keys were returned to stock.
-      // In a real system, we'd check if stock is still available and re-deduct it.
-      // For this app, we will just allow the status change.
+      // H-3: Moving FROM a cancelled state back to active — re-deduct stock keys
+      // Check if those specific keys are still in inventory (they might have been re-sold)
+      if (order.items) {
+        for (const item of order.items) {
+          const productIndex = data.products.findIndex(p => p._id === item.productId);
+          if (productIndex !== -1 && item.keys && item.keys.length > 0) {
+            const product = data.products[productIndex];
+            const availableKeys = product.stockKeys || [];
+            // Check if every key for this item is still present in stock
+            const keysStillAvailable = item.keys.every(k => availableKeys.includes(k));
+            if (!keysStillAvailable) {
+              return res.status(400).json({ 
+                message: `Cannot re-approve order: some stock keys for "${item.productName}" have already been re-sold. Please issue a manual replacement.`
+              });
+            }
+            // Remove the keys back out of inventory
+            item.keys.forEach(k => {
+              const idx = product.stockKeys.indexOf(k);
+              if (idx !== -1) product.stockKeys.splice(idx, 1);
+            });
+            data.products[productIndex] = product;
+          }
+        }
+      }
     }
     
     order.status = status;

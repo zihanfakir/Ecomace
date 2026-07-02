@@ -100,6 +100,41 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get a single product by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const data = await readData();
+    let isAdmin = false;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      const token = req.headers.authorization.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = data.users.find(u => u._id === decoded.id);
+        if (user && (user.role === 'admin' || user.role === 'owner')) {
+          isAdmin = true;
+        }
+      } catch (e) {
+        // Ignore token errors for public route
+      }
+    }
+
+    const product = data.products.find(p => p._id === req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    const safeProduct = isAdmin ? product : {
+      ...product,
+      stockKeys: product.stockKeys ? new Array(product.stockKeys.length).fill('HIDDEN_KEY') : []
+    };
+
+    res.json(safeProduct);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // Create a new product (License Keys/Accounts)
 router.post('/', protect, admin, express.json(), async (req, res) => {
   try {

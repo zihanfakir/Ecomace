@@ -29,7 +29,30 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
-// Mark a single notification as read
+// Mark all notifications as read for current user — MUST be before /:id/read to avoid route shadowing
+router.put('/read-all', protect, async (req, res) => {
+  try {
+    const data = await readData();
+    const notifications = data.notifications || [];
+    
+    const target = (req.user.role === 'admin' || req.user.role === 'owner') ? 'admin' : req.user._id;
+    
+    notifications.forEach(n => {
+      if (n.target === target) {
+        n.read = true;
+      }
+    });
+    
+    data.notifications = notifications;
+    await writeData(data);
+    
+    res.json({ message: 'All marked as read' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Mark a single notification as read — registered AFTER /read-all to prevent route shadowing
 router.put('/:id/read', protect, async (req, res) => {
   try {
     const data = await readData();
@@ -51,29 +74,6 @@ router.put('/:id/read', protect, async (req, res) => {
     }
     
     res.json({ message: 'Marked as read' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Mark all notifications as read for current user
-router.put('/read-all', protect, async (req, res) => {
-  try {
-    const data = await readData();
-    const notifications = data.notifications || [];
-    
-    const target = (req.user.role === 'admin' || req.user.role === 'owner') ? 'admin' : req.user._id;
-    
-    notifications.forEach(n => {
-      if (n.target === target) {
-        n.read = true;
-      }
-    });
-    
-    data.notifications = notifications;
-    await writeData(data);
-    
-    res.json({ message: 'All marked as read' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

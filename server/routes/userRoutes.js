@@ -15,6 +15,7 @@ router.get('/', protect, admin, async (req, res) => {
       email: u.email,
       role: u.role,
       photoUrl: u.photoUrl,
+      phone: u.phone,
       createdAt: u.createdAt
     }));
     res.json(safeUsers);

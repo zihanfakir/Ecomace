@@ -101,6 +101,14 @@ router.post('/:id/reply', protect, async (req, res) => {
       return res.status(404).json({ message: 'Ticket not found' });
     }
     
+    // Ownership check: only the ticket owner or an admin can reply
+    const ticket = data.messages[msgIndex];
+    const isOwner = ticket.userId === req.user._id;
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'owner';
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: 'Not authorized to reply to this ticket' });
+    }
+    
     const reply = {
       sender,
       text,

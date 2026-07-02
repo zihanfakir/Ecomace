@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { LogIn, UserPlus } from 'lucide-react';
@@ -10,9 +10,15 @@ const Auth = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { login } = useContext(AuthContext);
+  const { login, user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // H-8: Redirect already-logged-in users away from the auth page
+  if (user) {
+    const destination = location.state?.from || '/';
+    return <Navigate to={destination} replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -83,7 +89,7 @@ const Auth = () => {
         <p style={{ textAlign: 'center', marginTop: '20px', color: 'var(--text-secondary)' }}>
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <span 
-            onClick={() => setIsLogin(!isLogin)} 
+            onClick={() => { setIsLogin(!isLogin); setError(''); }} 
             style={{ color: 'var(--primary-accent)', cursor: 'pointer', fontWeight: 'bold' }}
           >
             {isLogin ? 'Sign Up' : 'Login'}
