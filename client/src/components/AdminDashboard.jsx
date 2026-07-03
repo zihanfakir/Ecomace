@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Settings, Users, Tag, Package, X, History, Save, MessageSquare, TrendingUp } from 'lucide-react';
+import { Plus, Settings, Users, Tag, Package, X, History, Save, MessageSquare, TrendingUp, ChevronUp, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useContext } from 'react';
