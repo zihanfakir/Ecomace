@@ -12,8 +12,8 @@ const AdminCoupons = ({ coupons, products, setIsCouponModalOpen, handleToggleCou
         </button>
       </div>
       
-      <div style={{ backgroundColor: 'var(--surface-color)', padding: '20px', borderRadius: '12px' }}>
-        <div className="mobile-table-header" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.5fr 1fr 1fr 0.5fr', fontWeight: 'bold', paddingBottom: '15px', borderBottom: '1px solid var(--border-color)', marginBottom: '15px' }}>
+      <div style={{ backgroundColor: 'var(--surface-color)', padding: '20px', borderRadius: '12px', overflowX: 'auto' }}>
+        <div className="mobile-table-header" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.5fr 1fr 1fr 0.5fr', fontWeight: 'bold', paddingBottom: '15px', borderBottom: '1px solid var(--border-color)', marginBottom: '15px', minWidth: '800px' }}>
           <div>Coupon Code</div>
           <div>Discount</div>
           <div>Applies To</div>
@@ -26,7 +26,7 @@ const AdminCoupons = ({ coupons, products, setIsCouponModalOpen, handleToggleCou
           <p style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>No coupons created yet.</p>
         ) : (
           coupons.map(coupon => (
-            <div key={coupon._id} className="mobile-table-row" style={{ gridTemplateColumns: '1fr 1fr 1.5fr 1fr 1fr 0.5fr', alignItems: 'center', padding: '15px 0', borderBottom: '1px solid var(--border-color)' }}>
+            <div key={coupon._id} className="mobile-table-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.5fr 1fr 1fr 0.5fr', alignItems: 'center', padding: '15px 0', borderBottom: '1px solid var(--border-color)', minWidth: '800px' }}>
               <div>
                 <strong style={{ fontSize: '1.1rem', letterSpacing: '1px' }}>{coupon.code}</strong>
               </div>
