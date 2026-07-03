@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Sun, Moon, ShoppingBag, Menu, X, User } from 'lucide-react';
 import axios from 'axios';
