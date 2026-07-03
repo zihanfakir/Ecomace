@@ -671,9 +671,7 @@ const AdminDashboard = () => {
         <button onClick={() => { setActiveTab('history'); setMessage(''); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'history' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'history' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
           <History size={18} /> Order History
         </button>
-        <button onClick={() => { setActiveTab('messages'); setMessage(''); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'messages' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'messages' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
-          <MessageSquare size={18} /> Messages
-        </button>
+        
         <button onClick={() => setActiveTab('settings')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'settings' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'settings' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
           <Settings size={18} /> Settings
         </button>
@@ -722,17 +720,7 @@ const AdminDashboard = () => {
             user={user}
           />
         )}
-        {activeTab === 'messages' && (
-          <AdminSupport 
-            tickets={tickets} 
-            activeTicket={activeTicket} 
-            setActiveTicket={setActiveTicket} 
-            replyText={replyText} 
-            setReplyText={setReplyText} 
-            handleReplyTicket={handleReplyTicket} 
-            handleCloseTicket={handleCloseTicket}
-          />
-        )}
+        
         {activeTab === 'settings' && (
           <AdminSettings 
             user={user}
