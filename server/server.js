@@ -32,7 +32,6 @@ connectDB().then(async () => {
       const Order = require('./models/Order');
       const Coupon = require('./models/Coupon');
       const Message = require('./models/Message');
-      const Notification = require('./models/Notification');
       const Setting = require('./models/Setting');
       
       if (state.users && state.users.length > 0) { await User.deleteMany({}); await User.insertMany(state.users); }
@@ -40,7 +39,6 @@ connectDB().then(async () => {
       if (state.orders && state.orders.length > 0) { await Order.deleteMany({}); await Order.insertMany(state.orders); }
       if (state.coupons && state.coupons.length > 0) { await Coupon.deleteMany({}); await Coupon.insertMany(state.coupons); }
       if (state.messages && state.messages.length > 0) { await Message.deleteMany({}); await Message.insertMany(state.messages); }
-      if (state.notifications && state.notifications.length > 0) { await Notification.deleteMany({}); await Notification.insertMany(state.notifications); }
       if (state.settings) { await Setting.deleteMany({}); await Setting.create({ settingType: 'global', state: state.settings }); }
       
       // Mark as migrated so it doesn't run again

@@ -109,10 +109,6 @@ router.post('/migrate', protect, admin, async (req, res) => {
       log.push(`Migrated ${state.messages.length} messages.`);
     }
 
-    // 6. Notifications
-    if (state.notifications && state.notifications.length > 0) {
-      await Notification.deleteMany({});
-      await Notification.insertMany(state.notifications);
       log.push(`Migrated ${state.notifications.length} notifications.`);
     }
 

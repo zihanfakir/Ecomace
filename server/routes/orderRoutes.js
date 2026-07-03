@@ -162,17 +162,6 @@ router.post('/checkout', protect, async (req, res) => {
     
     await newOrder.save();
     
-    const newNotification = new Notification({
-      _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-      target: 'admin',
-      type: 'order',
-      title: 'New Order',
-      message: `New order ${newOrder._id} received for ৳ ${totalPrice}`,
-      link: '/admin'
-    });
-
-    try { await newNotification.save(); } catch (e) { console.error('Notification failed to save', e); }
-    
     const orderObj = newOrder.toObject();
     const safeOrder = {
       ...orderObj,
@@ -276,15 +265,6 @@ router.put('/:id/status', protect, admin, async (req, res) => {
     await order.save();
     
     if (order.userId && order.userId !== 'guest') {
-      const newNotification = new Notification({
-        _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-        target: order.userId,
-        type: 'order_update',
-        title: 'Order Status Update',
-        message: `Your order ${order._id} status is now: ${status}`,
-        link: '/dashboard'
-      });
-      try { await newNotification.save(); } catch (e) { console.error('Notification failed to save', e); }
     }
     
     res.status(200).json(order);

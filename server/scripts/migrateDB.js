@@ -67,10 +67,6 @@ const migrateDB = async () => {
       console.log(`Migrated ${state.messages.length} messages.`);
     }
 
-    // 6. Notifications
-    if (state.notifications && state.notifications.length > 0) {
-      await Notification.deleteMany({});
-      await Notification.insertMany(state.notifications);
       console.log(`Migrated ${state.notifications.length} notifications.`);
     }
 
