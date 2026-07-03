@@ -60,15 +60,6 @@ const migrateDB = async () => {
       console.log(`Migrated ${state.coupons.length} coupons.`);
     }
 
-    // 5. Messages
-    if (state.messages && state.messages.length > 0) {
-      await Message.deleteMany({});
-      await Message.insertMany(state.messages);
-      console.log(`Migrated ${state.messages.length} messages.`);
-    }
-
-      console.log(`Migrated ${state.notifications.length} notifications.`);
-    }
 
     // 7. Settings
     if (state.settings) {
