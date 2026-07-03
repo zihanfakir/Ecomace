@@ -29,8 +29,25 @@ export const AuthProvider = ({ children }) => {
       return Promise.reject(error);
     });
 
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && error.response.status === 401) {
+          // Token expired or invalid, log out
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+          delete axios.defaults.headers.common['Authorization'];
+          window.location.href = '/login';
+        }
+        return Promise.reject(error);
+      }
+    );
+
     return () => {
       axios.interceptors.request.eject(interceptor);
+      axios.interceptors.response.eject(responseInterceptor);
     };
   }, []);
 

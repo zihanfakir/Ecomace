@@ -822,7 +822,6 @@ const AdminDashboard = () => {
               <button onClick={submitCategoryModal} className="btn-primary" style={{ padding: '10px 20px' }}>Save Category</button>
             </div>
           </div>
-          </div>
         </div>
       )}
 
