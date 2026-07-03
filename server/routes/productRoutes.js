@@ -6,6 +6,32 @@ const User = require('../models/User');
 
 const router = express.Router();
 
+// Reorder products (Admin only)
+router.put('/reorder', protect, admin, async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ message: 'Invalid items format' });
+    }
+    
+    // items should be [{ _id: '...', sortOrder: 0 }, { _id: '...', sortOrder: 1 }]
+    const operations = items.map(item => ({
+      updateOne: {
+        filter: { _id: item._id },
+        update: { sortOrder: item.sortOrder }
+      }
+    }));
+    
+    if (operations.length > 0) {
+      await Product.bulkWrite(operations);
+    }
+    
+    res.json({ message: 'Order updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Edit product (Admin)
 router.put('/:id', protect, admin, async (req, res) => {
   try {
@@ -170,32 +196,6 @@ router.post('/', protect, admin, async (req, res) => {
     res.status(201).json(newProduct);
   } catch (err) {
     res.status(400).json({ message: err.message });
-  }
-});
-
-// Reorder products (Admin only)
-router.put('/reorder', protect, admin, async (req, res) => {
-  try {
-    const { items } = req.body;
-    if (!Array.isArray(items)) {
-      return res.status(400).json({ message: 'Invalid items format' });
-    }
-    
-    // items should be [{ _id: '...', sortOrder: 0 }, { _id: '...', sortOrder: 1 }]
-    const operations = items.map(item => ({
-      updateOne: {
-        filter: { _id: item._id },
-        update: { sortOrder: item.sortOrder }
-      }
-    }));
-    
-    if (operations.length > 0) {
-      await Product.bulkWrite(operations);
-    }
-    
-    res.json({ message: 'Order updated successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
 });
 
