@@ -8,7 +8,28 @@ const Setting = require('../models/Setting');
 // Initialize Gemini with provided key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// In-memory rate limiting to protect against Denial of Wallet (DoW)
+const chatRateLimitMap = new Map();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 5;
+
 router.post('/', async (req, res) => {
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+  const now = Date.now();
+  
+  if (!chatRateLimitMap.has(ip)) {
+    chatRateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+  } else {
+    const limitData = chatRateLimitMap.get(ip);
+    if (now > limitData.resetTime) {
+      chatRateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    } else {
+      limitData.count++;
+      if (limitData.count > MAX_REQUESTS_PER_WINDOW) {
+        return res.status(429).json({ error: 'Too many requests. Please wait a minute before asking more questions.' });
+      }
+    }
+  }
   try {
     const { message, language } = req.body;
     if (!message) {

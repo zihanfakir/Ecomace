@@ -11,6 +11,6 @@ const CouponSchema = new mongoose.Schema({
   usageCount: { type: Number, default: 0 },
   isActive: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now }
-}, { strict: false });
+}, { strict: false, optimisticConcurrency: true });
 
 module.exports = mongoose.model('Coupon', CouponSchema);
