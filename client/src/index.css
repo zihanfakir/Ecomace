@@ -55,6 +55,11 @@ button, a, .category-btn, .product-card, img, svg, label, select, input[type="su
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+}
+
+button:focus, a:focus, .category-btn:focus {
+  outline: none !important;
 }
 
 body {
