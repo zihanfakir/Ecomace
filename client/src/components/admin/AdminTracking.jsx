@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { TrendingUp, DollarSign, PackageOpen, Users, ShoppingCart, Clock } from 'lucide-react';
+import { TrendingUp, DollarSign, PackageOpen, Users, ShoppingCart, Clock, Package, CheckCircle2 } from 'lucide-react';
 
 const AdminTracking = ({ products, orders, users }) => {
   // Calculate Total Sales Revenue (Approved Orders)
@@ -35,6 +35,14 @@ const AdminTracking = ({ products, orders, users }) => {
   // Calculate Total Available Keys
   const totalStockKeys = useMemo(() => {
     return products.reduce((sum, product) => sum + (product.stockKeys ? product.stockKeys.length : 0), 0);
+  }, [products]);
+
+  // Calculate Total Products
+  const totalProducts = products.length;
+
+  // Calculate Products In Stock (Products that have at least 1 key)
+  const productsInStock = useMemo(() => {
+    return products.filter(product => product.stockKeys && product.stockKeys.length > 0).length;
   }, [products]);
 
   return (
@@ -108,6 +116,28 @@ const AdminTracking = ({ products, orders, users }) => {
           <div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '5px' }}>Total Keys in Stock</div>
             <div style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>{totalStockKeys}</div>
+          </div>
+        </div>
+
+        {/* Total Products */}
+        <div className="glass-panel" style={{ padding: '25px', borderLeft: '4px solid #F43F5E', display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ padding: '15px', borderRadius: '12px', backgroundColor: 'rgba(244, 63, 94, 0.1)' }}>
+            <Package size={32} color="#F43F5E" />
+          </div>
+          <div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '5px' }}>Total Products Listed</div>
+            <div style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>{totalProducts}</div>
+          </div>
+        </div>
+
+        {/* Products In Stock */}
+        <div className="glass-panel" style={{ padding: '25px', borderLeft: '4px solid #22C55E', display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ padding: '15px', borderRadius: '12px', backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
+            <CheckCircle2 size={32} color="#22C55E" />
+          </div>
+          <div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '5px' }}>Products In Stock</div>
+            <div style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>{productsInStock}</div>
           </div>
         </div>
       </div>
