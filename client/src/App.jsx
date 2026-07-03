@@ -249,8 +249,7 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
               <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)} style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: '500', fontSize: '14px', background: 'var(--surface-color)', padding: '5px 10px', borderRadius: '8px', border: 'var(--glass-border)' }}>Login</Link>
             )}
             
-
-
+            {user && <NotificationBell />}
             <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)} style={{ position: 'relative', color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }}>
               <ShoppingBag size={24} />
               {getCartCount() > 0 && (

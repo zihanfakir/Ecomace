@@ -43,8 +43,8 @@ router.get('/user/:userId', protect, async (req, res) => {
 
 // Checkout (Process multiple products from cart)
 router.post('/checkout', protect, async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const modifiedProducts = [];
+  let appliedCoupon = null;
 
   try {
     const { cartItems, customerDetails, paymentMethod, paymentDetails, couponCode } = req.body;
@@ -57,7 +57,7 @@ router.post('/checkout', protect, async (req, res) => {
       if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
         throw new Error('Invalid quantity');
       }
-      const product = await Product.findById(item.product._id).session(session);
+      const product = await Product.findById(item.product._id);
       if (!product) {
         throw new Error(`Product ${item.product.name} not found`);
       }
@@ -90,13 +90,14 @@ router.post('/checkout', protect, async (req, res) => {
         keys: keys
       });
       
-      await product.save({ session });
+      await product.save();
+      modifiedProducts.push({ product, keys });
     }
 
     // Apply Coupon
     let discountAmount = 0;
     if (couponCode) {
-      const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${couponCode}$`, 'i') }, isActive: true }).session(session);
+      const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${couponCode}$`, 'i') }, isActive: true });
       if (!coupon) {
         throw new Error('Invalid or inactive coupon code');
       }
@@ -132,7 +133,8 @@ router.post('/checkout', protect, async (req, res) => {
       discountAmount = Math.min(discountAmount, applicableSubtotal);
       
       coupon.usageCount = (coupon.usageCount || 0) + 1;
-      await coupon.save({ session });
+      await coupon.save();
+      appliedCoupon = coupon;
     }
     
     const totalPrice = subtotal - discountAmount;
@@ -154,7 +156,7 @@ router.post('/checkout', protect, async (req, res) => {
       status: 'pending'
     });
     
-    await newOrder.save({ session });
+    await newOrder.save();
     
     const newNotification = new Notification({
       _id: 'NOTIF-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
@@ -165,10 +167,7 @@ router.post('/checkout', protect, async (req, res) => {
       link: '/admin'
     });
 
-    await newNotification.save({ session });
-
-    await session.commitTransaction();
-    session.endSession();
+    try { await newNotification.save(); } catch (e) { console.error('Notification failed to save', e); }
     
     const orderObj = newOrder.toObject();
     const safeOrder = {
@@ -178,21 +177,36 @@ router.post('/checkout', protect, async (req, res) => {
 
     res.status(200).json({ message: 'Checkout successful', order: safeOrder });
   } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
+    // Manual Rollback
+    for (const modified of modifiedProducts) {
+      try {
+        modified.product.stockKeys = [...modified.keys, ...modified.product.stockKeys];
+        await modified.product.save();
+      } catch (rollbackErr) {
+        console.error('Failed to rollback product stock:', rollbackErr);
+      }
+    }
+    if (appliedCoupon) {
+      try {
+        appliedCoupon.usageCount -= 1;
+        await appliedCoupon.save();
+      } catch (rollbackErr) {
+        console.error('Failed to rollback coupon usage:', rollbackErr);
+      }
+    }
     res.status(400).json({ message: err.message });
   }
 });
 
 // Update order status (Approve/Reject)
 router.put('/:id/status', protect, admin, async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const modifiedProducts = [];
+  let modifiedCoupon = null;
 
   try {
     const { status } = req.body;
     
-    const order = await Order.findById(req.params.id).session(session);
+    const order = await Order.findById(req.params.id);
     if (!order) {
       throw new Error('Order not found');
     }
@@ -214,25 +228,27 @@ router.put('/:id/status', protect, admin, async (req, res) => {
         // Restore keys to products
         if (order.items) {
           for (const item of order.items) {
-            const product = await Product.findById(item.productId).session(session);
+            const product = await Product.findById(item.productId);
             if (product && item.keys && item.keys.length > 0) {
               product.stockKeys = [...product.stockKeys, ...item.keys];
-              await product.save({ session });
+              await product.save();
+              modifiedProducts.push({ product, action: 'restore', keys: item.keys });
             }
           }
         }
         if (order.couponApplied?.code) {
-          const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${order.couponApplied.code}$`, 'i') } }).session(session);
+          const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${order.couponApplied.code}$`, 'i') } });
           if (coupon && coupon.usageCount > 0) {
             coupon.usageCount -= 1;
-            await coupon.save({ session });
+            await coupon.save();
+            modifiedCoupon = { coupon, action: 'restore' };
           }
         }
       }
     } else if (order.status === 'cancelled' || order.status === 'rejected') {
       if (order.items) {
         for (const item of order.items) {
-          const product = await Product.findById(item.productId).session(session);
+          const product = await Product.findById(item.productId);
           if (product && item.keys && item.keys.length > 0) {
             const availableKeys = product.stockKeys || [];
             const keysStillAvailable = item.keys.every(k => availableKeys.includes(k));
@@ -243,7 +259,8 @@ router.put('/:id/status', protect, admin, async (req, res) => {
               const idx = product.stockKeys.indexOf(k);
               if (idx !== -1) product.stockKeys.splice(idx, 1);
             });
-            await product.save({ session });
+            await product.save();
+            modifiedProducts.push({ product, action: 'consume', keys: item.keys });
           }
         }
       }
@@ -252,7 +269,7 @@ router.put('/:id/status', protect, admin, async (req, res) => {
     order.status = status;
     order.statusChangeCount += 1;
     
-    await order.save({ session });
+    await order.save();
     
     if (order.userId && order.userId !== 'guest') {
       const newNotification = new Notification({
@@ -263,27 +280,47 @@ router.put('/:id/status', protect, admin, async (req, res) => {
         message: `Your order ${order._id} status is now: ${status}`,
         link: '/dashboard'
       });
-      await newNotification.save({ session });
+      try { await newNotification.save(); } catch (e) { console.error('Notification failed to save', e); }
     }
-
-    await session.commitTransaction();
-    session.endSession();
     
     res.status(200).json(order);
   } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
+    // Rollback
+    for (const modified of modifiedProducts) {
+      try {
+        if (modified.action === 'restore') {
+          // undo restore
+          modified.keys.forEach(k => {
+            const idx = modified.product.stockKeys.indexOf(k);
+            if (idx !== -1) modified.product.stockKeys.splice(idx, 1);
+          });
+        } else {
+          // undo consume
+          modified.product.stockKeys = [...modified.keys, ...modified.product.stockKeys];
+        }
+        await modified.product.save();
+      } catch (rollbackErr) {
+        console.error('Failed to rollback product stock:', rollbackErr);
+      }
+    }
+    if (modifiedCoupon) {
+      try {
+        modifiedCoupon.coupon.usageCount += 1; // undo restore
+        await modifiedCoupon.coupon.save();
+      } catch (rollbackErr) {
+        console.error('Failed to rollback coupon usage:', rollbackErr);
+      }
+    }
     res.status(400).json({ message: err.message });
   }
 });
 
 // Delete Order
 router.delete('/:id', protect, admin, async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const modifiedProducts = [];
 
   try {
-    const order = await Order.findById(req.params.id).session(session);
+    const order = await Order.findById(req.params.id);
     if (!order) {
       throw new Error('Order not found');
     }
@@ -291,24 +328,32 @@ router.delete('/:id', protect, admin, async (req, res) => {
     if (order.status !== 'cancelled' && order.status !== 'rejected') {
       if (order.items) {
         for (const item of order.items) {
-          const product = await Product.findById(item.productId).session(session);
+          const product = await Product.findById(item.productId);
           if (product && item.keys && item.keys.length > 0) {
             product.stockKeys = [...product.stockKeys, ...item.keys];
-            await product.save({ session });
+            await product.save();
+            modifiedProducts.push({ product, keys: item.keys });
           }
         }
       }
     }
     
-    await Order.findByIdAndDelete(req.params.id).session(session);
+    await Order.findByIdAndDelete(req.params.id);
     
-    await session.commitTransaction();
-    session.endSession();
-
     res.status(200).json({ message: 'Order deleted successfully' });
   } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
+    // Rollback
+    for (const modified of modifiedProducts) {
+      try {
+        modified.keys.forEach(k => {
+          const idx = modified.product.stockKeys.indexOf(k);
+          if (idx !== -1) modified.product.stockKeys.splice(idx, 1);
+        });
+        await modified.product.save();
+      } catch (rollbackErr) {
+        console.error('Failed to rollback product stock:', rollbackErr);
+      }
+    }
     res.status(400).json({ message: err.message });
   }
 });

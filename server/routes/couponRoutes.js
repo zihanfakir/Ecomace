@@ -4,6 +4,8 @@ const Coupon = require('../models/Coupon');
 
 const router = express.Router();
 
+const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // Get all coupons (Admin)
 router.get('/', protect, admin, async (req, res) => {
   try {
@@ -17,7 +19,7 @@ router.get('/', protect, admin, async (req, res) => {
 // Create new coupon (Admin)
 router.post('/', protect, admin, async (req, res) => {
   try {
-    const existing = await Coupon.findOne({ code: { $regex: new RegExp(`^${req.body.code}$`, 'i') } });
+    const existing = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(req.body.code)}$`, 'i') } });
     if (existing) {
       return res.status(400).json({ message: 'Coupon code already exists' });
     }
@@ -86,7 +88,7 @@ router.delete('/:id', protect, admin, async (req, res) => {
 router.post('/validate', async (req, res) => {
   try {
     const { code } = req.body;
-    const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${code}$`, 'i') } });
+    const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(code)}$`, 'i') } });
     
     if (!coupon) {
       return res.status(404).json({ message: 'Invalid coupon code' });

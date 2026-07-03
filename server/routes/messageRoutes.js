@@ -51,7 +51,7 @@ router.post('/', protect, async (req, res) => {
         {
           sender: 'user',
           text,
-          timestamp: new Date().toISOString()
+          timestamp: Date.now()
         }
       ]
     });
@@ -102,11 +102,11 @@ router.post('/:id/reply', protect, async (req, res) => {
     const reply = {
       sender,
       text,
-      timestamp: new Date().toISOString()
+      timestamp: Date.now()
     };
     
     message.conversation.push(reply);
-    message.updatedAt = new Date().toISOString();
+    message.updatedAt = Date.now();
     
     // Automatically reopen if a user replies to a closed ticket
     if (sender === 'user' && message.status === 'closed') {
@@ -145,7 +145,7 @@ router.put('/:id/status', protect, admin, async (req, res) => {
     }
     
     message.status = status;
-    message.updatedAt = new Date().toISOString();
+    message.updatedAt = Date.now();
     
     await message.save();
     res.json(message);
