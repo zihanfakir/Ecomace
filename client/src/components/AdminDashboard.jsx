@@ -13,6 +13,7 @@ import AdminSettings from './admin/AdminSettings';
 import AdminTracking from './admin/AdminTracking';
 import ActionMenu from './ActionMenu';
 import { uploadToImgBB } from '../utils/imageUtils';
+import ErrorBoundary from './ErrorBoundary';
 
 const AdminDashboard = () => {
   const { user, token, updateUser } = useContext(AuthContext);
@@ -831,44 +832,46 @@ const AdminDashboard = () => {
 
       {/* Category Order Modal */}
       {isCategoryOrderModalOpen && (
-        <div className="modal-overlay animate-fade-in" style={{ zIndex: 1100 }}>
-          <div className="glass-panel modal-content" style={{ position: 'relative', maxWidth: '500px', width: '90%' }}>
-            <button onClick={() => setIsCategoryOrderModalOpen(false)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '5px' }}>
-              <X size={20} />
-            </button>
-            <h2 style={{ marginBottom: '20px', fontSize: '1.4rem' }}>Manage Category Order</h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '15px', fontSize: '0.9rem' }}>Use the arrows to reorder how categories appear on the homepage.</p>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px', maxHeight: '400px', overflowY: 'auto' }}>
-              {tempCategoryOrder.map((catName, index) => (
-                <div key={catName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 15px', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                  <span style={{ fontWeight: '500' }}>{catName}</span>
-                  <div style={{ display: 'flex', gap: '5px' }}>
-                    <button 
-                      onClick={() => handleReorderCategory(catName, 'up')} 
-                      disabled={index === 0}
-                      style={{ background: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: index === 0 ? 'not-allowed' : 'pointer', color: index === 0 ? 'var(--border-color)' : 'var(--text-primary)', padding: '5px' }}
-                    >
-                      <ChevronUp size={16} />
-                    </button>
-                    <button 
-                      onClick={() => handleReorderCategory(catName, 'down')} 
-                      disabled={index === tempCategoryOrder.length - 1}
-                      style={{ background: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: index === tempCategoryOrder.length - 1 ? 'not-allowed' : 'pointer', color: index === tempCategoryOrder.length - 1 ? 'var(--border-color)' : 'var(--text-primary)', padding: '5px' }}
-                    >
-                      <ChevronDown size={16} />
-                    </button>
+        <ErrorBoundary>
+          <div className="modal-overlay animate-fade-in" style={{ zIndex: 1100 }}>
+            <div className="glass-panel modal-content" style={{ position: 'relative', maxWidth: '500px', width: '90%' }}>
+              <button onClick={() => setIsCategoryOrderModalOpen(false)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '5px' }}>
+                <X size={20} />
+              </button>
+              <h2 style={{ marginBottom: '20px', fontSize: '1.4rem' }}>Manage Category Order</h2>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '15px', fontSize: '0.9rem' }}>Use the arrows to reorder how categories appear on the homepage.</p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px', maxHeight: '400px', overflowY: 'auto' }}>
+                {tempCategoryOrder.map((catName, index) => (
+                  <div key={catName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 15px', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <span style={{ fontWeight: '500' }}>{catName}</span>
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                      <button 
+                        onClick={() => handleReorderCategory(catName, 'up')} 
+                        disabled={index === 0}
+                        style={{ background: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: index === 0 ? 'not-allowed' : 'pointer', color: index === 0 ? 'var(--border-color)' : 'var(--text-primary)', padding: '5px' }}
+                      >
+                        <ChevronUp size={16} />
+                      </button>
+                      <button 
+                        onClick={() => handleReorderCategory(catName, 'down')} 
+                        disabled={index === tempCategoryOrder.length - 1}
+                        style={{ background: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: index === tempCategoryOrder.length - 1 ? 'not-allowed' : 'pointer', color: index === tempCategoryOrder.length - 1 ? 'var(--border-color)' : 'var(--text-primary)', padding: '5px' }}
+                      >
+                        <ChevronDown size={16} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-            
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button onClick={() => setIsCategoryOrderModalOpen(false)} style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: '500' }}>Cancel</button>
-              <button onClick={handleSaveCategoryOrder} className="btn-primary" style={{ padding: '10px 20px' }}>{isLoading ? 'Saving...' : 'Save Order'}</button>
+                ))}
+              </div>
+              
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button onClick={() => setIsCategoryOrderModalOpen(false)} style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: '500' }}>Cancel</button>
+                <button onClick={handleSaveCategoryOrder} className="btn-primary" style={{ padding: '10px 20px' }}>{isLoading ? 'Saving...' : 'Save Order'}</button>
+              </div>
             </div>
           </div>
-        </div>
+        </ErrorBoundary>
       )}
 
     </div>
