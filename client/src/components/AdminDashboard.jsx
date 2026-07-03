@@ -680,6 +680,7 @@ const AdminDashboard = () => {
             handleUpdateOrderStatus={handleUpdateOrderStatus} 
             setOrderToDelete={setOrderToDelete} 
             user={user}
+            fetchOrders={fetchOrders}
           />
         )}
         

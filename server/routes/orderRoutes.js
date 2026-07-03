@@ -18,6 +18,24 @@ router.get('/', protect, admin, async (req, res) => {
   }
 });
 
+// Update order keys (Admin only)
+router.put('/:id/keys', protect, admin, async (req, res) => {
+  try {
+    const { items } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+    
+    order.items = items;
+    await order.save();
+    
+    res.status(200).json(order);
+  } catch(err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
 // Get orders by specific user
 router.get('/user/:userId', protect, async (req, res) => {
   if (req.user._id !== req.params.userId && req.user.role !== 'admin' && req.user.role !== 'owner') {

@@ -1,11 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Search, Filter } from 'lucide-react';
+import { Trash2, Search, Filter, Edit, X } from 'lucide-react';
 import ActionMenu from '../ActionMenu';
+import axios from 'axios';
+import { useToast } from '../../context/ToastContext';
 
-const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user }) => {
+const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user, fetchOrders }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [editingOrderKeys, setEditingOrderKeys] = useState(null);
+  const [editedItems, setEditedItems] = useState([]);
+  const [isSavingKeys, setIsSavingKeys] = useState(false);
+  const { addToast } = useToast();
+
+  const handleSaveKeys = async () => {
+    try {
+      setIsSavingKeys(true);
+      const token = localStorage.getItem('token');
+      await axios.put(`https://ecomace.onrender.com/api/orders/${editingOrderKeys}/keys`, { items: editedItems }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      addToast('Order keys updated successfully', 'success');
+      setEditingOrderKeys(null);
+      if (fetchOrders) fetchOrders();
+    } catch (error) {
+      addToast(error.response?.data?.message || 'Failed to update keys', 'error');
+    } finally {
+      setIsSavingKeys(false);
+    }
+  };
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -123,21 +146,64 @@ const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user }
               </div>
               
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                {user?.role === 'owner' && (
-                  <ActionMenu actions={[
-                    { 
-                      label: 'Delete Order', 
-                      icon: <Trash2 size={16} />, 
-                      onClick: () => setOrderToDelete(order._id), 
-                      danger: true 
+                <ActionMenu actions={[
+                  {
+                    label: 'Edit Keys/Links',
+                    icon: <Edit size={16} />,
+                    onClick: () => {
+                      setEditingOrderKeys(order._id);
+                      setEditedItems(order.items.map(item => ({ ...item, keysStr: item.keys ? item.keys.join('\n') : '' })));
                     }
-                  ]} />
-                )}
+                  },
+                  ...(user?.role === 'owner' ? [{ 
+                    label: 'Delete Order', 
+                    icon: <Trash2 size={16} />, 
+                    onClick: () => setOrderToDelete(order._id), 
+                    danger: true 
+                  }] : [])
+                ]} />
               </div>
             </div>
           ))
         )}
       </div>
+
+      {/* Edit Keys Modal */}
+      {editingOrderKeys && (
+        <div className="modal-overlay">
+          <div className="glass-panel modal-content animate-fade-in" style={{ maxWidth: '600px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <h2>Edit Order Keys</h2>
+              <button onClick={() => setEditingOrderKeys(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}><X /></button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {editedItems.map((item, idx) => (
+                <div key={idx} style={{ backgroundColor: 'var(--bg-color)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '10px', color: 'var(--primary-accent)' }}>{item.productName} (x{item.quantity})</div>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '5px' }}>Keys / Links (One per line)</label>
+                  <textarea 
+                    rows={4}
+                    value={item.keysStr}
+                    onChange={(e) => {
+                      const newItems = [...editedItems];
+                      newItems[idx].keysStr = e.target.value;
+                      newItems[idx].keys = e.target.value.split('\n').map(k => k.trim()).filter(k => k);
+                      setEditedItems(newItems);
+                    }}
+                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--glass-border)', backgroundColor: 'var(--surface-color)', color: 'var(--text-primary)', resize: 'vertical', boxSizing: 'border-box' }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+              <button onClick={() => setEditingOrderKeys(null)} style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: '500' }}>Cancel</button>
+              <button onClick={handleSaveKeys} className="btn-primary" disabled={isSavingKeys} style={{ padding: '10px 20px' }}>
+                {isSavingKeys ? 'Saving...' : 'Save Keys'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
