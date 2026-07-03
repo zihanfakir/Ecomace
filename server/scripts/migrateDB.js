@@ -14,8 +14,6 @@ const User = require('../models/User');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const Coupon = require('../models/Coupon');
-const Message = require('../models/Message');
-const Notification = require('../models/Notification');
 const Setting = require('../models/Setting');
 
 const migrateDB = async () => {
