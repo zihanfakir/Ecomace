@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { Sun, Moon, ShoppingBag, Menu, X, User, Bell, BellRing } from 'lucide-react';
+import { Sun, Moon, ShoppingBag, Menu, X, User } from 'lucide-react';
 import axios from 'axios';
 import './index.css';
 
@@ -15,106 +15,6 @@ import ChatWidget from './components/ChatWidget';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { CartProvider, CartContext } from './context/CartContext';
 import { ToastProvider } from './context/ToastContext';
-import { useContext, useRef } from 'react';
-
-const NotificationBell = () => {
-  const { user, token } = useContext(AuthContext);
-  const [notifications, setNotifications] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  const fetchNotifications = async () => {
-    if (!user || !token) return;
-    try {
-      const response = await axios.get('https://ecomace.onrender.com/api/notifications', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setNotifications(Array.isArray(response.data) ? response.data : []);
-    } catch (err) {
-      console.error('Failed to fetch notifications', err);
-    }
-  };
-
-  useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 15000);
-    return () => clearInterval(interval);
-  }, [user, token]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const markAsRead = async (id) => {
-    if (!token) return;
-    try {
-      await axios.put(`https://ecomace.onrender.com/api/notifications/${id}/read`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setNotifications(notifications.map(n => n._id === id ? { ...n, read: true } : n));
-    } catch (err) {}
-  };
-
-  const markAllAsRead = async () => {
-    if (!token) return;
-    try {
-      await axios.put('https://ecomace.onrender.com/api/notifications/read-all', {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setNotifications(notifications.map(n => ({ ...n, read: true })));
-    } catch (err) {}
-  };
-
-  const safeNotifications = Array.isArray(notifications) ? notifications : [];
-  const unreadCount = safeNotifications.filter(n => !n.read).length;
-
-  if (!user) return null;
-
-  return (
-    <div ref={dropdownRef} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        style={{ position: 'relative', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      >
-        {unreadCount > 0 ? <BellRing size={24} color="#EF4444" /> : <Bell size={24} />}
-        {unreadCount > 0 && (
-          <span style={{ position: 'absolute', top: '-6px', right: '-6px', backgroundColor: '#EF4444', color: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 'bold' }}>
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
-      </button>
-
-      {isOpen && (
-        <div className="glass-panel" style={{
-          position: 'absolute', top: '120%', right: '-50px', width: '320px', maxHeight: '400px', overflowY: 'auto',
-          zIndex: 1000, padding: '15px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '10px'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
-            <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Notifications</h3>
-            {unreadCount > 0 && (
-              <button onClick={markAllAsRead} style={{ background: 'none', border: 'none', color: 'var(--primary-accent)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '500' }}>Mark all read</button>
-            )}
-          </div>
-          
-          {safeNotifications.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No notifications yet</div>
-          ) : (
-            safeNotifications.map((n) => (
-              <Link 
-                to={n.link || '#'}
-                key={n._id} 
-                onClick={() => { 
-                  if (!n.read) markAsRead(n._id);
-                  setIsOpen(false);
-                }}
-                style={{ 
-                  padding: '10px', 
                   borderRadius: '8px', 
                   backgroundColor: n.read ? 'transparent' : 'rgba(67, 24, 255, 0.1)',
                   border: n.read ? '1px solid var(--border-color)' : '1px solid var(--primary-accent)',
@@ -249,7 +149,7 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
               <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)} style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: '500', fontSize: '14px', background: 'var(--surface-color)', padding: '5px 10px', borderRadius: '8px', border: 'var(--glass-border)' }}>Login</Link>
             )}
             
-            {user && <NotificationBell />}
+            
             <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)} style={{ position: 'relative', color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }}>
               <ShoppingBag size={24} />
               {getCartCount() > 0 && (
