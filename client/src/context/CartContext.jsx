@@ -82,6 +82,7 @@ export const CartProvider = ({ children }) => {
           finalPrice = Math.max(0, item.product.price - item.product.discount);
         } else {
           finalPrice = Math.round(item.product.price - (item.product.price * (item.product.discount / 100)));
+          finalPrice = Math.max(0, finalPrice);
         }
       }
       return total + finalPrice * item.quantity;

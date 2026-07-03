@@ -72,7 +72,12 @@ const Checkout = () => {
         applicableSubtotal = applicableItems.reduce((acc, item) => {
           let price = item.product.price;
           if (item.product.discount > 0) {
-            price = item.product.discountType === 'flat' ? Math.max(0, item.product.price - item.product.discount) : Math.round(item.product.price - (item.product.price * (item.product.discount / 100)));
+            if (item.product.discountType === 'flat') {
+              price = Math.max(0, item.product.price - item.product.discount);
+            } else {
+              price = Math.round(item.product.price - (item.product.price * (item.product.discount / 100)));
+              price = Math.max(0, price);
+            }
           }
           return acc + (price * item.quantity);
         }, 0);
@@ -84,7 +89,12 @@ const Checkout = () => {
         applicableSubtotal = applicableItems.reduce((acc, item) => {
           let price = item.product.price;
           if (item.product.discount > 0) {
-            price = item.product.discountType === 'flat' ? Math.max(0, item.product.price - item.product.discount) : Math.round(item.product.price - (item.product.price * (item.product.discount / 100)));
+            if (item.product.discountType === 'flat') {
+              price = Math.max(0, item.product.price - item.product.discount);
+            } else {
+              price = Math.round(item.product.price - (item.product.price * (item.product.discount / 100)));
+              price = Math.max(0, price);
+            }
           }
           return acc + (price * item.quantity);
         }, 0);

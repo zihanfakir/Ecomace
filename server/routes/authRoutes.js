@@ -41,6 +41,9 @@ router.post('/register', async (req, res) => {
     }
 
     // Validation
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ message: 'Name is required' });
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: 'Invalid email format' });

@@ -7,9 +7,9 @@ const router = express.Router();
 // Get notifications for logged in user (or admin)
 router.get('/', protect, async (req, res) => {
   try {
-    const target = (req.user.role === 'admin' || req.user.role === 'owner') ? 'admin' : req.user._id;
+    const targets = (req.user.role === 'admin' || req.user.role === 'owner') ? ['admin', req.user._id] : [req.user._id];
     
-    const notifications = await Notification.find({ target })
+    const notifications = await Notification.find({ target: { $in: targets } })
       .sort({ createdAt: -1 })
       .limit(20);
     
@@ -22,9 +22,9 @@ router.get('/', protect, async (req, res) => {
 // Mark all notifications as read for current user
 router.put('/read-all', protect, async (req, res) => {
   try {
-    const target = (req.user.role === 'admin' || req.user.role === 'owner') ? 'admin' : req.user._id;
+    const targets = (req.user.role === 'admin' || req.user.role === 'owner') ? ['admin', req.user._id] : [req.user._id];
     
-    await Notification.updateMany({ target, read: false }, { read: true });
+    await Notification.updateMany({ target: { $in: targets }, read: false }, { read: true });
     
     res.json({ message: 'All marked as read' });
   } catch (error) {

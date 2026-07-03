@@ -5,8 +5,9 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
 const Notification = require('../models/Notification');
-
 const router = express.Router();
+
+const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Get all orders (Admin only)
 router.get('/', protect, admin, async (req, res) => {
@@ -97,7 +98,7 @@ router.post('/checkout', protect, async (req, res) => {
     // Apply Coupon
     let discountAmount = 0;
     if (couponCode) {
-      const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${couponCode}$`, 'i') }, isActive: true });
+      const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(couponCode)}$`, 'i') }, isActive: true });
       if (!coupon) {
         throw new Error('Invalid or inactive coupon code');
       }
@@ -237,7 +238,7 @@ router.put('/:id/status', protect, admin, async (req, res) => {
           }
         }
         if (order.couponApplied?.code) {
-          const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${order.couponApplied.code}$`, 'i') } });
+          const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(order.couponApplied.code)}$`, 'i') } });
           if (coupon && coupon.usageCount > 0) {
             coupon.usageCount -= 1;
             await coupon.save();

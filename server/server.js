@@ -49,6 +49,10 @@ connectDB().then(async () => {
   } catch (err) {
     console.error("Auto-migration failed:", err);
   }
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 }).catch(console.error);
 
 // Middleware
@@ -92,8 +96,4 @@ app.use('/api/upload', uploadRoutes);
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err.stack || err.message);
   res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });

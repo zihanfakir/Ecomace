@@ -33,8 +33,8 @@ router.put('/:id', protect, admin, async (req, res) => {
       return res.status(400).json({ message: 'Percentage discount cannot exceed 100%' });
     }
 
-    product.name = req.body.name !== undefined ? req.body.name : product.name;
-    product.description = req.body.description !== undefined ? req.body.description : product.description;
+    product.name = req.body.name ? req.body.name : product.name;
+    product.description = req.body.description ? req.body.description : product.description;
     product.price = newPrice;
     product.icon = req.body.icon !== undefined ? req.body.icon : product.icon;
     product.photoUrl = req.body.photoUrl !== undefined ? req.body.photoUrl : product.photoUrl;

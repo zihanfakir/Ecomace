@@ -20,6 +20,7 @@ const OrderSchema = new mongoose.Schema({
   totalPrice: { type: Number, required: true },
   couponApplied: { type: mongoose.Schema.Types.Mixed },
   paymentMethod: { type: String, required: true },
+  paymentDetails: { type: mongoose.Schema.Types.Mixed },
   transactionId: { type: String, required: true },
   paymentPhone: { type: String },
   status: { type: String, default: 'pending' }, // 'pending', 'processing', 'completed', 'cancelled'
