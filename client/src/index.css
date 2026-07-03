@@ -116,6 +116,8 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* Responsive Utilities */
@@ -139,6 +141,38 @@ body {
   gap: 30px;
 }
 
+/* Mobile Table to Card Transformation */
+@media (max-width: 768px) {
+  .mobile-table-header {
+    display: none !important;
+  }
+  .mobile-table-row {
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    gap: 12px !important;
+    padding: 15px !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  .mobile-table-row > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  /* If the column is just text, align it left, otherwise keep space-between */
+  .mobile-table-row > div > *:only-child {
+    margin-left: auto;
+  }
+  .mobile-table-row > div:empty {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard-container { flex-direction: column; gap: 20px; }
   .dashboard-sidebar { width: 100% !important; }
@@ -155,7 +189,7 @@ body {
   .hide-text-mobile { display: none !important; }
   .nav-links { flex-wrap: wrap; justify-content: center; }
   
-  .main-content { padding: 1rem !important; }
+  .main-content { padding: 1rem !important; min-width: 0 !important; overflow-x: hidden; }
   
   h1 { font-size: 2rem !important; }
   h2 { font-size: 1.5rem !important; }
