@@ -95,7 +95,9 @@ const AdminDashboard = () => {
 
   const fetchSettings = async () => {
     try {
-      const response = await axios.get('https://ecomace.onrender.com/api/settings');
+      const activeToken = token || localStorage.getItem('token');
+      const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
+      const response = await axios.get('https://ecomace.onrender.com/api/settings', config);
       if (response.data?.paymentMethods) {
         setPaymentMethods(response.data.paymentMethods);
       }
@@ -118,7 +120,8 @@ const AdminDashboard = () => {
 
   const fetchProducts = async () => {
     try {
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const activeToken = token || localStorage.getItem('token');
+      const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
       const response = await axios.get('https://ecomace.onrender.com/api/products', config);
       setProducts(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
@@ -129,7 +132,9 @@ const AdminDashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('https://ecomace.onrender.com/api/users');
+      const activeToken = token || localStorage.getItem('token');
+      const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
+      const response = await axios.get('https://ecomace.onrender.com/api/users', config);
       setUsers(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -138,7 +143,9 @@ const AdminDashboard = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await axios.get('https://ecomace.onrender.com/api/orders');
+      const activeToken = token || localStorage.getItem('token');
+      const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
+      const response = await axios.get('https://ecomace.onrender.com/api/orders', config);
       setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -147,7 +154,9 @@ const AdminDashboard = () => {
 
   const fetchCoupons = async () => {
     try {
-      const response = await axios.get('https://ecomace.onrender.com/api/coupons');
+      const activeToken = token || localStorage.getItem('token');
+      const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
+      const response = await axios.get('https://ecomace.onrender.com/api/coupons', config);
       setCoupons(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching coupons:', error);
@@ -156,7 +165,9 @@ const AdminDashboard = () => {
 
   const fetchTickets = async () => {
     try {
-      const response = await axios.get('https://ecomace.onrender.com/api/messages');
+      const activeToken = token || localStorage.getItem('token');
+      const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
+      const response = await axios.get('https://ecomace.onrender.com/api/messages', config);
       setTickets(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching tickets:', error);
