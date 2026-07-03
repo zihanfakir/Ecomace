@@ -32,14 +32,17 @@ export const AuthProvider = ({ children }) => {
     const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response && error.response.status === 401) {
+        const originalRequest = error.config;
+        const isAuthRoute = originalRequest?.url?.includes('/api/auth/login') || originalRequest?.url?.includes('/api/auth/register');
+        
+        if (error.response && error.response.status === 401 && !isAuthRoute) {
           // Token expired or invalid, log out
           setUser(null);
           setToken(null);
           localStorage.removeItem('user');
           localStorage.removeItem('token');
           delete axios.defaults.headers.common['Authorization'];
-          window.location.href = '/login';
+          window.location.href = '/auth';
         }
         return Promise.reject(error);
       }
