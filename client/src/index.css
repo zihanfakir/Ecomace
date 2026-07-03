@@ -59,11 +59,11 @@ button *, a *, .category-btn * {
   -webkit-touch-callout: none !important;
   -webkit-tap-highlight-color: transparent !important;
   outline: none !important;
+  touch-action: manipulation !important;
 }
 
 button:focus, a:focus, .category-btn:focus {
   outline: none !important;
-  background-color: inherit;
 }
 
 @media (hover: hover) {
