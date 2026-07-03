@@ -34,7 +34,6 @@ const CustomerDashboard = () => {
     
     if (user) {
       fetchOrders();
-      fetchTickets();
     }
   }, [user]);
   
@@ -76,24 +75,7 @@ const CustomerDashboard = () => {
   
 
 
-    const handleReply = async (e) => {
-      e.preventDefault();
-      if (!replyText.trim() || !activeTicket) return;
-      try {
-        const res = await axios.post(`https://ecomace.onrender.com/api/messages/${activeTicket._id}/reply`, {
-          sender: 'user',
-          text: replyText
-        });
-        // Update local ticket state
-        const updatedTickets = tickets.map(t => t._id === activeTicket._id ? res.data : t);
-        setTickets(updatedTickets);
-        setActiveTicket(res.data);
-        setReplyText('');
-      } catch (error) {
-        addToast('Failed to send reply', 'error');
-      }
-    };
-  
+
     return (
     <div className="animate-fade-in" style={{ padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px' }}>
