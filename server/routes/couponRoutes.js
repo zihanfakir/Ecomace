@@ -59,9 +59,25 @@ router.put('/:id', protect, admin, async (req, res) => {
       return res.status(400).json({ message: 'Percentage discount cannot exceed 100%' });
     }
     
-    // Update all provided fields
+    // Prevent duplicate code if code is being changed
+    if (req.body.code && req.body.code.toUpperCase() !== coupon.code) {
+      const existing = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(req.body.code)}$`, 'i') } });
+      if (existing) {
+        return res.status(400).json({ message: 'Coupon code already exists' });
+      }
+      coupon.code = req.body.code.toUpperCase();
+    }
+    
+    // Explicitly allow only specific fields to be updated
+    const allowedUpdates = ['discountPercent', 'discountType', 'applicableType', 'applicableTo', 'usageLimit', 'isActive'];
     Object.keys(req.body).forEach(key => {
-      coupon[key] = req.body[key];
+      if (allowedUpdates.includes(key)) {
+        if (key === 'usageLimit') {
+          coupon[key] = req.body[key] ? parseInt(req.body[key], 10) : null;
+        } else {
+          coupon[key] = req.body[key];
+        }
+      }
     });
     
     await coupon.save();

@@ -135,6 +135,13 @@ router.post('/', protect, admin, express.json(), async (req, res) => {
   try {
     const keysArray = req.body.keys ? req.body.keys.split('\n').map(k => k.trim()).filter(k => k) : [];
 
+    if (!req.body.name || String(req.body.name).trim() === '') {
+      return res.status(400).json({ message: 'Product name is required' });
+    }
+    if (req.body.price === undefined || req.body.price === null || req.body.price === '') {
+      return res.status(400).json({ message: 'Product price is required' });
+    }
+
     if (req.body.price !== undefined && req.body.price < 0) {
       return res.status(400).json({ message: 'Price cannot be negative' });
     }

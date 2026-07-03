@@ -27,6 +27,11 @@ router.put('/:id', protect, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Protection: Admin cannot modify an Owner's profile (name, email, password, etc)
+    if (user.role === 'owner' && req.user.role !== 'owner') {
+      return res.status(403).json({ message: 'Only an owner can modify an owner profile' });
+    }
+
     user.name = req.body.name || user.name;
     user.photoUrl = req.body.photoUrl !== undefined ? req.body.photoUrl : user.photoUrl;
 

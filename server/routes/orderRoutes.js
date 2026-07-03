@@ -50,6 +50,10 @@ router.post('/checkout', protect, async (req, res) => {
   try {
     const { cartItems, customerDetails, paymentMethod, paymentDetails, couponCode } = req.body;
     
+    if (!cartItems || cartItems.length === 0) {
+      throw new Error('Cart is empty');
+    }
+
     let subtotal = 0;
     const purchasedItems = [];
 
@@ -141,7 +145,7 @@ router.post('/checkout', protect, async (req, res) => {
     const totalPrice = subtotal - discountAmount;
 
     const newOrder = new Order({
-      _id: 'ORD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+      _id: 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
       userId: req.user._id,
       customerName: customerDetails.name || req.user.name || 'Guest',
       customerPhone: customerDetails.phone,
