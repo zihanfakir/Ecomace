@@ -15,7 +15,7 @@ import ActionMenu from './ActionMenu';
 import { uploadToImgBB } from '../utils/imageUtils';
 
 const AdminDashboard = () => {
-  const { user, updateUser } = useContext(AuthContext);
+  const { user, token, updateUser } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
@@ -118,10 +118,12 @@ const AdminDashboard = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('https://ecomace.onrender.com/api/products');
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const response = await axios.get('https://ecomace.onrender.com/api/products', config);
       setProducts(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error('Failed to fetch products:', error);
+      setProducts([]);
     }
   };
 
@@ -228,17 +230,27 @@ const AdminDashboard = () => {
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
+    if (newProduct.keys && newProduct.keys.includes('HIDDEN_KEY')) {
+      addToast('Cannot save! Your session is unauthorized to see real keys. Please refresh the page.', 'error');
+      return;
+    }
     setIsLoading(true);
     try {
       if (editingProductId) {
         // Edit existing product
         await axios.put(`https://ecomace.onrender.com/api/products/${editingProductId}`, newProduct, {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: token ? `Bearer ${token}` : undefined
+          }
         });
       } else {
         // Add new product
         await axios.post('https://ecomace.onrender.com/api/products', newProduct, {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: token ? `Bearer ${token}` : undefined
+          }
         });
       }
       setIsModalOpen(false);
@@ -247,7 +259,8 @@ const AdminDashboard = () => {
       fetchProducts();
       addToast(editingProductId ? 'Product updated successfully' : 'Product added successfully', 'success');
     } catch (error) {
-      addToast(editingProductId ? 'Failed to edit product' : 'Failed to add product', 'error');
+      const errorMsg = error.response?.data?.message || (editingProductId ? 'Failed to edit product' : 'Failed to add product');
+      addToast(errorMsg, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -300,7 +313,10 @@ const AdminDashboard = () => {
       await axios.put(`https://ecomace.onrender.com/api/products/${categoryModalProduct._id}`, { 
         category: categoryModalInput || 'Uncategorized'
       }, {
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : undefined
+        }
       });
       fetchProducts();
       addToast('Category updated successfully', 'success');
