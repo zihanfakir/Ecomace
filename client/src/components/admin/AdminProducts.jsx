@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, Tag, ChevronUp, ChevronDown, ListOrdered } from 'lucide-react';
 import ActionMenu from '../ActionMenu';
 
-const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOpenAddModal, handleSetCategory, handleReorderProduct, handleManageCategories }) => {
+const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOpenAddModal, handleSetCategory, handleReorderProduct }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [stockFilter, setStockFilter] = useState('all');
@@ -33,9 +33,7 @@ const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOp
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <h2>Manage Digital Licenses</h2>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', color: 'var(--text-primary)', cursor: 'pointer' }} onClick={handleManageCategories}>
-            <ListOrdered size={18} /> Manage Categories
-          </button>
+
           <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }} onClick={handleOpenAddModal}>
             <Plus size={18} /> Add New Product
           </button>
