@@ -9,6 +9,7 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [categoryOrder, setCategoryOrder] = useState([]);
 
   // Debounce search input to remove typing lag
   useEffect(() => {
@@ -29,10 +30,31 @@ const Home = () => {
         setLoading(false);
       }
     };
+    const fetchSettings = async () => {
+      try {
+        const response = await axios.get('https://ecomace.onrender.com/api/settings');
+        if (response.data && response.data.categoryOrder) {
+          setCategoryOrder(response.data.categoryOrder);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
     fetchProducts();
+    fetchSettings();
   }, []);
 
-  const categories = ['All', ...new Set(products.map(p => p.category || 'Uncategorized'))];
+  const dynamicCategories = ['All', ...new Set(products.map(p => p.category || 'Uncategorized'))];
+  const categories = dynamicCategories.sort((a, b) => {
+    if (a === 'All') return -1;
+    if (b === 'All') return 1;
+    const idxA = categoryOrder.indexOf(a);
+    const idxB = categoryOrder.indexOf(b);
+    if (idxA === -1 && idxB === -1) return 0;
+    if (idxA === -1) return 1;
+    if (idxB === -1) return -1;
+    return idxA - idxB;
+  });
 
   const getCategoryIcon = (cat) => {
     // If the category already contains an emoji, don't add a default one

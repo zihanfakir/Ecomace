@@ -33,6 +33,8 @@ const AdminDashboard = () => {
   // Category Modal State
   const [categoryModalProduct, setCategoryModalProduct] = useState(null);
   const [categoryModalInput, setCategoryModalInput] = useState('');
+  const [isCategoryOrderModalOpen, setIsCategoryOrderModalOpen] = useState(false);
+  const [tempCategoryOrder, setTempCategoryOrder] = useState([]);
   
   // Settings state
   const [paymentMethods, setPaymentMethods] = useState({ bkash: '', nagad: '', rocket: '', upay: '', bybit: '', binance: '' });
@@ -42,7 +44,8 @@ const AdminDashboard = () => {
     telegramLink: 'https://t.me/zihanfakir',
     whatsappLink: 'https://wa.me/8801700000000',
     noticeText: '',
-    noticeColor: 'blue'
+    noticeColor: 'blue',
+    categoryOrder: []
   });
   const [paymentSettingsLoading, setPaymentSettingsLoading] = useState(false);
 
@@ -109,7 +112,8 @@ const AdminDashboard = () => {
           telegramLink: response.data.telegramLink !== undefined ? response.data.telegramLink : 'https://t.me/zihanfakir',
           whatsappLink: response.data.whatsappLink !== undefined ? response.data.whatsappLink : 'https://wa.me/8801700000000',
           noticeText: response.data.noticeText || '',
-          noticeColor: response.data.noticeColor || 'blue'
+          noticeColor: response.data.noticeColor || 'blue',
+          categoryOrder: response.data.categoryOrder || []
         });
       }
     } catch (error) {
@@ -300,6 +304,92 @@ const AdminDashboard = () => {
     setEditingProductId(null);
     setNewProduct({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', category: 'Uncategorized', keys: '' });
     setIsModalOpen(true);
+  };
+
+  const handleReorderProduct = async (productId, direction) => {
+    const currentIndex = products.findIndex(p => p._id === productId);
+    if (currentIndex === -1) return;
+    
+    if (direction === 'up' && currentIndex === 0) return;
+    if (direction === 'down' && currentIndex === products.length - 1) return;
+    
+    const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    
+    // Create a new array and swap the items
+    const newProducts = [...products];
+    const temp = newProducts[currentIndex];
+    newProducts[currentIndex] = newProducts[swapIndex];
+    newProducts[swapIndex] = temp;
+    
+    // Optimistically update UI
+    setProducts(newProducts);
+    
+    // Prepare data for API (assign sortOrder based on array index)
+    const items = newProducts.map((p, index) => ({ _id: p._id, sortOrder: index }));
+    
+    try {
+      const activeToken = token || localStorage.getItem('token');
+      await axios.put('https://ecomace.onrender.com/api/products/reorder', { items }, {
+        headers: { Authorization: `Bearer ${activeToken}` }
+      });
+      addToast('Product order updated', 'success');
+    } catch (error) {
+      console.error('Failed to reorder products', error);
+      addToast('Failed to save product order', 'error');
+      fetchProducts(); // revert on fail
+    }
+  };
+
+  const handleManageCategories = () => {
+    // Extract unique categories from current products
+    const dynamicCats = ['All', ...new Set(products.map(p => p.category || 'Uncategorized'))];
+    // Merge with saved order to ensure all current categories are present
+    const savedOrder = siteTextSettings.categoryOrder || [];
+    // Sort dynamicCats based on savedOrder
+    const sortedCats = dynamicCats.sort((a, b) => {
+      const idxA = savedOrder.indexOf(a);
+      const idxB = savedOrder.indexOf(b);
+      if (idxA === -1 && idxB === -1) return 0;
+      if (idxA === -1) return 1;
+      if (idxB === -1) return -1;
+      return idxA - idxB;
+    });
+    setTempCategoryOrder(sortedCats);
+    setIsCategoryOrderModalOpen(true);
+  };
+
+  const handleReorderCategory = (catName, direction) => {
+    const currentIndex = tempCategoryOrder.indexOf(catName);
+    if (currentIndex === -1) return;
+    
+    if (direction === 'up' && currentIndex === 0) return;
+    if (direction === 'down' && currentIndex === tempCategoryOrder.length - 1) return;
+    
+    const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const newOrder = [...tempCategoryOrder];
+    const temp = newOrder[currentIndex];
+    newOrder[currentIndex] = newOrder[swapIndex];
+    newOrder[swapIndex] = temp;
+    
+    setTempCategoryOrder(newOrder);
+  };
+
+  const handleSaveCategoryOrder = async () => {
+    setIsLoading(true);
+    try {
+      const activeToken = token || localStorage.getItem('token');
+      await axios.put('https://ecomace.onrender.com/api/settings', { categoryOrder: tempCategoryOrder }, {
+        headers: { Authorization: `Bearer ${activeToken}` }
+      });
+      setSiteTextSettings(prev => ({ ...prev, categoryOrder: tempCategoryOrder }));
+      setIsCategoryOrderModalOpen(false);
+      addToast('Category order saved', 'success');
+    } catch (error) {
+      console.error('Failed to save category order', error);
+      addToast('Failed to save category order', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSetCategory = (product) => {
@@ -655,6 +745,8 @@ const AdminDashboard = () => {
             setProductToDelete={setProductToDelete} 
             handleOpenAddModal={handleOpenAddModal} 
             handleSetCategory={handleSetCategory}
+            handleReorderProduct={handleReorderProduct}
+            handleManageCategories={handleManageCategories}
           />
         )}
         {activeTab === 'users' && (
@@ -728,6 +820,49 @@ const AdminDashboard = () => {
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button onClick={() => setCategoryModalProduct(null)} style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: '500' }}>Cancel</button>
               <button onClick={submitCategoryModal} className="btn-primary" style={{ padding: '10px 20px' }}>Save Category</button>
+            </div>
+          </div>
+          </div>
+        </div>
+      )}
+
+      {/* Category Order Modal */}
+      {isCategoryOrderModalOpen && (
+        <div className="modal-overlay animate-fade-in" style={{ zIndex: 1100 }}>
+          <div className="glass-panel modal-content" style={{ position: 'relative', maxWidth: '500px', width: '90%' }}>
+            <button onClick={() => setIsCategoryOrderModalOpen(false)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '5px' }}>
+              <X size={20} />
+            </button>
+            <h2 style={{ marginBottom: '20px', fontSize: '1.4rem' }}>Manage Category Order</h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '15px', fontSize: '0.9rem' }}>Use the arrows to reorder how categories appear on the homepage.</p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px', maxHeight: '400px', overflowY: 'auto' }}>
+              {tempCategoryOrder.map((catName, index) => (
+                <div key={catName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 15px', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                  <span style={{ fontWeight: '500' }}>{catName}</span>
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    <button 
+                      onClick={() => handleReorderCategory(catName, 'up')} 
+                      disabled={index === 0}
+                      style={{ background: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: index === 0 ? 'not-allowed' : 'pointer', color: index === 0 ? 'var(--border-color)' : 'var(--text-primary)', padding: '5px' }}
+                    >
+                      <ChevronUp size={16} />
+                    </button>
+                    <button 
+                      onClick={() => handleReorderCategory(catName, 'down')} 
+                      disabled={index === tempCategoryOrder.length - 1}
+                      style={{ background: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: index === tempCategoryOrder.length - 1 ? 'not-allowed' : 'pointer', color: index === tempCategoryOrder.length - 1 ? 'var(--border-color)' : 'var(--text-primary)', padding: '5px' }}
+                    >
+                      <ChevronDown size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setIsCategoryOrderModalOpen(false)} style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'transparent', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: '500' }}>Cancel</button>
+              <button onClick={handleSaveCategoryOrder} className="btn-primary" style={{ padding: '10px 20px' }}>{isLoading ? 'Saving...' : 'Save Order'}</button>
             </div>
           </div>
         </div>

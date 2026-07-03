@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search, Tag } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Tag, ChevronUp, ChevronDown, ListOrdered } from 'lucide-react';
 import ActionMenu from '../ActionMenu';
 
-const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOpenAddModal, handleSetCategory }) => {
+const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOpenAddModal, handleSetCategory, handleReorderProduct, handleManageCategories }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [stockFilter, setStockFilter] = useState('all');
@@ -32,9 +32,14 @@ const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOp
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <h2>Manage Digital Licenses</h2>
-        <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }} onClick={handleOpenAddModal}>
-          <Plus size={18} /> Add New Product
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', color: 'var(--text-primary)', cursor: 'pointer' }} onClick={handleManageCategories}>
+            <ListOrdered size={18} /> Manage Categories
+          </button>
+          <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }} onClick={handleOpenAddModal}>
+            <Plus size={18} /> Add New Product
+          </button>
+        </div>
       </div>
       
       <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
@@ -62,7 +67,8 @@ const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOp
       </div>
       
       <div style={{ backgroundColor: 'var(--surface-color)', padding: '20px', borderRadius: '12px' }}>
-        <div className="mobile-table-header" style={{ gridTemplateColumns: '1fr 2fr 1fr 1fr 0.5fr', fontWeight: 'bold', paddingBottom: '15px', borderBottom: '1px solid var(--border-color)', marginBottom: '15px' }}>
+        <div className="mobile-table-header" style={{ gridTemplateColumns: '0.5fr 1fr 2fr 1fr 1fr 0.5fr', fontWeight: 'bold', paddingBottom: '15px', borderBottom: '1px solid var(--border-color)', marginBottom: '15px' }}>
+          <div>Sort</div>
           <div>Image/Icon</div>
           <div>Product Name</div>
           <div>Stock</div>
@@ -74,7 +80,11 @@ const AdminProducts = ({ products, handleEditClick, setProductToDelete, handleOp
           <p style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>No products found.</p>
         ) : (
           filteredProducts.map(product => (
-            <div key={product._id} className="mobile-table-row" style={{ gridTemplateColumns: '1fr 2fr 1fr 1fr 0.5fr', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border-color)' }}>
+            <div key={product._id} className="mobile-table-row" style={{ gridTemplateColumns: '0.5fr 1fr 2fr 1fr 1fr 0.5fr', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                <button onClick={() => handleReorderProduct(product._id, 'up')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}><ChevronUp size={18} /></button>
+                <button onClick={() => handleReorderProduct(product._id, 'down')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}><ChevronDown size={18} /></button>
+              </div>
               <div style={{ fontSize: '1.5rem', width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-color)', flexShrink: 0 }}>
                 {product.photoUrl ? <img src={product.photoUrl} alt="product" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : product.icon}
               </div>

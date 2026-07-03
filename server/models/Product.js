@@ -12,6 +12,7 @@ const ProductSchema = new mongoose.Schema({
   photoUrl: { type: String },
   icon: { type: String },
   stockKeys: { type: [String], default: [] },
+  sortOrder: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
 

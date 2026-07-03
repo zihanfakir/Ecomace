@@ -80,7 +80,7 @@ router.get('/', async (req, res) => {
       } catch (e) {}
     }
 
-    const products = await Product.find({}).sort({ createdAt: -1 });
+    const products = await Product.find({}).sort({ sortOrder: 1, createdAt: -1 });
 
     const safeProducts = products.map(p => {
       const productObj = p.toObject ? p.toObject() : p;
@@ -170,6 +170,32 @@ router.post('/', protect, admin, async (req, res) => {
     res.status(201).json(newProduct);
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+// Reorder products (Admin only)
+router.put('/reorder', protect, admin, async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ message: 'Invalid items format' });
+    }
+    
+    // items should be [{ _id: '...', sortOrder: 0 }, { _id: '...', sortOrder: 1 }]
+    const operations = items.map(item => ({
+      updateOne: {
+        filter: { _id: item._id },
+        update: { sortOrder: item.sortOrder }
+      }
+    }));
+    
+    if (operations.length > 0) {
+      await Product.bulkWrite(operations);
+    }
+    
+    res.json({ message: 'Order updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
