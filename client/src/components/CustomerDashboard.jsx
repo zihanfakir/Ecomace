@@ -15,13 +15,7 @@ const CustomerDashboard = () => {
   const [message, setMessage] = useState('');
 
 
-  const chatEndRef = useRef(null);
 
-  useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [activeTicket]);
   const { addToast } = useToast();
 
 
