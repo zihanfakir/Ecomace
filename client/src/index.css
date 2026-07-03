@@ -189,7 +189,7 @@ body {
   .hide-text-mobile { display: none !important; }
   .nav-links { flex-wrap: wrap; justify-content: center; }
   
-  .main-content { padding: 1rem !important; min-width: 0 !important; overflow-x: hidden; }
+  .main-content { padding: 1rem !important; min-width: 0 !important; }
   
   h1 { font-size: 2rem !important; }
   h2 { font-size: 1.5rem !important; }
