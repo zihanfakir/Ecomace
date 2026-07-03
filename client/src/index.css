@@ -47,13 +47,14 @@
   padding: 0;
   box-sizing: border-box;
   font-family: 'Outfit', sans-serif;
-  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
-button, a, .category-btn {
+button, a, .category-btn, .product-card, img, svg, label, select, input[type="submit"], input[type="button"], .interactive-element {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 body {
