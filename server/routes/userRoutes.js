@@ -18,7 +18,7 @@ router.get('/', protect, admin, async (req, res) => {
 router.put('/:id', protect, async (req, res) => {
   try {
     // Only allow users to update their own profile, unless they are admin
-    if (req.user._id !== req.params.id && req.user.role !== 'admin' && req.user.role !== 'owner') {
+    if (req.user._id.toString() !== req.params.id && req.user.role !== 'admin' && req.user.role !== 'owner') {
       return res.status(403).json({ message: 'Not authorized to update this profile' });
     }
 

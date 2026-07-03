@@ -38,7 +38,7 @@ router.put('/:id/keys', protect, admin, async (req, res) => {
 
 // Get orders by specific user
 router.get('/user/:userId', protect, async (req, res) => {
-  if (req.user._id !== req.params.userId && req.user.role !== 'admin' && req.user.role !== 'owner') {
+  if (req.user._id.toString() !== req.params.userId && req.user.role !== 'admin' && req.user.role !== 'owner') {
     return res.status(403).json({ message: 'Not authorized to view these orders' });
   }
   try {
@@ -206,11 +206,10 @@ router.post('/checkout', protect, async (req, res) => {
       // Manual Rollback ONLY for products that were actually saved
       for (const saved of savedProducts) {
         try {
-          const freshProduct = await Product.findById(saved.product._id);
-          if (freshProduct) {
-             freshProduct.stockKeys = [...saved.keys, ...freshProduct.stockKeys];
-             await freshProduct.save();
-          }
+          await Product.updateOne(
+            { _id: saved.product._id },
+            { $push: { stockKeys: { $each: saved.keys, $position: 0 } } }
+          );
         } catch (rollbackErr) {
           console.error('Failed to rollback product stock:', rollbackErr);
         }
@@ -307,16 +306,18 @@ router.put('/:id/status', protect, admin, async (req, res) => {
     for (const modified of modifiedProducts) {
       try {
         if (modified.action === 'restore') {
-          // undo restore
-          modified.keys.forEach(k => {
-            const idx = modified.product.stockKeys.indexOf(k);
-            if (idx !== -1) modified.product.stockKeys.splice(idx, 1);
-          });
+          // undo restore (remove the keys again)
+          await Product.updateOne(
+            { _id: modified.product._id },
+            { $pullAll: { stockKeys: modified.keys } }
+          );
         } else {
-          // undo consume
-          modified.product.stockKeys = [...modified.keys, ...modified.product.stockKeys];
+          // undo consume (add the keys back)
+          await Product.updateOne(
+            { _id: modified.product._id },
+            { $push: { stockKeys: { $each: modified.keys, $position: 0 } } }
+          );
         }
-        await modified.product.save();
       } catch (rollbackErr) {
         console.error('Failed to rollback product stock:', rollbackErr);
       }
