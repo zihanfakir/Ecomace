@@ -118,7 +118,16 @@ router.post('/validate', async (req, res) => {
       return res.status(400).json({ message: 'Coupon usage limit reached' });
     }
     
-    res.json(coupon);
+    // Only return safe fields
+    const safeCoupon = {
+      code: coupon.code,
+      discountPercent: coupon.discountPercent,
+      discountType: coupon.discountType,
+      applicableType: coupon.applicableType,
+      applicableTo: coupon.applicableTo
+    };
+    
+    res.json(safeCoupon);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

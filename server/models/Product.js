@@ -14,6 +14,6 @@ const ProductSchema = new mongoose.Schema({
   stockKeys: { type: [String], default: [] },
   sortOrder: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
-});
+}, { optimisticConcurrency: true });
 
 module.exports = mongoose.model('Product', ProductSchema);

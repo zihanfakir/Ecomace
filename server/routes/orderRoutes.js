@@ -61,157 +61,170 @@ router.get('/user/:userId', protect, async (req, res) => {
 
 // Checkout (Process multiple products from cart)
 router.post('/checkout', protect, async (req, res) => {
-  const modifiedProducts = [];
-  let appliedCoupon = null;
+  let attempts = 0;
+  let success = false;
+  
+  while (attempts < 3 && !success) {
+    attempts++;
+    const modifiedProducts = [];
+    const savedProducts = [];
+    let appliedCoupon = null;
 
-  try {
-    const { cartItems, customerDetails, paymentMethod, paymentDetails, couponCode } = req.body;
-    
-    if (!cartItems || cartItems.length === 0) {
-      throw new Error('Cart is empty');
-    }
-
-    let subtotal = 0;
-    const purchasedItems = [];
-
-    // Verify stock and prepare items
-    for (const item of cartItems) {
-      if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
-        throw new Error('Invalid quantity');
-      }
-      const product = await Product.findById(item.product._id);
-      if (!product) {
-        throw new Error(`Product ${item.product.name} not found`);
-      }
-      if (!product.stockKeys || product.stockKeys.length < item.quantity) {
-        throw new Error(`Not enough stock for ${product.name}`);
+    try {
+      const { cartItems, customerDetails, paymentMethod, paymentDetails, couponCode } = req.body;
+      
+      if (!cartItems || cartItems.length === 0) {
+        throw new Error('Cart is empty');
       }
 
-      let finalPrice = product.price;
-      if (product.discount > 0) {
-        if (product.discountType === 'flat') {
-          finalPrice = Math.max(0, product.price - product.discount);
-        } else {
-          finalPrice = Math.round(product.price - (product.price * (product.discount / 100)));
-          finalPrice = Math.max(0, finalPrice);
+      let subtotal = 0;
+      const purchasedItems = [];
+
+      // Verify stock and prepare items
+      for (const item of cartItems) {
+        if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+          throw new Error('Invalid quantity');
         }
+        const product = await Product.findById(item.product._id);
+        if (!product) {
+          throw new Error(`Product ${item.product.name} not found`);
+        }
+        if (!product.stockKeys || product.stockKeys.length < item.quantity) {
+          throw new Error(`Not enough stock for ${product.name}`);
+        }
+
+        let finalPrice = product.price;
+        if (product.discount > 0) {
+          if (product.discountType === 'flat') {
+            finalPrice = Math.max(0, product.price - product.discount);
+          } else {
+            finalPrice = Math.round(product.price - (product.price * (product.discount / 100)));
+            finalPrice = Math.max(0, finalPrice);
+          }
+        }
+        subtotal += finalPrice * item.quantity;
+        
+        const keys = [];
+        for (let i = 0; i < item.quantity; i++) {
+          keys.push(product.stockKeys.shift());
+        }
+        
+        purchasedItems.push({
+          productId: product._id,
+          productName: product.name,
+          category: product.category,
+          quantity: item.quantity,
+          price: finalPrice,
+          keys: keys
+        });
+        
+        modifiedProducts.push({ product, keys });
       }
-      subtotal += finalPrice * item.quantity;
-      
-      const keys = [];
-      for (let i = 0; i < item.quantity; i++) {
-        keys.push(product.stockKeys.shift());
+
+      // Apply Coupon
+      let discountAmount = 0;
+      if (couponCode) {
+        const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(couponCode)}$`, 'i') }, isActive: true });
+        if (!coupon) {
+          throw new Error('Invalid or inactive coupon code');
+        }
+        
+        if (coupon.usageLimit && (coupon.usageCount || 0) >= coupon.usageLimit) {
+          throw new Error('Coupon usage limit reached');
+        }
+        
+        let applicableSubtotal = 0;
+        
+        if (coupon.applicableType === 'product') {
+          const applicableItems = purchasedItems.filter(item => item.productId.toString() === coupon.applicableTo.toString());
+          if (applicableItems.length === 0) {
+            throw new Error('Coupon is not valid for any items in cart');
+          }
+          applicableSubtotal = applicableItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        } else if (coupon.applicableType === 'category') {
+          const applicableItems = purchasedItems.filter(item => item.category === coupon.applicableTo);
+          if (applicableItems.length === 0) {
+            throw new Error('Coupon is not valid for any items in cart');
+          }
+          applicableSubtotal = applicableItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        } else {
+          applicableSubtotal = subtotal;
+        }
+
+        if (coupon.discountType === 'flat') {
+          discountAmount = Math.min(coupon.discountPercent, applicableSubtotal); 
+        } else {
+          discountAmount = Math.round(applicableSubtotal * (coupon.discountPercent / 100));
+        }
+        // Cap discount to applicable subtotal
+        discountAmount = Math.min(discountAmount, applicableSubtotal);
+        
+        appliedCoupon = coupon;
       }
       
-      purchasedItems.push({
-        productId: product._id,
-        productName: product.name,
-        category: product.category,
-        quantity: item.quantity,
-        price: finalPrice,
-        keys: keys
+      const totalPrice = subtotal - discountAmount;
+
+      // Save products FIRST. If any fail due to VersionError, we can rollback the successful ones.
+      for (const modified of modifiedProducts) {
+        await modified.product.save();
+        savedProducts.push(modified);
+      }
+
+      const newOrder = new Order({
+        _id: 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+        userId: req.user._id,
+        customerName: customerDetails.name || req.user.name || 'Guest',
+        customerPhone: customerDetails.phone,
+        customerDetails: customerDetails || {},
+        paymentMethod: paymentMethod || 'bkash',
+        paymentDetails: paymentDetails || {},
+        transactionId: paymentDetails?.transactionId || 'N/A',
+        paymentPhone: paymentDetails?.phone || '',
+        couponApplied: couponCode ? { code: couponCode, discountAmount } : null,
+        items: purchasedItems,
+        subtotal,
+        totalPrice,
+        status: 'pending'
       });
       
-      modifiedProducts.push({ product, keys });
-    }
+      await newOrder.save();
 
-    // Apply Coupon
-    let discountAmount = 0;
-    if (couponCode) {
-      const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(couponCode)}$`, 'i') }, isActive: true });
-      if (!coupon) {
-        throw new Error('Invalid or inactive coupon code');
-      }
-      
-      if (coupon.usageLimit && (coupon.usageCount || 0) >= coupon.usageLimit) {
-        throw new Error('Coupon usage limit reached');
-      }
-      
-      let applicableSubtotal = 0;
-      
-      if (coupon.applicableType === 'product') {
-        const applicableItems = purchasedItems.filter(item => item.productId.toString() === coupon.applicableTo.toString());
-        if (applicableItems.length === 0) {
-          throw new Error('Coupon is not valid for any items in cart');
-        }
-        applicableSubtotal = applicableItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-      } else if (coupon.applicableType === 'category') {
-        const applicableItems = purchasedItems.filter(item => item.category === coupon.applicableTo);
-        if (applicableItems.length === 0) {
-          throw new Error('Coupon is not valid for any items in cart');
-        }
-        applicableSubtotal = applicableItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-      } else {
-        applicableSubtotal = subtotal;
-      }
-
-      if (coupon.discountType === 'flat') {
-        discountAmount = Math.min(coupon.discountPercent, applicableSubtotal); 
-      } else {
-        discountAmount = Math.round(applicableSubtotal * (coupon.discountPercent / 100));
-      }
-      // Cap discount to applicable subtotal
-      discountAmount = Math.min(discountAmount, applicableSubtotal);
-      
-      appliedCoupon = coupon;
-    }
-    
-    const totalPrice = subtotal - discountAmount;
-
-    const newOrder = new Order({
-      _id: 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
-      userId: req.user._id,
-      customerName: customerDetails.name || req.user.name || 'Guest',
-      customerPhone: customerDetails.phone,
-      customerDetails: customerDetails || {},
-      paymentMethod: paymentMethod || 'bkash',
-      paymentDetails: paymentDetails || {},
-      transactionId: paymentDetails?.transactionId || 'N/A',
-      paymentPhone: paymentDetails?.phone || '',
-      couponApplied: couponCode ? { code: couponCode, discountAmount } : null,
-      items: purchasedItems,
-      subtotal,
-      totalPrice,
-      status: 'pending'
-    });
-    
-    await newOrder.save();
-
-    // Deduct stock and increment coupon usage only after order is saved successfully
-    for (const modified of modifiedProducts) {
-      await modified.product.save();
-    }
-    if (appliedCoupon) {
-      appliedCoupon.usageCount = (appliedCoupon.usageCount || 0) + 1;
-      await appliedCoupon.save();
-    }
-    
-    const orderObj = newOrder.toObject();
-    const safeOrder = {
-      ...orderObj,
-      items: orderObj.items.map(item => ({ ...item, keys: [] }))
-    };
-
-    res.status(200).json({ message: 'Checkout successful', order: safeOrder });
-  } catch (err) {
-    // Manual Rollback
-    for (const modified of modifiedProducts) {
-      try {
-        modified.product.stockKeys = [...modified.keys, ...modified.product.stockKeys];
-        await modified.product.save();
-      } catch (rollbackErr) {
-        console.error('Failed to rollback product stock:', rollbackErr);
-      }
-    }
-    if (appliedCoupon) {
-      try {
-        appliedCoupon.usageCount -= 1;
+      if (appliedCoupon) {
+        appliedCoupon.usageCount = (appliedCoupon.usageCount || 0) + 1;
         await appliedCoupon.save();
-      } catch (rollbackErr) {
-        console.error('Failed to rollback coupon usage:', rollbackErr);
+      }
+      
+      const orderObj = newOrder.toObject();
+      const safeOrder = {
+        ...orderObj,
+        items: orderObj.items.map(item => ({ ...item, keys: [] }))
+      };
+
+      success = true;
+      return res.status(200).json({ message: 'Checkout successful', order: safeOrder });
+    } catch (err) {
+      // Manual Rollback ONLY for products that were actually saved
+      for (const saved of savedProducts) {
+        try {
+          const freshProduct = await Product.findById(saved.product._id);
+          if (freshProduct) {
+             freshProduct.stockKeys = [...saved.keys, ...freshProduct.stockKeys];
+             await freshProduct.save();
+          }
+        } catch (rollbackErr) {
+          console.error('Failed to rollback product stock:', rollbackErr);
+        }
+      }
+
+      if (err.name === 'VersionError' || (err.message && err.message.includes('VersionError'))) {
+        if (attempts >= 3) {
+           return res.status(503).json({ message: 'System is busy processing other orders. Please try again.' });
+        }
+        // Will loop and retry
+      } else {
+        return res.status(400).json({ message: err.message });
       }
     }
-    res.status(400).json({ message: err.message });
   }
 });
 
