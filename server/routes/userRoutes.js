@@ -38,7 +38,7 @@ router.put('/:id', protect, async (req, res) => {
     if (req.body.email) {
       // Check if new email is already taken
       const emailExists = await User.findOne({ email: req.body.email });
-      if (emailExists && emailExists._id !== user._id) {
+      if (emailExists && emailExists._id.toString() !== user._id.toString()) {
         return res.status(400).json({ message: 'Email is already taken by another account' });
       }
       user.email = req.body.email;

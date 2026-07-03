@@ -131,7 +131,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create a new product (License Keys/Accounts)
-router.post('/', protect, admin, express.json(), async (req, res) => {
+router.post('/', protect, admin, async (req, res) => {
   try {
     const keysArray = req.body.keys ? req.body.keys.split('\n').map(k => k.trim()).filter(k => k) : [];
 

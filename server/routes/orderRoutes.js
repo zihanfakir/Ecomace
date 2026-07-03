@@ -94,7 +94,6 @@ router.post('/checkout', protect, async (req, res) => {
         keys: keys
       });
       
-      await product.save();
       modifiedProducts.push({ product, keys });
     }
 
@@ -113,7 +112,7 @@ router.post('/checkout', protect, async (req, res) => {
       let applicableSubtotal = 0;
       
       if (coupon.applicableType === 'product') {
-        const applicableItems = purchasedItems.filter(item => item.productId === coupon.applicableTo);
+        const applicableItems = purchasedItems.filter(item => item.productId.toString() === coupon.applicableTo.toString());
         if (applicableItems.length === 0) {
           throw new Error('Coupon is not valid for any items in cart');
         }
@@ -136,8 +135,6 @@ router.post('/checkout', protect, async (req, res) => {
       // Cap discount to applicable subtotal
       discountAmount = Math.min(discountAmount, applicableSubtotal);
       
-      coupon.usageCount = (coupon.usageCount || 0) + 1;
-      await coupon.save();
       appliedCoupon = coupon;
     }
     
@@ -161,6 +158,15 @@ router.post('/checkout', protect, async (req, res) => {
     });
     
     await newOrder.save();
+
+    // Deduct stock and increment coupon usage only after order is saved successfully
+    for (const modified of modifiedProducts) {
+      await modified.product.save();
+    }
+    if (appliedCoupon) {
+      appliedCoupon.usageCount = (appliedCoupon.usageCount || 0) + 1;
+      await appliedCoupon.save();
+    }
     
     const orderObj = newOrder.toObject();
     const safeOrder = {
@@ -264,9 +270,6 @@ router.put('/:id/status', protect, admin, async (req, res) => {
     
     await order.save();
     
-    if (order.userId && order.userId !== 'guest') {
-    }
-    
     res.status(200).json(order);
   } catch (err) {
     // Rollback
@@ -309,6 +312,7 @@ router.delete('/:id', protect, admin, async (req, res) => {
       throw new Error('Order not found');
     }
     
+    let modifiedCoupon = null;
     if (order.status !== 'cancelled' && order.status !== 'rejected') {
       if (order.items) {
         for (const item of order.items) {
@@ -318,6 +322,14 @@ router.delete('/:id', protect, admin, async (req, res) => {
             await product.save();
             modifiedProducts.push({ product, keys: item.keys });
           }
+        }
+      }
+      if (order.couponApplied?.code) {
+        const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(order.couponApplied.code)}$`, 'i') } });
+        if (coupon && coupon.usageCount > 0) {
+          coupon.usageCount -= 1;
+          await coupon.save();
+          modifiedCoupon = coupon;
         }
       }
     }
@@ -338,6 +350,8 @@ router.delete('/:id', protect, admin, async (req, res) => {
         console.error('Failed to rollback product stock:', rollbackErr);
       }
     }
+    // If the coupon was restored but deletion failed, we don't have a robust way to undo the coupon restore here
+    // as it's a delete operation. Ideally this would be inside a transaction.
     res.status(400).json({ message: err.message });
   }
 });

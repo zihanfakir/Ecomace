@@ -8,7 +8,7 @@ import AdminProducts from './admin/AdminProducts';
 import AdminUsers from './admin/AdminUsers';
 import AdminCoupons from './admin/AdminCoupons';
 import AdminOrders from './admin/AdminOrders';
-import AdminSupport from './admin/AdminSupport';
+
 import AdminSettings from './admin/AdminSettings';
 import AdminTracking from './admin/AdminTracking';
 import ActionMenu from './ActionMenu';
@@ -21,7 +21,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [coupons, setCoupons] = useState([]);
-  const [tickets, setTickets] = useState([]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
@@ -55,15 +55,14 @@ const AdminDashboard = () => {
   const [productToDelete, setProductToDelete] = useState(null);
   const [orderToDelete, setOrderToDelete] = useState(null);
   const [couponToDelete, setCouponToDelete] = useState(null);
-  const [activeTicket, setActiveTicket] = useState(null);
-  const [replyText, setReplyText] = useState('');
+
 
   useEffect(() => {
     fetchProducts();
     fetchUsers();
     fetchOrders();
     fetchCoupons();
-    fetchTickets();
+
     fetchSettings();
 
     // Polling for new orders every 15 seconds
@@ -163,16 +162,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchTickets = async () => {
-    try {
-      const activeToken = token || localStorage.getItem('token');
-      const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
-      const response = await axios.get('https://ecomace.onrender.com/api/messages', config);
-      setTickets(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error('Error fetching tickets:', error);
-    }
-  };
+
 
   const handleUpdateOrderStatus = async (orderId, status) => {
     try {
@@ -390,35 +380,7 @@ const AdminDashboard = () => {
     setBanners(banners.filter(b => b.id !== id));
   };
 
-  const handleReplyTicket = async (e) => {
-    e.preventDefault();
-    if (!replyText.trim() || !activeTicket) return;
-    try {
-      const res = await axios.post(`https://ecomace.onrender.com/api/messages/${activeTicket._id}/reply`, {
-        sender: 'admin',
-        text: replyText
-      });
-      // Update local state
-      const updatedTickets = tickets.map(t => t._id === activeTicket._id ? res.data : t);
-      setTickets(updatedTickets);
-      setActiveTicket(res.data);
-      setReplyText('');
-    } catch (error) {
-      addToast('Failed to send reply', 'error');
-    }
-  };
 
-  const handleCloseTicket = async (ticketId) => {
-    try {
-      const res = await axios.put(`https://ecomace.onrender.com/api/messages/${ticketId}/status`, { status: 'closed' });
-      const updatedTickets = tickets.map(t => t._id === ticketId ? res.data : t);
-      setTickets(updatedTickets);
-      setActiveTicket(res.data);
-      addToast('Ticket marked as closed', 'success');
-    } catch (error) {
-      addToast('Failed to close ticket', 'error');
-    }
-  };
 
   const handleUpdateRole = async (userId, newRole) => {
     try {

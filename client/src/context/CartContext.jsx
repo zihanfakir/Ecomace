@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useToast } from './ToastContext';
+import axios from 'axios';
 
 export const CartContext = createContext();
 
@@ -20,26 +21,34 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (product) => {
-    setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.product._id === product._id);
+  const addToCart = async (product) => {
+    try {
+      const res = await axios.get(`https://ecomace.onrender.com/api/products/${product._id}`);
+      const liveProduct = res.data;
+      const maxStock = liveProduct.stockKeys?.length || 0;
+
+      const existingItem = cart.find((item) => item.product._id === product._id);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+
+      if (currentQty >= maxStock) {
+        addToast('Not enough stock available!', 'error');
+        return;
+      }
+
       if (existingItem) {
-        // Prevent adding more than stock available
-        const maxStock = product.stockKeys?.length || 0;
-        if (existingItem.quantity >= maxStock) {
-          addToast('Not enough stock available!', 'error');
-          return prevCart;
-        }
-        addToast('Added to cart!', 'success');
-        return prevCart.map((item) =>
+        setCart(cart.map((item) =>
           item.product._id === product._id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + 1, product: liveProduct }
             : item
-        );
+        ));
+      } else {
+        setCart([...cart, { product: liveProduct, quantity: 1 }]);
       }
       addToast('Added to cart!', 'success');
-      return [...prevCart, { product, quantity: 1 }];
-    });
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to add to cart', 'error');
+    }
   };
 
   const removeFromCart = (productId) => {
@@ -47,27 +56,36 @@ export const CartProvider = ({ children }) => {
     addToast('Item removed from cart', 'info');
   };
 
-  const updateQuantity = (productId, amount) => {
-    setCart((prevCart) => {
-      const itemToUpdate = prevCart.find(item => item.product._id === productId);
-      if (!itemToUpdate) return prevCart;
-      
-      const newQty = itemToUpdate.quantity + amount;
-      
-      if (newQty <= 0) {
-        // addToast called here, but avoid infinite loops; it's safe since it's just a context call
-        return prevCart.filter(item => item.product._id !== productId);
+  const updateQuantity = async (productId, amount) => {
+    const itemToUpdate = cart.find(item => item.product._id === productId);
+    if (!itemToUpdate) return;
+    
+    const newQty = itemToUpdate.quantity + amount;
+    
+    if (newQty <= 0) {
+      setCart(cart.filter(item => item.product._id !== productId));
+      return;
+    }
+    
+    try {
+      if (amount > 0) {
+        const res = await axios.get(`https://ecomace.onrender.com/api/products/${productId}`);
+        const liveProduct = res.data;
+        const maxStock = liveProduct.stockKeys?.length || 0;
+        
+        if (newQty > maxStock) {
+          addToast('Not enough stock available!', 'error');
+          return;
+        }
       }
       
-      const maxStock = itemToUpdate.product.stockKeys?.length || 0;
-      if (newQty > maxStock) {
-        return prevCart;
-      }
-      
-      return prevCart.map((item) => 
+      setCart(cart.map((item) => 
         item.product._id === productId ? { ...item, quantity: newQty } : item
-      );
-    });
+      ));
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to update quantity', 'error');
+    }
   };
 
   const clearCart = () => {

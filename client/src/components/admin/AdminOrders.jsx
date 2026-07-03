@@ -81,8 +81,15 @@ const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user }
               
               <div style={{ fontSize: '0.85rem' }}>
                 {order.items && order.items.map((item, idx) => (
-                  <div key={idx} style={{ marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    <span style={{ color: 'var(--primary-accent)', fontWeight: 'bold' }}>{item.quantity}x</span> {item.productName || item.name || 'Unknown Item'}
+                  <div key={idx} style={{ marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ whiteSpace: 'nowrap' }}>
+                      <span style={{ color: 'var(--primary-accent)', fontWeight: 'bold' }}>{item.quantity}x</span> {item.productName || item.name || 'Unknown Item'}
+                    </div>
+                    {item.keys && item.keys.length > 0 && (
+                      <div style={{ marginLeft: '10px', marginTop: '2px', color: 'var(--text-secondary)', fontSize: '0.8rem', fontFamily: 'monospace' }}>
+                        Keys: {item.keys.join(', ')}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

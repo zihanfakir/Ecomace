@@ -47,6 +47,24 @@ const Checkout = () => {
     }
   }, [user, navigate, addToast]);
 
+  useEffect(() => {
+    setCouponDiscount(0);
+    setCouponCode('');
+  }, [cart]);
+
+  const getUnitPrice = (product) => {
+    let price = product.price;
+    if (product.discount > 0) {
+      if (product.discountType === 'flat') {
+        price = Math.max(0, product.price - product.discount);
+      } else {
+        price = Math.round(product.price - (product.price * (product.discount / 100)));
+        price = Math.max(0, price);
+      }
+    }
+    return price;
+  };
+
   if (cart.length === 0 && !isSuccess) {
     return (
       <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', marginTop: '40px' }}>
@@ -70,16 +88,7 @@ const Checkout = () => {
           throw new Error('This coupon is not valid for the items in your cart');
         }
         applicableSubtotal = applicableItems.reduce((acc, item) => {
-          let price = item.product.price;
-          if (item.product.discount > 0) {
-            if (item.product.discountType === 'flat') {
-              price = Math.max(0, item.product.price - item.product.discount);
-            } else {
-              price = Math.round(item.product.price - (item.product.price * (item.product.discount / 100)));
-              price = Math.max(0, price);
-            }
-          }
-          return acc + (price * item.quantity);
+          return acc + (getUnitPrice(item.product) * item.quantity);
         }, 0);
       } else if (coupon.applicableType === 'category') {
         const applicableItems = cart.filter(item => item.product.category === coupon.applicableTo);
@@ -87,16 +96,7 @@ const Checkout = () => {
           throw new Error('This coupon is not valid for the items in your cart');
         }
         applicableSubtotal = applicableItems.reduce((acc, item) => {
-          let price = item.product.price;
-          if (item.product.discount > 0) {
-            if (item.product.discountType === 'flat') {
-              price = Math.max(0, item.product.price - item.product.discount);
-            } else {
-              price = Math.round(item.product.price - (item.product.price * (item.product.discount / 100)));
-              price = Math.max(0, price);
-            }
-          }
-          return acc + (price * item.quantity);
+          return acc + (getUnitPrice(item.product) * item.quantity);
         }, 0);
       } else {
         applicableSubtotal = getCartTotal();
@@ -209,7 +209,7 @@ const Checkout = () => {
               {cart.map((item, idx) => (
                 <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px solid var(--border-color)' }}>
                   <div>{item.product.name} (x{item.quantity})</div>
-                  <div>৳ {Math.round((item.product.discount > 0 ? (item.product.discountType === 'flat' ? Math.max(0, item.product.price - item.product.discount) : item.product.price - (item.product.price * (item.product.discount / 100))) : item.product.price) * item.quantity)}</div>
+                  <div>৳ {getUnitPrice(item.product) * item.quantity}</div>
                 </div>
               ))}
             </div>
