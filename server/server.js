@@ -8,8 +8,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 if (!process.env.JWT_SECRET) {
-  console.error("FATAL ERROR: JWT_SECRET is not defined. Server cannot start.");
-  process.exit(1);
+  console.warn("WARNING: JWT_SECRET is not defined in environment variables. Using a fallback secret for development. THIS IS INSECURE FOR PRODUCTION!");
+  process.env.JWT_SECRET = "fallback_secret_please_change_me_in_production";
 }
 
 // Connect to MongoDB
