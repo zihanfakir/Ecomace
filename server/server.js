@@ -19,8 +19,9 @@ connectDB().then(async () => {
   try {
     const mongoose = require('mongoose');
     const db = mongoose.connection.db;
-    const storeCollection = db.collection('stores');
-    const mainDoc = await storeCollection.findOne({ docId: 'main' });
+    if (db) {
+      const storeCollection = db.collection('stores');
+      const mainDoc = await storeCollection.findOne({ docId: 'main' });
     
     if (mainDoc) {
       console.log("Found legacy monolithic database. Starting auto-migration...");
@@ -45,6 +46,7 @@ connectDB().then(async () => {
       // Mark as migrated so it doesn't run again
       await storeCollection.updateOne({ docId: 'main' }, { $set: { docId: 'main_migrated' } });
       console.log("Auto-migration completed successfully!");
+    }
     }
   } catch (err) {
     console.error("Auto-migration failed:", err);
