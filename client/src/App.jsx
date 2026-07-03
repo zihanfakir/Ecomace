@@ -15,29 +15,6 @@ import ChatWidget from './components/ChatWidget';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { CartProvider, CartContext } from './context/CartContext';
 import { ToastProvider } from './context/ToastContext';
-                  borderRadius: '8px', 
-                  backgroundColor: n.read ? 'transparent' : 'rgba(67, 24, 255, 0.1)',
-                  border: n.read ? '1px solid var(--border-color)' : '1px solid var(--primary-accent)',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s',
-                  textDecoration: 'none',
-                  display: 'block',
-                  color: 'inherit'
-                }}
-              >
-                <div style={{ fontSize: '0.9rem', marginBottom: '5px', fontWeight: n.read ? '400' : '500' }}>{n.message}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>{new Date(n.createdAt).toLocaleDateString()}</span>
-                  {!n.read && <span style={{ color: 'var(--primary-accent)', fontWeight: 'bold' }}>New</span>}
-                </div>
-              </Link>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
 
 const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
   const { user, logout } = useContext(AuthContext);
