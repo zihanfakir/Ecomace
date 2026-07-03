@@ -322,8 +322,6 @@ router.put('/:id/status', protect, admin, async (req, res) => {
 
 // Delete Order
 router.delete('/:id', protect, admin, async (req, res) => {
-  const modifiedProducts = [];
-
   try {
     const order = await Order.findById(req.params.id);
     if (!order) {
@@ -332,16 +330,6 @@ router.delete('/:id', protect, admin, async (req, res) => {
     
     let modifiedCoupon = null;
     if (order.status !== 'cancelled' && order.status !== 'rejected') {
-      if (order.items) {
-        for (const item of order.items) {
-          const product = await Product.findById(item.productId);
-          if (product && item.keys && item.keys.length > 0) {
-            product.stockKeys = [...product.stockKeys, ...item.keys];
-            await product.save();
-            modifiedProducts.push({ product, keys: item.keys });
-          }
-        }
-      }
       if (order.couponApplied?.code) {
         const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(order.couponApplied.code)}$`, 'i') } });
         if (coupon && coupon.usageCount > 0) {
@@ -356,18 +344,6 @@ router.delete('/:id', protect, admin, async (req, res) => {
     
     res.status(200).json({ message: 'Order deleted successfully' });
   } catch (err) {
-    // Rollback
-    for (const modified of modifiedProducts) {
-      try {
-        modified.keys.forEach(k => {
-          const idx = modified.product.stockKeys.indexOf(k);
-          if (idx !== -1) modified.product.stockKeys.splice(idx, 1);
-        });
-        await modified.product.save();
-      } catch (rollbackErr) {
-        console.error('Failed to rollback product stock:', rollbackErr);
-      }
-    }
     // If the coupon was restored but deletion failed, we don't have a robust way to undo the coupon restore here
     // as it's a delete operation. Ideally this would be inside a transaction.
     res.status(400).json({ message: err.message });
