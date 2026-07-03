@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Settings, Users, Tag, Package, X, History, Save, MessageSquare } from 'lucide-react';
+import { Plus, Settings, Users, Tag, Package, X, History, Save, MessageSquare, TrendingUp } from 'lucide-react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { useContext } from 'react';
@@ -10,6 +10,7 @@ import AdminCoupons from './admin/AdminCoupons';
 import AdminOrders from './admin/AdminOrders';
 import AdminSupport from './admin/AdminSupport';
 import AdminSettings from './admin/AdminSettings';
+import AdminTracking from './admin/AdminTracking';
 import ActionMenu from './ActionMenu';
 import { uploadToImgBB } from '../utils/imageUtils';
 
@@ -628,6 +629,9 @@ const AdminDashboard = () => {
         
         <h3 style={{ marginBottom: '10px', paddingLeft: '10px', borderLeft: '3px solid var(--primary-accent)' }}>Admin Menu</h3>
         
+        <button onClick={() => { setActiveTab('tracking'); setMessage(''); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'tracking' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'tracking' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
+          <TrendingUp size={18} /> Tracking & Analytics
+        </button>
         <button onClick={() => { setActiveTab('products'); setMessage(''); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 15px', border: 'none', background: activeTab === 'products' ? 'var(--primary-accent)' : 'transparent', color: activeTab === 'products' ? '#fff' : 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontWeight: '500' }}>
           <Package size={18} /> Products
         </button>
@@ -650,6 +654,13 @@ const AdminDashboard = () => {
 
       {/* Main Content Area */}
       <div className="glass-panel dashboard-content" style={{ padding: '30px' }}>
+        {activeTab === 'tracking' && (
+          <AdminTracking 
+            products={products}
+            orders={orders}
+            users={users}
+          />
+        )}
         {activeTab === 'products' && (
           <AdminProducts 
             products={products} 
