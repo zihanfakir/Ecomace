@@ -25,7 +25,7 @@ const AdminDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
-  const [newProduct, setNewProduct] = useState({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', category: 'Uncategorized', keys: '' });
+  const [newProduct, setNewProduct] = useState({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', category: 'Uncategorized', keys: '', __v: undefined });
   const [newCoupon, setNewCoupon] = useState({ code: '', discountPercent: '', discountType: 'percent', usageLimit: '', applicableType: 'all', applicableTo: '' });
   const [isLoading, setIsLoading] = useState(false);
   const { addToast } = useToast();
@@ -260,8 +260,9 @@ const AdminDashboard = () => {
       }
       setIsModalOpen(false);
       setEditingProductId(null);
-      setNewProduct({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', category: 'Uncategorized', keys: '' });
+      setNewProduct({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', category: 'Uncategorized', keys: '', __v: undefined });
       fetchProducts();
+      setIsModalOpen(false);
       addToast(editingProductId ? 'Product updated successfully' : 'Product added successfully', 'success');
     } catch (error) {
       const errorMsg = error.response?.data?.message || (editingProductId ? 'Failed to edit product' : 'Failed to add product');
@@ -294,7 +295,8 @@ const AdminDashboard = () => {
       discount: product.discount || '',
       discountType: product.discountType || 'percent',
       category: product.category || 'Uncategorized',
-      keys: product.stockKeys ? product.stockKeys.join('\n') : ''
+      keys: product.stockKeys ? product.stockKeys.join('\n') : '',
+      __v: product.__v
     });
     setEditingProductId(product._id);
     setIsModalOpen(true);
@@ -302,7 +304,7 @@ const AdminDashboard = () => {
 
   const handleOpenAddModal = () => {
     setEditingProductId(null);
-    setNewProduct({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', category: 'Uncategorized', keys: '' });
+    setNewProduct({ name: '', description: '', bigDescription: '', price: '', icon: '🔑', photoUrl: '', discount: '', discountType: 'percent', category: 'Uncategorized', keys: '', __v: undefined });
     setIsModalOpen(true);
   };
 

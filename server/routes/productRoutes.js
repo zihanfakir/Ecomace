@@ -40,6 +40,10 @@ router.put('/:id', protect, admin, async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
+    if (req.body.__v !== undefined && product.__v !== undefined && product.__v !== req.body.__v) {
+       return res.status(409).json({ message: 'Product was modified by someone else (e.g. a customer checkout). Please close this window and edit the product again to get the latest stock.' });
+    }
+
     // Parse keys from multiline text if it's a string, or keep it if it's already an array
     let keysArray = product.stockKeys;
     if (typeof req.body.keys === 'string') {
