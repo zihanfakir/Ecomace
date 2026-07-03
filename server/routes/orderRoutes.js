@@ -341,24 +341,36 @@ router.delete('/:id', protect, admin, async (req, res) => {
       throw new Error('Order not found');
     }
     
-    let modifiedCoupon = null;
+    // We must use version-aware deletion to prevent race condition with Cancel Order
+    const deletedOrder = await Order.findOneAndDelete({ _id: order._id, __v: order.__v });
+    
+    if (!deletedOrder) {
+      return res.status(409).json({ message: 'Order was modified by another administrator. Please refresh the page.' });
+    }
+
+    // Only restore stock/coupons if the order was taking up stock
     if (order.status !== 'cancelled' && order.status !== 'rejected') {
       if (order.couponApplied?.code) {
         const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(order.couponApplied.code)}$`, 'i') } });
         if (coupon && coupon.usageCount > 0) {
           coupon.usageCount -= 1;
           await coupon.save();
-          modifiedCoupon = coupon;
+        }
+      }
+      
+      if (order.items) {
+        for (const item of order.items) {
+          const product = await Product.findById(item.productId);
+          if (product && item.keys && item.keys.length > 0) {
+            product.stockKeys = [...product.stockKeys, ...item.keys];
+            await product.save();
+          }
         }
       }
     }
     
-    await Order.findByIdAndDelete(req.params.id);
-    
     res.status(200).json({ message: 'Order deleted successfully' });
   } catch (err) {
-    // If the coupon was restored but deletion failed, we don't have a robust way to undo the coupon restore here
-    // as it's a delete operation. Ideally this would be inside a transaction.
     res.status(400).json({ message: err.message });
   }
 });

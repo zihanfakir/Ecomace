@@ -26,6 +26,6 @@ const OrderSchema = new mongoose.Schema({
   status: { type: String, default: 'pending' }, // 'pending', 'processing', 'completed', 'cancelled'
   statusChangeCount: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
-});
+}, { strict: false, optimisticConcurrency: true });
 
 module.exports = mongoose.model('Order', OrderSchema);
