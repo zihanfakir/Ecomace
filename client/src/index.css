@@ -60,14 +60,25 @@ button, a, .category-btn, .product-card, img, svg, label, select, input[type="su
 
 button:focus, a:focus, .category-btn:focus {
   outline: none !important;
+  background-color: inherit;
 }
 
-body {
+@media (hover: hover) {
+  .category-btn:not(.active):hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.08) !important;
+    background: var(--bg-color) !important;
+  }
+}
+
+html, body {
   background-color: var(--bg-color);
   color: var(--text-primary);
   transition: background-color 0.4s ease, color 0.4s ease;
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
 }
 
 /* Glassmorphism Utilities */

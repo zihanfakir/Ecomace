@@ -149,20 +149,6 @@ const Home = () => {
                 backdropFilter: 'blur(10px)',
                 transform: 'scale(1)'
               }}
-              onMouseEnter={(e) => {
-                if(activeCategory !== category) {
-                  e.currentTarget.style.transform = 'translateY(-3px)';
-                  e.currentTarget.style.boxShadow = '0 8px 15px rgba(0,0,0,0.08)';
-                  e.currentTarget.style.background = 'var(--bg-color)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if(activeCategory !== category) {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.02)';
-                  e.currentTarget.style.background = 'var(--surface-color)';
-                }
-              }}
             >
               {getCategoryIcon(category) && (
                 <span style={{ fontSize: '1.2rem' }}>{getCategoryIcon(category)}</span>
