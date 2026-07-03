@@ -47,6 +47,13 @@
   padding: 0;
   box-sizing: border-box;
   font-family: 'Outfit', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a, .category-btn {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 body {
