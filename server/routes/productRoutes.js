@@ -80,7 +80,7 @@ router.get('/', async (req, res) => {
       } catch (e) {}
     }
 
-    const products = await Product.find({});
+    const products = await Product.find({}).sort({ createdAt: -1 });
 
     const safeProducts = products.map(p => {
       const productObj = p.toObject ? p.toObject() : p;

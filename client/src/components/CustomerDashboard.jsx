@@ -145,7 +145,7 @@ const CustomerDashboard = () => {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
-          {orders.slice().reverse().map(order => (
+          {orders.map(order => (
             <div key={order._id} className="glass-panel" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
