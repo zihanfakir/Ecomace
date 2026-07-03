@@ -343,21 +343,23 @@ const AdminDashboard = () => {
   };
 
   const handleManageCategories = () => {
-    // Extract unique categories from current products
-    const dynamicCats = ['All', ...new Set(products.map(p => p.category || 'Uncategorized'))];
-    // Merge with saved order to ensure all current categories are present
-    const savedOrder = siteTextSettings.categoryOrder || [];
-    // Sort dynamicCats based on savedOrder
-    const sortedCats = dynamicCats.sort((a, b) => {
-      const idxA = savedOrder.indexOf(a);
-      const idxB = savedOrder.indexOf(b);
-      if (idxA === -1 && idxB === -1) return 0;
-      if (idxA === -1) return 1;
-      if (idxB === -1) return -1;
-      return idxA - idxB;
-    });
-    setTempCategoryOrder(sortedCats);
-    setIsCategoryOrderModalOpen(true);
+    try {
+      const dynamicCats = ['All', ...new Set(products.map(p => p?.category || 'Uncategorized'))];
+      const savedOrder = Array.isArray(siteTextSettings?.categoryOrder) ? siteTextSettings.categoryOrder : [];
+      const sortedCats = dynamicCats.sort((a, b) => {
+        const idxA = savedOrder.indexOf(a);
+        const idxB = savedOrder.indexOf(b);
+        if (idxA === -1 && idxB === -1) return 0;
+        if (idxA === -1) return 1;
+        if (idxB === -1) return -1;
+        return idxA - idxB;
+      });
+      setTempCategoryOrder(sortedCats);
+      setIsCategoryOrderModalOpen(true);
+    } catch (e) {
+      console.error(e);
+      addToast('Error opening categories', 'error');
+    }
   };
 
   const handleReorderCategory = (catName, direction) => {
