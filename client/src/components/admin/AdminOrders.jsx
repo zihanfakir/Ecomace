@@ -17,7 +17,7 @@ const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user, 
     try {
       setIsSavingKeys(true);
       const token = localStorage.getItem('token');
-      await axios.put(`https://ecomace.onrender.com/api/orders/${editingOrderKeys}/keys`, { items: editedItems }, {
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders/${editingOrderKeys}/keys`, { items: editedItems }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       addToast('Order keys updated successfully', 'success');

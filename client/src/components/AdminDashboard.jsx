@@ -77,7 +77,7 @@ const AdminDashboard = () => {
 
   const fetchOrdersSilently = async () => {
     try {
-      const response = await axios.get('https://ecomace.onrender.com/api/orders');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders`);
       setOrders(prevOrders => {
         const newData = Array.isArray(response.data) ? response.data : [];
         if (prevOrders.length > 0 && newData.length > prevOrders.length) {
@@ -98,7 +98,7 @@ const AdminDashboard = () => {
     try {
       const activeToken = token || localStorage.getItem('token');
       const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
-      const response = await axios.get('https://ecomace.onrender.com/api/settings', config);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/settings`, config);
       if (response.data?.paymentMethods) {
         setPaymentMethods(response.data.paymentMethods);
       }
@@ -124,7 +124,7 @@ const AdminDashboard = () => {
     try {
       const activeToken = token || localStorage.getItem('token');
       const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
-      const response = await axios.get('https://ecomace.onrender.com/api/products', config);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products`, config);
       setProducts(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Failed to fetch products:', error);
@@ -136,7 +136,7 @@ const AdminDashboard = () => {
     try {
       const activeToken = token || localStorage.getItem('token');
       const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
-      const response = await axios.get('https://ecomace.onrender.com/api/users', config);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/users`, config);
       setUsers(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -147,7 +147,7 @@ const AdminDashboard = () => {
     try {
       const activeToken = token || localStorage.getItem('token');
       const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
-      const response = await axios.get('https://ecomace.onrender.com/api/orders', config);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders`, config);
       setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -158,7 +158,7 @@ const AdminDashboard = () => {
     try {
       const activeToken = token || localStorage.getItem('token');
       const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
-      const response = await axios.get('https://ecomace.onrender.com/api/coupons', config);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/coupons`, config);
       setCoupons(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching coupons:', error);
@@ -169,7 +169,7 @@ const AdminDashboard = () => {
 
   const handleUpdateOrderStatus = async (orderId, status) => {
     try {
-      await axios.put(`https://ecomace.onrender.com/api/orders/${orderId}/status`, { status });
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders/${orderId}/status`, { status });
       fetchOrders();
       fetchProducts();
     } catch (error) {
@@ -180,7 +180,7 @@ const AdminDashboard = () => {
   const handleDeleteOrder = async () => {
     if (!orderToDelete) return;
     try {
-      await axios.delete(`https://ecomace.onrender.com/api/orders/${orderToDelete}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders/${orderToDelete}`);
       setOrderToDelete(null);
       fetchOrders();
       fetchProducts();
@@ -198,7 +198,7 @@ const AdminDashboard = () => {
     }
     setIsLoading(true);
     try {
-      await axios.post('https://ecomace.onrender.com/api/coupons', newCoupon);
+      await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/coupons`, newCoupon);
       setIsCouponModalOpen(false);
       setNewCoupon({ code: '', discountPercent: '', discountType: 'percent', usageLimit: '', applicableType: 'all', applicableTo: '' });
       fetchCoupons();
@@ -212,7 +212,7 @@ const AdminDashboard = () => {
 
   const handleToggleCoupon = async (coupon) => {
     try {
-      await axios.put(`https://ecomace.onrender.com/api/coupons/${coupon._id}`, { isActive: !coupon.isActive });
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/coupons/${coupon._id}`, { isActive: !coupon.isActive });
       fetchCoupons();
       addToast(`Coupon ${!coupon.isActive ? 'enabled' : 'disabled'} successfully`, 'success');
     } catch (error) {
@@ -223,7 +223,7 @@ const AdminDashboard = () => {
   const handleDeleteCoupon = async () => {
     if (!couponToDelete) return;
     try {
-      await axios.delete(`https://ecomace.onrender.com/api/coupons/${couponToDelete}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/coupons/${couponToDelete}`);
       setCouponToDelete(null);
       fetchCoupons();
       addToast('Coupon deleted successfully', 'success');
@@ -242,7 +242,7 @@ const AdminDashboard = () => {
     try {
       if (editingProductId) {
         // Edit existing product
-        await axios.put(`https://ecomace.onrender.com/api/products/${editingProductId}`, newProduct, {
+        await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${editingProductId}`, newProduct, {
           headers: { 
             'Content-Type': 'application/json',
             Authorization: token ? `Bearer ${token}` : undefined
@@ -250,7 +250,7 @@ const AdminDashboard = () => {
         });
       } else {
         // Add new product
-        await axios.post('https://ecomace.onrender.com/api/products', newProduct, {
+        await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products`, newProduct, {
           headers: { 
             'Content-Type': 'application/json',
             Authorization: token ? `Bearer ${token}` : undefined
@@ -274,7 +274,7 @@ const AdminDashboard = () => {
   const handleDeleteProduct = async () => {
     if (!productToDelete) return;
     try {
-      await axios.delete(`https://ecomace.onrender.com/api/products/${productToDelete}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${productToDelete}`);
       setProductToDelete(null);
       fetchProducts();
       addToast('Product deleted successfully', 'success');
@@ -330,7 +330,7 @@ const AdminDashboard = () => {
     
     try {
       const activeToken = token || localStorage.getItem('token');
-      await axios.put('https://ecomace.onrender.com/api/products/reorder', { items }, {
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/reorder`, { items }, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       addToast('Product order updated', 'success');
@@ -351,7 +351,7 @@ const AdminDashboard = () => {
     if (!categoryModalProduct) return;
     try {
       // H-4: Only send the category field — avoid stale client-state overwriting server stock
-      await axios.put(`https://ecomace.onrender.com/api/products/${categoryModalProduct._id}`, { 
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${categoryModalProduct._id}`, { 
         category: categoryModalInput || 'Uncategorized'
       }, {
         headers: { 
@@ -377,7 +377,7 @@ const AdminDashboard = () => {
       if (!payload.password || payload.password.trim() === '') {
         delete payload.password;
       }
-      const response = await axios.put(`https://ecomace.onrender.com/api/users/${user._id}`, payload);
+      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/users/${user._id}`, payload);
       updateUser(response.data);
       setMessage('Admin profile updated successfully!');
       setProfileData({ ...profileData, password: '' }); // clear password field
@@ -392,7 +392,7 @@ const AdminDashboard = () => {
     e?.preventDefault();
     setPaymentSettingsLoading(true);
     try {
-      await axios.put('https://ecomace.onrender.com/api/settings', { 
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/settings`, { 
         paymentMethods, banners, 
         footerText: siteTextSettings.footerText, 
         telegramLink: siteTextSettings.telegramLink,
@@ -424,7 +424,7 @@ const AdminDashboard = () => {
 
   const handleUpdateRole = async (userId, newRole) => {
     try {
-      await axios.put(`https://ecomace.onrender.com/api/users/${userId}`, { role: newRole, requesterId: user._id });
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/users/${userId}`, { role: newRole, requesterId: user._id });
       addToast('User role updated successfully', 'success');
       fetchUsers(); // Refresh the list
     } catch (error) {

@@ -23,7 +23,7 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (product) => {
     try {
-      const res = await axios.get(`https://ecomace.onrender.com/api/products/${product._id}`);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${product._id}`);
       const liveProduct = res.data;
       const maxStock = liveProduct.stockKeys?.length || 0;
 
@@ -69,7 +69,7 @@ export const CartProvider = ({ children }) => {
     
     try {
       if (amount > 0) {
-        const res = await axios.get(`https://ecomace.onrender.com/api/products/${productId}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${productId}`);
         const liveProduct = res.data;
         const maxStock = liveProduct.stockKeys?.length || 0;
         

@@ -23,7 +23,7 @@ const CustomerDashboard = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get(`https://ecomace.onrender.com/api/orders/user/${user._id}`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders/user/${user._id}`);
         setOrders(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -61,7 +61,7 @@ const CustomerDashboard = () => {
     setProfileLoading(true);
     setMessage('');
     try {
-      const response = await axios.put(`https://ecomace.onrender.com/api/users/${user._id}`, profileData);
+      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/users/${user._id}`, profileData);
       updateUser(response.data);
       setMessage('Profile updated successfully!');
       setIsEditingProfile(false);

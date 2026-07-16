@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const rateLimit = require('express-rate-limit');
 
 dotenv.config();
 
@@ -8,6 +9,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 if (!process.env.JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error("FATAL ERROR: JWT_SECRET is not defined in production. Exiting.");
+    process.exit(1);
+  }
   console.warn("WARNING: JWT_SECRET is not defined in environment variables. Using a fallback secret for development. THIS IS INSECURE FOR PRODUCTION!");
   process.env.JWT_SECRET = "fallback_secret_please_change_me_in_production";
 }
@@ -56,9 +61,20 @@ connectDB().then(async () => {
 }).catch(console.error);
 
 // Middleware
-app.use(cors({ origin: ['http://localhost:5173', 'https://ecomace.onrender.com', 'https://ecomace.vercel.app'] }));
+const allowedOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : ['http://localhost:5173', 'https://ecomace.onrender.com', 'https://ecomace.vercel.app'];
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ limit: '5mb', extended: true }));
+
+// Global Rate Limiting
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // Limit each IP to 500 requests per `window` (here, per 15 minutes)
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many requests from this IP, please try again after 15 minutes" }
+});
+app.use('/api', globalLimiter);
 
 // Basic Route
 app.get('/', (req, res) => {

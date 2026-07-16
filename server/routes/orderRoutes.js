@@ -259,9 +259,12 @@ router.put('/:id/status', protect, admin, async (req, res) => {
           for (const item of order.items) {
             const product = await Product.findById(item.productId);
             if (product && item.keys && item.keys.length > 0) {
-              product.stockKeys = [...product.stockKeys, ...item.keys];
-              await product.save();
-              modifiedProducts.push({ product, action: 'restore', keys: item.keys });
+              const uniqueKeysToRestore = item.keys.filter(k => !product.stockKeys.includes(k));
+              if (uniqueKeysToRestore.length > 0) {
+                product.stockKeys = [...product.stockKeys, ...uniqueKeysToRestore];
+                await product.save();
+                modifiedProducts.push({ product, action: 'restore', keys: uniqueKeysToRestore });
+              }
             }
           }
         }
@@ -363,8 +366,11 @@ router.delete('/:id', protect, admin, async (req, res) => {
         for (const item of order.items) {
           const product = await Product.findById(item.productId);
           if (product && item.keys && item.keys.length > 0) {
-            product.stockKeys = [...product.stockKeys, ...item.keys];
-            await product.save();
+            const uniqueKeysToRestore = item.keys.filter(k => !product.stockKeys.includes(k));
+            if (uniqueKeysToRestore.length > 0) {
+              product.stockKeys = [...product.stockKeys, ...uniqueKeysToRestore];
+              await product.save();
+            }
           }
         }
       }
