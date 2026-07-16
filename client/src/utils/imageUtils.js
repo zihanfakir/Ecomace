@@ -37,8 +37,8 @@ export const compressImage = (file, maxWidth = 800, quality = 0.7) => {
 };
 
 /**
- * Compresses an image and uploads it directly to ImgBB.
- * Uploading directly from the client avoids backend sleep timeouts and CORS issues.
+ * Compresses an image and uploads it via the backend server proxy to ImgBB.
+ * This avoids client-side IP blocks by ImgBB.
  */
 export const uploadToImgBB = async (file, maxWidth = 800, quality = 0.7) => {
   // Compress first to save bandwidth
@@ -47,30 +47,20 @@ export const uploadToImgBB = async (file, maxWidth = 800, quality = 0.7) => {
   // Remove the data URL prefix — ImgBB only wants the raw base64
   const base64Data = base64String.split(',')[1];
 
-  // Hardcode the API key provided by the user to ensure it works on any deployment
-  const apiKey = import.meta.env.VITE_IMGBB_API_KEY || 'd56dbc5ab20a283240dd980bfb387a1a';
+  const apiUrl = import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com';
+  
+  try {
+    const response = await axios.post(`${apiUrl}/api/upload`, {
+      image: base64Data
+    });
 
-  // Use FormData to send the base64 image data
-  const formData = new FormData();
-  formData.append('image', base64Data);
-
-  // Upload directly to ImgBB using fetch to bypass axios interceptors
-  // which might add an 'Authorization' header and break CORS
-  const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-    method: 'POST',
-    body: formData
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`ImgBB upload failed: ${response.status} ${errorText}`);
-  }
-
-  const data = await response.json();
-
-  if (data && data.data && data.data.url) {
-    return data.data.url;
-  } else {
-    throw new Error('ImgBB upload failed: Invalid response format');
+    if (response.data && response.data.url) {
+      return response.data.url;
+    } else {
+      throw new Error('Upload failed: Invalid response from backend');
+    }
+  } catch (error) {
+    const errorMsg = error.response?.data?.message || error.message || 'Failed to upload via proxy';
+    throw new Error(`Upload failed: ${errorMsg}`);
   }
 };
