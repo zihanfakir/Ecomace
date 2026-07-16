@@ -17,48 +17,6 @@ if (!process.env.JWT_SECRET) {
   process.env.JWT_SECRET = "fallback_secret_please_change_me_in_production";
 }
 
-// Connect to MongoDB
-const { connectDB } = require('./data/db');
-connectDB().then(async () => {
-  // Auto-migration Logic (Run once on startup if needed)
-  try {
-    const mongoose = require('mongoose');
-    const db = mongoose.connection.db;
-    if (db) {
-      const storeCollection = db.collection('stores');
-      const mainDoc = await storeCollection.findOne({ docId: 'main' });
-    
-    if (mainDoc) {
-      console.log("Found legacy monolithic database. Starting auto-migration...");
-      const state = mainDoc.state;
-      
-      const User = require('./models/User');
-      const Product = require('./models/Product');
-      const Order = require('./models/Order');
-      const Coupon = require('./models/Coupon');
-      const Message = require('./models/Message');
-      const Setting = require('./models/Setting');
-      
-      if (state.users && state.users.length > 0) { await User.deleteMany({}); await User.insertMany(state.users); }
-      if (state.products && state.products.length > 0) { await Product.deleteMany({}); await Product.insertMany(state.products); }
-      if (state.orders && state.orders.length > 0) { await Order.deleteMany({}); await Order.insertMany(state.orders); }
-      if (state.coupons && state.coupons.length > 0) { await Coupon.deleteMany({}); await Coupon.insertMany(state.coupons); }
-      if (state.messages && state.messages.length > 0) { await Message.deleteMany({}); await Message.insertMany(state.messages); }
-      if (state.settings) { await Setting.deleteMany({}); await Setting.create({ settingType: 'global', state: state.settings }); }
-      
-      // Mark as migrated so it doesn't run again
-      await storeCollection.updateOne({ docId: 'main' }, { $set: { docId: 'main_migrated' } });
-      console.log("Auto-migration completed successfully!");
-    }
-    }
-  } catch (err) {
-    console.error("Auto-migration failed:", err);
-  }
-
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}).catch(console.error);
 
 // Middleware
 const allowedOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : ['http://localhost:5173', 'https://ecomace.onrender.com', 'https://ecomace.vercel.app'];
@@ -109,3 +67,44 @@ app.use((err, req, res, next) => {
   console.error('Unhandled error:', err.stack || err.message);
   res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
 });
+
+// Connect to MongoDB
+const { connectDB } = require('./data/db');
+connectDB().then(async () => {
+  // Auto-migration Logic (Run once on startup if needed)
+  try {
+    const mongoose = require('mongoose');
+    const db = mongoose.connection.db;
+    if (db) {
+      const storeCollection = db.collection('stores');
+      const mainDoc = await storeCollection.findOne({ docId: 'main' });
+    
+    if (mainDoc) {
+      console.log("Found legacy monolithic database. Starting auto-migration...");
+      const state = mainDoc.state;
+      
+      const User = require('./models/User');
+      const Product = require('./models/Product');
+      const Order = require('./models/Order');
+      const Coupon = require('./models/Coupon');
+      const Setting = require('./models/Setting');
+      
+      if (state.users && state.users.length > 0) { await User.deleteMany({}); await User.insertMany(state.users); }
+      if (state.products && state.products.length > 0) { await Product.deleteMany({}); await Product.insertMany(state.products); }
+      if (state.orders && state.orders.length > 0) { await Order.deleteMany({}); await Order.insertMany(state.orders); }
+      if (state.coupons && state.coupons.length > 0) { await Coupon.deleteMany({}); await Coupon.insertMany(state.coupons); }
+      if (state.settings) { await Setting.deleteMany({}); await Setting.create({ settingType: 'global', state: state.settings }); }
+      
+      // Mark as migrated so it doesn't run again
+      await storeCollection.updateOne({ docId: 'main' }, { $set: { docId: 'main_migrated' } });
+      console.log("Auto-migration completed successfully!");
+    }
+    }
+  } catch (err) {
+    console.error("Auto-migration failed:", err);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}).catch(console.error);

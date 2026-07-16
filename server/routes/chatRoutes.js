@@ -5,35 +5,32 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Product = require('../models/Product');
 const Setting = require('../models/Setting');
 
-// Initialize Gemini with provided key
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Initialize Gemini with provided key. Do not crash if missing, handle it in the route.
+let genAI = null;
+if (process.env.GEMINI_API_KEY) {
+  genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+}
 
-// In-memory rate limiting to protect against Denial of Wallet (DoW)
-const chatRateLimitMap = new Map();
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
-const MAX_REQUESTS_PER_WINDOW = 5;
+const rateLimit = require('express-rate-limit');
 
-router.post('/', async (req, res) => {
-  const ip = req.ip || req.connection.remoteAddress || 'unknown';
-  const now = Date.now();
-  
-  if (!chatRateLimitMap.has(ip)) {
-    chatRateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
-  } else {
-    const limitData = chatRateLimitMap.get(ip);
-    if (now > limitData.resetTime) {
-      chatRateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
-    } else {
-      limitData.count++;
-      if (limitData.count > MAX_REQUESTS_PER_WINDOW) {
-        return res.status(429).json({ error: 'Too many requests. Please wait a minute before asking more questions.' });
-      }
-    }
-  }
+// Use express-rate-limit instead of in-memory map to prevent memory leaks
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: { error: 'Too many requests. Please wait a minute before asking more questions.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.post('/', chatLimiter, async (req, res) => {
   try {
     const { message, language } = req.body;
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
+    }
+
+    if (!genAI) {
+      return res.status(503).json({ error: 'AI Assistant is currently unavailable due to missing API key.' });
     }
 
     // Load store context

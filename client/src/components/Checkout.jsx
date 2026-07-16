@@ -146,6 +146,11 @@ const Checkout = () => {
         addToast('Rocket Mobile Number must be 11 or 12 digits and start with 01.', 'error');
         return;
       }
+    } else if (['bybit', 'binance'].includes(paymentMethod)) {
+      if (paymentDetails.accountInfo.length < 5) {
+        addToast(`${paymentMethod === 'bybit' ? 'Bybit' : 'Binance'} ID/Email must be at least 5 characters long.`, 'error');
+        return;
+      }
     }
     
     setIsProcessing(true);
@@ -260,30 +265,47 @@ const Checkout = () => {
         <div className="glass-panel" style={{ padding: '30px' }}>
           <h2 style={{ marginBottom: '20px' }}>Payment Method</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: 'var(--glass-border)', borderRadius: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'bkash' ? 'var(--surface-color)' : 'transparent', transition: 'all 0.3s' }}>
-              <input type="radio" name="payment" value="bkash" checked={paymentMethod === 'bkash'} onChange={() => {setPaymentMethod('bkash'); setPaymentDetails({ accountInfo: '', transactionId: '' });}} />
-              <div style={{ fontWeight: '600' }}>bKash Mobile Banking</div>
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: 'var(--glass-border)', borderRadius: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'nagad' ? 'var(--surface-color)' : 'transparent', transition: 'all 0.3s' }}>
-              <input type="radio" name="payment" value="nagad" checked={paymentMethod === 'nagad'} onChange={() => {setPaymentMethod('nagad'); setPaymentDetails({ accountInfo: '', transactionId: '' });}} />
-              <div style={{ fontWeight: '600' }}>Nagad Mobile Banking</div>
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: 'var(--glass-border)', borderRadius: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'rocket' ? 'var(--surface-color)' : 'transparent', transition: 'all 0.3s' }}>
-              <input type="radio" name="payment" value="rocket" checked={paymentMethod === 'rocket'} onChange={() => {setPaymentMethod('rocket'); setPaymentDetails({ accountInfo: '', transactionId: '' });}} />
-              <div style={{ fontWeight: '600' }}>Rocket Mobile Banking</div>
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: 'var(--glass-border)', borderRadius: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'upay' ? 'var(--surface-color)' : 'transparent', transition: 'all 0.3s' }}>
-              <input type="radio" name="payment" value="upay" checked={paymentMethod === 'upay'} onChange={() => {setPaymentMethod('upay'); setPaymentDetails({ accountInfo: '', transactionId: '' });}} />
-              <div style={{ fontWeight: '600' }}>Upay Mobile Banking</div>
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: 'var(--glass-border)', borderRadius: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'bybit' ? 'var(--surface-color)' : 'transparent', transition: 'all 0.3s' }}>
-              <input type="radio" name="payment" value="bybit" checked={paymentMethod === 'bybit'} onChange={() => {setPaymentMethod('bybit'); setPaymentDetails({ accountInfo: '', transactionId: '' });}} />
-              <div style={{ fontWeight: '600' }}>Bybit Pay (Crypto)</div>
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: 'var(--glass-border)', borderRadius: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'binance' ? 'var(--surface-color)' : 'transparent', transition: 'all 0.3s' }}>
-              <input type="radio" name="payment" value="binance" checked={paymentMethod === 'binance'} onChange={() => {setPaymentMethod('binance'); setPaymentDetails({ accountInfo: '', transactionId: '' });}} />
-              <div style={{ fontWeight: '600' }}>Binance Pay</div>
-            </label>
+            {adminPaymentAccounts.bkash && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: 'var(--glass-border)', borderRadius: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'bkash' ? 'var(--surface-color)' : 'transparent', transition: 'all 0.3s' }}>
+                <input type="radio" name="payment" value="bkash" checked={paymentMethod === 'bkash'} onChange={() => {setPaymentMethod('bkash'); setPaymentDetails({ accountInfo: '', transactionId: '' });}} />
+                <div style={{ fontWeight: '600' }}>bKash Mobile Banking</div>
+              </label>
+            )}
+            {adminPaymentAccounts.nagad && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: 'var(--glass-border)', borderRadius: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'nagad' ? 'var(--surface-color)' : 'transparent', transition: 'all 0.3s' }}>
+                <input type="radio" name="payment" value="nagad" checked={paymentMethod === 'nagad'} onChange={() => {setPaymentMethod('nagad'); setPaymentDetails({ accountInfo: '', transactionId: '' });}} />
+                <div style={{ fontWeight: '600' }}>Nagad Mobile Banking</div>
+              </label>
+            )}
+            {adminPaymentAccounts.rocket && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: 'var(--glass-border)', borderRadius: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'rocket' ? 'var(--surface-color)' : 'transparent', transition: 'all 0.3s' }}>
+                <input type="radio" name="payment" value="rocket" checked={paymentMethod === 'rocket'} onChange={() => {setPaymentMethod('rocket'); setPaymentDetails({ accountInfo: '', transactionId: '' });}} />
+                <div style={{ fontWeight: '600' }}>Rocket Mobile Banking</div>
+              </label>
+            )}
+            {adminPaymentAccounts.upay && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: 'var(--glass-border)', borderRadius: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'upay' ? 'var(--surface-color)' : 'transparent', transition: 'all 0.3s' }}>
+                <input type="radio" name="payment" value="upay" checked={paymentMethod === 'upay'} onChange={() => {setPaymentMethod('upay'); setPaymentDetails({ accountInfo: '', transactionId: '' });}} />
+                <div style={{ fontWeight: '600' }}>Upay Mobile Banking</div>
+              </label>
+            )}
+            {adminPaymentAccounts.bybit && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: 'var(--glass-border)', borderRadius: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'bybit' ? 'var(--surface-color)' : 'transparent', transition: 'all 0.3s' }}>
+                <input type="radio" name="payment" value="bybit" checked={paymentMethod === 'bybit'} onChange={() => {setPaymentMethod('bybit'); setPaymentDetails({ accountInfo: '', transactionId: '' });}} />
+                <div style={{ fontWeight: '600' }}>Bybit Pay (Crypto)</div>
+              </label>
+            )}
+            {adminPaymentAccounts.binance && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: 'var(--glass-border)', borderRadius: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'binance' ? 'var(--surface-color)' : 'transparent', transition: 'all 0.3s' }}>
+                <input type="radio" name="payment" value="binance" checked={paymentMethod === 'binance'} onChange={() => {setPaymentMethod('binance'); setPaymentDetails({ accountInfo: '', transactionId: '' });}} />
+                <div style={{ fontWeight: '600' }}>Binance Pay</div>
+              </label>
+            )}
+            {(!adminPaymentAccounts.bkash && !adminPaymentAccounts.nagad && !adminPaymentAccounts.rocket && !adminPaymentAccounts.upay && !adminPaymentAccounts.bybit && !adminPaymentAccounts.binance) && (
+              <div style={{ padding: '15px', border: '1px solid #EF4444', borderRadius: '12px', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#EF4444' }}>
+                No payment methods are currently available. Please contact support.
+              </div>
+            )}
           </div>
 
           <form onSubmit={handlePayment} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>

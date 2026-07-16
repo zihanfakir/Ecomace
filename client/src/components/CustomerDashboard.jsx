@@ -149,15 +149,15 @@ const CustomerDashboard = () => {
             <div key={order._id} className="glass-panel" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-                  <h3 style={{ margin: 0 }}>Order #{order._id.replace('order_', '').substring(0, 8).toUpperCase()}</h3>
+                  <h3 style={{ margin: 0 }}>Order #{order._id.replace(/^(order_|ORD-)/i, '').substring(0, 8).toUpperCase()}</h3>
                   <span style={{
                     padding: '4px 10px', 
                     borderRadius: '12px', 
                     fontSize: '0.8rem', 
                     fontWeight: 'bold',
                     textTransform: 'uppercase',
-                    backgroundColor: order.status === 'completed' ? 'rgba(16, 185, 129, 0.2)' : order.status === 'cancelled' ? 'rgba(239, 68, 68, 0.2)' : order.status === 'processing' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                    color: order.status === 'completed' ? '#10B981' : order.status === 'cancelled' ? '#EF4444' : order.status === 'processing' ? '#3B82F6' : '#F59E0B'
+                    backgroundColor: (order.status === 'completed' || order.status === 'approved') ? 'rgba(16, 185, 129, 0.2)' : (order.status === 'cancelled' || order.status === 'rejected') ? 'rgba(239, 68, 68, 0.2)' : order.status === 'processing' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                    color: (order.status === 'completed' || order.status === 'approved') ? '#10B981' : (order.status === 'cancelled' || order.status === 'rejected') ? '#EF4444' : order.status === 'processing' ? '#3B82F6' : '#F59E0B'
                   }}>
                     {order.status || 'pending'}
                   </span>
@@ -169,11 +169,13 @@ const CustomerDashboard = () => {
 
                 {order.status === 'cancelled' ? (
                   <p style={{ color: '#EF4444' }}>This order was cancelled. Please contact support if you believe this is an error.</p>
+                ) : order.status === 'rejected' ? (
+                  <p style={{ color: '#EF4444' }}>This order was rejected. Please contact support for more details.</p>
                 ) : (order.status === 'pending' || !order.status) ? (
                   <p style={{ color: '#F59E0B' }}>Your payment is currently being verified. Your keys will appear here once approved.</p>
                 ) : order.status === 'processing' ? (
                   <p style={{ color: '#3B82F6' }}>Your order is currently processing. Your keys will be delivered shortly.</p>
-                ) : (
+                ) : (order.status === 'completed' || order.status === 'approved') ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                     {order.items ? (
                       order.items.map((item, idx) => (
@@ -207,6 +209,8 @@ const CustomerDashboard = () => {
                       </div>
                     )}
                   </div>
+                ) : (
+                  <p style={{ color: 'var(--text-secondary)' }}>Status: {order.status}</p>
                 )}
               </div>
               <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--primary-accent)', textAlign: 'right' }}>

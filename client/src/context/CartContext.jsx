@@ -21,6 +21,35 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
+  // Refresh cart prices on load
+  useEffect(() => {
+    const refreshCart = async () => {
+      if (cart.length === 0) return;
+      try {
+        const refreshedCart = await Promise.all(cart.map(async (item) => {
+          try {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${item.product._id}`);
+            return { ...item, product: res.data };
+          } catch (err) {
+            // If product deleted or failed to fetch, keep old or remove? Let's just keep old for now.
+            return item;
+          }
+        }));
+        // Only update if something actually changed to prevent infinite loops if prices are same, 
+        // but since it's on mount it's fine to just set it once.
+        setCart(refreshedCart);
+      } catch (err) {
+        console.error('Failed to refresh cart prices', err);
+      }
+    };
+    
+    // Run once on mount if cart has items
+    if (cart.length > 0) {
+      refreshCart();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array to run only once on mount
+
   const addToCart = async (product) => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${product._id}`);

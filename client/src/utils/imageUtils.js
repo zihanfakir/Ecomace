@@ -44,7 +44,7 @@ export const uploadToImgBB = async (file, maxWidth = 800, quality = 0.7) => {
   // Compress first to save bandwidth
   const base64String = await compressImage(file, maxWidth, quality);
 
-  // Remove the data URL prefix — ImgBB only wants the raw base64
+  // Remove the data URL prefix
   const base64Data = base64String.split(',')[1];
 
   const apiUrl = import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com';

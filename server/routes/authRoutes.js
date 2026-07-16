@@ -29,7 +29,8 @@ router.post('/login', authLimiter, async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
     
-    const user = await User.findOne({ email });
+    const lowerEmail = email.toLowerCase();
+    const user = await User.findOne({ email: lowerEmail });
     
     if (user && (await bcrypt.compare(password, user.password))) {
       const userProfile = { _id: user._id, name: user.name, email: user.email, role: user.role, photoUrl: user.photoUrl };
@@ -46,9 +47,10 @@ router.post('/login', authLimiter, async (req, res) => {
 router.post('/register', authLimiter, async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    const lowerEmail = email.toLowerCase();
     
     // Check if user already exists
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: lowerEmail });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
@@ -58,7 +60,7 @@ router.post('/register', authLimiter, async (req, res) => {
       return res.status(400).json({ message: 'Name is required' });
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(lowerEmail)) {
       return res.status(400).json({ message: 'Invalid email format' });
     }
 
@@ -72,7 +74,7 @@ router.post('/register', authLimiter, async (req, res) => {
     const newUser = new User({
       _id: 'user_' + Date.now().toString() + Math.random().toString(36).substring(7),
       name,
-      email,
+      email: lowerEmail,
       password: hashedPassword,
       role: 'customer'
     });
