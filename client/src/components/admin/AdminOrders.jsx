@@ -68,8 +68,10 @@ const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user, 
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
             <option value="processing">Processing</option>
+            <option value="approved">Approved</option>
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
+            <option value="rejected">Rejected</option>
           </select>
         </div>
       </div>
@@ -125,8 +127,8 @@ const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user, 
                     padding: '6px 10px', 
                     borderRadius: '8px', 
                     border: '1px solid var(--glass-border)', 
-                    backgroundColor: order.status === 'completed' ? 'rgba(16, 185, 129, 0.1)' : order.status === 'processing' ? 'rgba(59, 130, 246, 0.1)' : order.status === 'pending' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
-                    color: order.status === 'completed' ? '#10B981' : order.status === 'processing' ? '#3B82F6' : order.status === 'pending' ? '#F59E0B' : '#EF4444',
+                    backgroundColor: (order.status === 'completed' || order.status === 'approved') ? 'rgba(16, 185, 129, 0.1)' : order.status === 'processing' ? 'rgba(59, 130, 246, 0.1)' : order.status === 'pending' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
+                    color: (order.status === 'completed' || order.status === 'approved') ? '#10B981' : order.status === 'processing' ? '#3B82F6' : order.status === 'pending' ? '#F59E0B' : '#EF4444',
                     fontWeight: 'bold',
                     fontSize: '0.85rem',
                     cursor: 'pointer',
@@ -136,8 +138,10 @@ const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user, 
                 >
                   <option value="pending">Pending</option>
                   <option value="processing">Processing</option>
+                  <option value="approved">Approved</option>
                   <option value="completed">Completed</option>
                   <option value="cancelled">Cancelled</option>
+                  <option value="rejected">Rejected</option>
                 </select>
               </div>
               
