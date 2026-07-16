@@ -23,7 +23,7 @@ const OrderSchema = new mongoose.Schema({
   paymentDetails: { type: mongoose.Schema.Types.Mixed },
   transactionId: { type: String, required: true },
   paymentPhone: { type: String },
-  status: { type: String, default: 'pending' }, // 'pending', 'processing', 'completed', 'cancelled'
+  status: { type: String, default: 'pending' }, // 'pending', 'processing', 'completed', 'cancelled', 'approved', 'rejected'
   statusChangeCount: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 }, { strict: false, optimisticConcurrency: true });
