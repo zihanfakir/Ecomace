@@ -9,12 +9,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 if (!process.env.JWT_SECRET) {
-  if (process.env.NODE_ENV === 'production') {
-    console.error("FATAL ERROR: JWT_SECRET is not defined in production. Exiting.");
-    process.exit(1);
-  }
-  console.warn("WARNING: JWT_SECRET is not defined in environment variables. Using a fallback secret for development. THIS IS INSECURE FOR PRODUCTION!");
-  process.env.JWT_SECRET = "fallback_secret_please_change_me_in_production";
+  console.warn("WARNING: JWT_SECRET is not defined in environment variables. Using a fallback secret. THIS IS INSECURE FOR PRODUCTION!");
+  process.env.JWT_SECRET = "fallback_secret_please_change_me_in_production_ecomace_2026";
 }
 
 
