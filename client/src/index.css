@@ -305,7 +305,6 @@ html, body {
 }
 
 .hide-on-desktop { display: none !important; }
-.hide-on-desktop { display: none !important; }
 @media (max-width: 768px) { .hide-on-desktop { display: inline-block !important; } }
 
 @media (max-width: 768px) { .desktop-nav-items { display: none !important; } .mobile-menu-btn { display: block !important; } }
