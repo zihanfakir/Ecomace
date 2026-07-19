@@ -248,8 +248,8 @@ router.put('/:id/status', protect, admin, async (req, res) => {
       throw new Error('Status is already ' + status);
     }
     
-    if (order.statusChangeCount >= 5) {
-      throw new Error('Order status can only be changed up to 5 times');
+    if (order.statusChangeCount >= 10) {
+      throw new Error('Order status can only be changed up to 10 times');
     }
     
     if (status === 'cancelled' || status === 'rejected') {
