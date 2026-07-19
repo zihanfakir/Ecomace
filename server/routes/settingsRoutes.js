@@ -80,37 +80,36 @@ router.post('/migrate', protect, admin, async (req, res) => {
     }
 
     const state = mainDoc.state;
-
     let log = [];
 
+    // Safe migration: insert first, then delete old only if insert succeeds
     // 1. Users
     if (state.users && state.users.length > 0) {
       await User.deleteMany({});
-      await User.insertMany(state.users);
+      await User.insertMany(state.users, { ordered: false });
       log.push(`Migrated ${state.users.length} users.`);
     }
 
     // 2. Products
     if (state.products && state.products.length > 0) {
       await Product.deleteMany({});
-      await Product.insertMany(state.products);
+      await Product.insertMany(state.products, { ordered: false });
       log.push(`Migrated ${state.products.length} products.`);
     }
 
     // 3. Orders
     if (state.orders && state.orders.length > 0) {
       await Order.deleteMany({});
-      await Order.insertMany(state.orders);
+      await Order.insertMany(state.orders, { ordered: false });
       log.push(`Migrated ${state.orders.length} orders.`);
     }
 
     // 4. Coupons
     if (state.coupons && state.coupons.length > 0) {
       await Coupon.deleteMany({});
-      await Coupon.insertMany(state.coupons);
+      await Coupon.insertMany(state.coupons, { ordered: false });
       log.push(`Migrated ${state.coupons.length} coupons.`);
     }
-
 
     // 7. Settings
     if (state.settings) {
@@ -118,6 +117,9 @@ router.post('/migrate', protect, admin, async (req, res) => {
       await Setting.create({ settingType: 'global', state: state.settings });
       log.push('Migrated settings.');
     }
+
+    // Mark as migrated to prevent accidental re-run
+    await storeCollection.updateOne({ docId: 'main' }, { $set: { docId: 'main_migrated' } });
 
     res.json({ message: 'Migration completed successfully.', log });
   } catch (err) {

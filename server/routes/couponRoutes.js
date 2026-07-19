@@ -27,6 +27,9 @@ router.post('/', protect, admin, async (req, res) => {
     if (req.body.discountType === 'percent' && Number(req.body.discountPercent) > 100) {
       return res.status(400).json({ message: 'Percentage discount cannot exceed 100%' });
     }
+    if (Number(req.body.discountPercent) <= 0) {
+      return res.status(400).json({ message: 'Discount value must be greater than 0' });
+    }
 
     const newCoupon = new Coupon({
       _id: Date.now().toString() + Math.random().toString(36).substring(7),

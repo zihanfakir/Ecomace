@@ -13,9 +13,15 @@ export const AuthProvider = ({ children }) => {
     const storedToken = localStorage.getItem('token');
     
     if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setToken(storedToken);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+      try {
+        setUser(JSON.parse(storedUser));
+        setToken(storedToken);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+      } catch (e) {
+        // Corrupted localStorage data — clear it and force re-login
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
 
     // Set up interceptor for all future requests

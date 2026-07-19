@@ -72,7 +72,15 @@ const CustomerDashboard = () => {
     setProfileLoading(true);
     setMessage('');
     try {
-      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/users/${user._id}`, profileData);
+      // Strip empty password to avoid sending blank string over the wire
+      const payload = { ...profileData };
+      if (!payload.password || payload.password.trim() === '') {
+        delete payload.password;
+      }
+      const activeToken = token || localStorage.getItem('token');
+      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/users/${user._id}`, payload, {
+        headers: { Authorization: `Bearer ${activeToken}` }
+      });
       updateUser(response.data);
       setMessage('Profile updated successfully!');
       setIsEditingProfile(false);
