@@ -296,6 +296,19 @@ router.put('/:id/status', protect, admin, async (req, res) => {
           }
         }
       }
+      
+      // Re-consume coupon usage if applicable
+      if (order.couponApplied?.code) {
+        const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(order.couponApplied.code)}$`, 'i') } });
+        if (coupon) {
+          if (coupon.usageLimit && (coupon.usageCount || 0) >= coupon.usageLimit) {
+             throw new Error('Cannot re-approve order: Coupon usage limit has been reached since this order was cancelled.');
+          }
+          coupon.usageCount = (coupon.usageCount || 0) + 1;
+          await coupon.save();
+          modifiedCoupon = { coupon, action: 'consume' };
+        }
+      }
     }
     
     order.status = status;
@@ -327,7 +340,11 @@ router.put('/:id/status', protect, admin, async (req, res) => {
     }
     if (modifiedCoupon) {
       try {
-        modifiedCoupon.coupon.usageCount += 1; // undo restore
+        if (modifiedCoupon.action === 'restore') {
+          modifiedCoupon.coupon.usageCount += 1; // undo restore (it was decreased, so increase it)
+        } else if (modifiedCoupon.action === 'consume') {
+          modifiedCoupon.coupon.usageCount = Math.max(0, (modifiedCoupon.coupon.usageCount || 1) - 1); // undo consume (it was increased, so decrease it)
+        }
         await modifiedCoupon.coupon.save();
       } catch (rollbackErr) {
         console.error('Failed to rollback coupon usage:', rollbackErr);
