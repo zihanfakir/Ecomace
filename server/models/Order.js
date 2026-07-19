@@ -28,4 +28,8 @@ const OrderSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }, { strict: false, optimisticConcurrency: true });
 
+// Performance Indexes
+OrderSchema.index({ userId: 1 });
+OrderSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Order', OrderSchema);

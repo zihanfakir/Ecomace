@@ -44,17 +44,19 @@ const Home = () => {
     fetchSettings();
   }, []);
 
-  const dynamicCategories = ['All', ...new Set(products.map(p => p.category || 'Uncategorized'))];
-  const categories = dynamicCategories.sort((a, b) => {
-    if (a === 'All') return -1;
-    if (b === 'All') return 1;
-    const idxA = categoryOrder.indexOf(a);
-    const idxB = categoryOrder.indexOf(b);
-    if (idxA === -1 && idxB === -1) return 0;
-    if (idxA === -1) return 1;
-    if (idxB === -1) return -1;
-    return idxA - idxB;
-  });
+  const categories = React.useMemo(() => {
+    const dynamicCategories = ['All', ...new Set(products.map(p => p.category || 'Uncategorized'))];
+    return dynamicCategories.sort((a, b) => {
+      if (a === 'All') return -1;
+      if (b === 'All') return 1;
+      const idxA = categoryOrder.indexOf(a);
+      const idxB = categoryOrder.indexOf(b);
+      if (idxA === -1 && idxB === -1) return 0;
+      if (idxA === -1) return 1;
+      if (idxB === -1) return -1;
+      return idxA - idxB;
+    });
+  }, [products, categoryOrder]);
 
   const getCategoryIcon = (cat) => {
     // If the category already contains an emoji, don't add a default one
@@ -75,18 +77,20 @@ const Home = () => {
     return '📦';
   };
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
-                          product.description?.toLowerCase().includes(debouncedSearch.toLowerCase());
-    const matchesCategory = activeCategory === 'All' || (product.category || 'Uncategorized') === activeCategory;
-    return matchesSearch && matchesCategory;
-  }).sort((a, b) => {
-    const aOut = !a.stockKeys || a.stockKeys.length === 0;
-    const bOut = !b.stockKeys || b.stockKeys.length === 0;
-    if (aOut && !bOut) return 1;
-    if (!aOut && bOut) return -1;
-    return 0;
-  });
+  const filteredProducts = React.useMemo(() => {
+    return products.filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+                            product.description?.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesCategory = activeCategory === 'All' || (product.category || 'Uncategorized') === activeCategory;
+      return matchesSearch && matchesCategory;
+    }).sort((a, b) => {
+      const aOut = !a.stockKeys || a.stockKeys.length === 0;
+      const bOut = !b.stockKeys || b.stockKeys.length === 0;
+      if (aOut && !bOut) return 1;
+      if (!aOut && bOut) return -1;
+      return 0;
+    });
+  }, [products, debouncedSearch, activeCategory]);
 
   return (
     <div className="animate-fade-in" style={{ padding: '20px' }}>

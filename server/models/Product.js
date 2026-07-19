@@ -16,4 +16,7 @@ const ProductSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }, { optimisticConcurrency: true });
 
+// Performance Indexes
+ProductSchema.index({ sortOrder: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Product', ProductSchema);
