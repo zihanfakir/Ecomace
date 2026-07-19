@@ -9,10 +9,10 @@ const AdminTracking = ({ products, orders, users }) => {
       .reduce((sum, order) => sum + (order.totalPrice || 0), 0);
   }, [orders]);
 
-  // Calculate Pending Revenue (Pending Orders)
+  // BUG-038 FIX: Include 'processing' orders in pending revenue (both are unconfirmed/undelivered)
   const pendingRevenue = useMemo(() => {
     return orders
-      .filter(o => o.status === 'pending')
+      .filter(o => o.status === 'pending' || o.status === 'processing')
       .reduce((sum, order) => sum + (order.totalPrice || 0), 0);
   }, [orders]);
 

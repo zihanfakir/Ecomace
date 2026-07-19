@@ -12,6 +12,7 @@ import Auth from './components/Auth';
 import CustomerDashboard from './components/CustomerDashboard';
 import Cart from './components/Cart';
 import ChatWidget from './components/ChatWidget';
+import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { CartProvider, CartContext } from './context/CartContext';
 import { ToastProvider } from './context/ToastContext';
@@ -351,14 +352,14 @@ function App() {
         <CartProvider>
           <Router>
             <Routes>
-              {/* Customer Storefront Routes */}
+                          {/* Customer Storefront Routes */}
               <Route element={<StoreLayout theme={theme} toggleTheme={toggleTheme} siteSettings={siteSettings} />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/product/:id" element={<ProductDetails />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
+                <Route path="/product/:id" element={<ErrorBoundary><ProductDetails /></ErrorBoundary>} />
+                <Route path="/cart" element={<ErrorBoundary><Cart /></ErrorBoundary>} />
+                <Route path="/checkout" element={<ErrorBoundary><Checkout /></ErrorBoundary>} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/dashboard" element={<ProtectedCustomerRoute><CustomerDashboard /></ProtectedCustomerRoute>} />
+                <Route path="/dashboard" element={<ProtectedCustomerRoute><ErrorBoundary><CustomerDashboard /></ErrorBoundary></ProtectedCustomerRoute>} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
 

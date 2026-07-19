@@ -6,11 +6,11 @@ import { Package, Settings, Save, X } from 'lucide-react';
 import { uploadToImgBB } from '../utils/imageUtils';
 
 const CustomerDashboard = () => {
-  const { user, updateUser } = useContext(AuthContext);
+  const { user, updateUser, token } = useContext(AuthContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [profileData, setProfileData] = useState({ name: user.name, email: user.email, password: '', photoUrl: user.photoUrl || '' });
+  const [profileData, setProfileData] = useState({ name: user?.name || '', email: user?.email || '', password: '', photoUrl: user?.photoUrl || '' });
   const [profileLoading, setProfileLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -20,10 +20,21 @@ const CustomerDashboard = () => {
 
 
 
+  // BUG-017 FIX: Sync profileData when the user context updates
+  useEffect(() => {
+    if (user) {
+      setProfileData(prev => ({ ...prev, name: user.name, email: user.email, photoUrl: user.photoUrl || '' }));
+    }
+  }, [user]);
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders/user/${user._id}`);
+        // BUG-006 FIX: Include Authorization header — server route requires protect middleware
+        const activeToken = token || localStorage.getItem('token');
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders/user/${user._id}`, {
+          headers: { Authorization: `Bearer ${activeToken}` }
+        });
         setOrders(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Error fetching orders:', error);

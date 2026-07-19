@@ -46,7 +46,7 @@ const ProductDetails = () => {
   return (
     <div className="animate-fade-in" style={{ padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' }}>
       <button 
-        onClick={() => navigate(-1)} 
+        onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/')} 
         style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', marginBottom: '30px' }}
       >
         <ArrowLeft size={20} /> Back to Store

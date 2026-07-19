@@ -38,8 +38,13 @@ const AdminOrders = ({ orders, handleUpdateOrderStatus, setOrderToDelete, user, 
   }, [searchTerm]);
   
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = (order._id.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
-                           (order.customerDetails?.email || '').toLowerCase().includes(debouncedSearch.toLowerCase()));
+    // BUG-034 FIX: Also search by customer name, not just ID and email
+    const matchesSearch = (
+      order._id.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+      (order.customerDetails?.email || '').toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      (order.customerName || '').toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      (order.customerDetails?.phone || '').includes(debouncedSearch)
+    );
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });

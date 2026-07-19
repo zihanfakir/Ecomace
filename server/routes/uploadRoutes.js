@@ -26,8 +26,11 @@ router.post('/', protect, uploadLimiter, async (req, res) => {
       return res.status(413).json({ message: 'Image size exceeds the 5MB limit' });
     }
 
-    // Use env variable if set, otherwise fall back to default key
-    const apiKey = process.env.IMGBB_API_KEY || 'd56dbc5ab20a283240dd980bfb387a1a';
+    // BUG-002 FIX: Never fallback to hardcoded key — return 503 if not configured
+    const apiKey = process.env.IMGBB_API_KEY;
+    if (!apiKey) {
+      return res.status(503).json({ message: 'Image upload is not configured on this server. Please contact the administrator.' });
+    }
 
     // ImgBB requires application/x-www-form-urlencoded with base64 image
     const params = new URLSearchParams();

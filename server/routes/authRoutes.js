@@ -47,25 +47,31 @@ router.post('/login', authLimiter, async (req, res) => {
 router.post('/register', authLimiter, async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const lowerEmail = email.toLowerCase();
-    
-    // Check if user already exists
-    const userExists = await User.findOne({ email: lowerEmail });
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists with this email' });
-    }
 
-    // Validation
+    // BUG-007/008 FIX: Validate inputs FIRST before any DB query
     if (!name || name.trim() === '') {
       return res.status(400).json({ message: 'Name is required' });
     }
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+    if (!password) {
+      return res.status(400).json({ message: 'Password is required' });
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(lowerEmail)) {
+    if (!emailRegex.test(email)) {
       return res.status(400).json({ message: 'Invalid email format' });
     }
-
     if (password.length < 6) {
       return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    }
+
+    const lowerEmail = email.toLowerCase();
+
+    // Check if user already exists AFTER validation passes
+    const userExists = await User.findOne({ email: lowerEmail });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists with this email' });
     }
 
     const salt = await bcrypt.genSalt(10);

@@ -49,7 +49,16 @@ router.put('/', protect, admin, async (req, res) => {
       });
     }
     
-    settingDoc.state = { ...(settingDoc.state || {}), ...req.body };
+    // BUG-013 FIX: Whitelist allowed settings keys to prevent prototype pollution and arbitrary injection
+    const ALLOWED_SETTINGS_KEYS = ['paymentMethods', 'banners', 'noticeText', 'noticeColor', 'footerText', 'telegramLink', 'whatsappLink', 'categoryOrder'];
+    const safeUpdate = {};
+    ALLOWED_SETTINGS_KEYS.forEach(key => {
+      if (req.body[key] !== undefined) {
+        safeUpdate[key] = req.body[key];
+      }
+    });
+
+    settingDoc.state = { ...(settingDoc.state || {}), ...safeUpdate };
     settingDoc.markModified('state'); // Ensure Mongoose knows the Mixed type was modified
     await settingDoc.save();
     

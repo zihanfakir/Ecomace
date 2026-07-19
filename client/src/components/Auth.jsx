@@ -89,7 +89,7 @@ const Auth = () => {
         <p style={{ textAlign: 'center', marginTop: '20px', color: 'var(--text-secondary)' }}>
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <span 
-            onClick={() => { setIsLogin(!isLogin); setError(''); }} 
+            onClick={() => { setIsLogin(!isLogin); setError(''); setFormData({ name: '', email: '', password: '' }); }} 
             style={{ color: 'var(--primary-accent)', cursor: 'pointer', fontWeight: 'bold' }}
           >
             {isLogin ? 'Sign Up' : 'Login'}
