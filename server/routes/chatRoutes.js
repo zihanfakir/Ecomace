@@ -25,8 +25,11 @@ const chatLimiter = rateLimit({
 router.post('/', chatLimiter, async (req, res) => {
   try {
     const { message, language } = req.body;
-    if (!message) {
+    if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Message is required' });
+    }
+    if (message.length > 500) {
+      return res.status(400).json({ error: 'Message is too long. Please keep your query under 500 characters.' });
     }
 
     if (!genAI) {
