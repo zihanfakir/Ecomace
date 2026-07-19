@@ -28,7 +28,7 @@ const Cart = () => {
             if (item.product.discountType === 'flat') {
               finalPrice = Math.max(0, item.product.price - item.product.discount);
             } else {
-              finalPrice = Math.round(item.product.price - (item.product.price * (item.product.discount / 100)));
+              finalPrice = Math.max(0, Math.round(item.product.price - (item.product.price * (item.product.discount / 100))));
             }
           }
 

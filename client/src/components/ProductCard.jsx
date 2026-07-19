@@ -45,7 +45,7 @@ const ProductCard = ({ product, delayIndex = 0 }) => {
             {product.discount > 0 ? (
               <>
                 <div className="product-price-strike">৳ {product.price}</div>
-                <div className="product-price-large">৳ {product.discountType === 'flat' ? Math.max(0, product.price - product.discount) : Math.round(product.price - (product.price * (product.discount / 100)))}</div>
+                <div className="product-price-large">৳ {product.discountType === 'flat' ? Math.max(0, product.price - product.discount) : Math.max(0, Math.round(product.price - (product.price * (product.discount / 100))))}</div>
               </>
             ) : (
               <div className="product-price-large">৳ {product.price}</div>

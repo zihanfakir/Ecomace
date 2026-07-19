@@ -40,7 +40,7 @@ const ProductDetails = () => {
     );
   }
 
-  const finalPrice = product.discount > 0 ? (product.discountType === 'flat' ? Math.max(0, product.price - product.discount) : Math.round(product.price - (product.price * (product.discount / 100)))) : product.price;
+  const finalPrice = product.discount > 0 ? (product.discountType === 'flat' ? Math.max(0, product.price - product.discount) : Math.max(0, Math.round(product.price - (product.price * (product.discount / 100))))) : product.price;
   const isOutOfStock = !product.stockKeys || product.stockKeys.length === 0;
 
   return (

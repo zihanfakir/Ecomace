@@ -36,6 +36,10 @@ router.put('/:id', protect, async (req, res) => {
     user.photoUrl = req.body.photoUrl !== undefined ? req.body.photoUrl : user.photoUrl;
 
     if (req.body.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(req.body.email)) {
+        return res.status(400).json({ message: 'Invalid email format' });
+      }
       const lowerEmail = req.body.email.toLowerCase();
       // Check if new email is already taken
       const emailExists = await User.findOne({ email: lowerEmail });
@@ -58,6 +62,9 @@ router.put('/:id', protect, async (req, res) => {
     }
 
     if (req.body.password) {
+      if (req.body.password.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+      }
       const bcrypt = require('bcryptjs');
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(req.body.password, salt);
