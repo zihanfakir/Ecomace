@@ -9,7 +9,7 @@ import { useToast } from '../context/ToastContext';
 const Checkout = () => {
   const navigate = useNavigate();
   const { user, token } = useContext(AuthContext);
-  const { cart, getCartTotal, clearCart } = useContext(CartContext);
+  const { cart, getCartTotal, clearCart, refreshCart } = useContext(CartContext);
   const { addToast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState('bkash');
   const [paymentDetails, setPaymentDetails] = useState({ accountInfo: '', transactionId: '' });
@@ -31,13 +31,24 @@ const Checkout = () => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/settings`);
         if (response.data?.paymentMethods) {
-          setAdminPaymentAccounts(response.data.paymentMethods);
+          const methods = response.data.paymentMethods;
+          setAdminPaymentAccounts(methods);
+          if (!methods.bkash) {
+            const firstAvailable = Object.keys(methods).find(k => methods[k]);
+            if (firstAvailable) setPaymentMethod(firstAvailable);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch payment settings:', error);
       }
     };
+    };
     fetchSettings();
+  }, []);
+
+  useEffect(() => {
+    if (refreshCart) refreshCart();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -147,8 +158,10 @@ const Checkout = () => {
         return;
       }
     } else if (['bybit', 'binance'].includes(paymentMethod)) {
-      if (paymentDetails.accountInfo.length < 5) {
-        addToast(`${paymentMethod === 'bybit' ? 'Bybit' : 'Binance'} ID/Email must be at least 5 characters long.`, 'error');
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paymentDetails.accountInfo);
+      const isUid = /^\d{5,20}$/.test(paymentDetails.accountInfo);
+      if (!isEmail && !isUid) {
+        addToast(`${paymentMethod === 'bybit' ? 'Bybit' : 'Binance'} ID must be a valid Email or a Numeric UID (5-20 digits).`, 'error');
         return;
       }
     }

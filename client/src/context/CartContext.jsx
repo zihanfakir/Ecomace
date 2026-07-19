@@ -21,9 +21,8 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
-  // Refresh cart prices on load
-  useEffect(() => {
-    const refreshCart = async () => {
+  // Refresh cart prices
+  const refreshCart = async () => {
       if (cart.length === 0) return;
       try {
         const refreshedCart = await Promise.all(cart.map(async (item) => {
@@ -43,6 +42,12 @@ export const CartProvider = ({ children }) => {
       }
     };
     
+    // Run once on mount if cart has items
+      }
+    };
+    
+  // Refresh cart prices on load
+  useEffect(() => {
     // Run once on mount if cart has items
     if (cart.length > 0) {
       refreshCart();
@@ -141,7 +146,7 @@ export const CartProvider = ({ children }) => {
   };
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, getCartTotal, getCartCount }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, getCartTotal, getCartCount, refreshCart }}>
       {children}
     </CartContext.Provider>
   );
