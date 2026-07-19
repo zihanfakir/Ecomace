@@ -58,7 +58,14 @@ router.put('/:id', protect, admin, async (req, res) => {
       return res.status(404).json({ message: 'Coupon not found' });
     }
     
-    if (req.body.discountType === 'percent' && Number(req.body.discountPercent) > 100) {
+    if (req.body.discountPercent !== undefined && Number(req.body.discountPercent) <= 0) {
+      return res.status(400).json({ message: 'Discount value must be greater than 0' });
+    }
+    
+    const checkType = req.body.discountType || coupon.discountType;
+    const checkPercent = req.body.discountPercent !== undefined ? req.body.discountPercent : coupon.discountPercent;
+    
+    if (checkType === 'percent' && Number(checkPercent) > 100) {
       return res.status(400).json({ message: 'Percentage discount cannot exceed 100%' });
     }
     
