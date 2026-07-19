@@ -162,7 +162,7 @@ router.post('/checkout', protect, async (req, res) => {
         appliedCoupon = coupon;
       }
       
-      const totalPrice = subtotal - discountAmount;
+      const totalPrice = Math.max(0, subtotal - discountAmount);
 
       // Save products FIRST. If any fail due to VersionError, we can rollback the successful ones.
       for (const modified of modifiedProducts) {

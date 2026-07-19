@@ -104,7 +104,10 @@ router.delete('/:id', protect, admin, async (req, res) => {
 router.post('/validate', protect, async (req, res) => {
   try {
     const { code } = req.body;
-    const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(code)}$`, 'i') } });
+    if (!code || typeof code !== 'string' || code.trim() === '') {
+      return res.status(400).json({ message: 'Coupon code is required' });
+    }
+    const coupon = await Coupon.findOne({ code: { $regex: new RegExp(`^${escapeRegExp(code.trim())}$`, 'i') } });
     
     if (!coupon) {
       return res.status(404).json({ message: 'Invalid coupon code' });

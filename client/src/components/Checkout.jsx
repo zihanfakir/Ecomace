@@ -42,7 +42,6 @@ const Checkout = () => {
         console.error('Failed to fetch payment settings:', error);
       }
     };
-    };
     fetchSettings();
   }, []);
 

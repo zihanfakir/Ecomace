@@ -42,10 +42,6 @@ export const CartProvider = ({ children }) => {
       }
     };
     
-    // Run once on mount if cart has items
-      }
-    };
-    
   // Refresh cart prices on load
   useEffect(() => {
     // Run once on mount if cart has items
