@@ -36,12 +36,13 @@ router.put('/:id', protect, async (req, res) => {
     user.photoUrl = req.body.photoUrl !== undefined ? req.body.photoUrl : user.photoUrl;
 
     if (req.body.email) {
+      const lowerEmail = req.body.email.toLowerCase();
       // Check if new email is already taken
-      const emailExists = await User.findOne({ email: req.body.email });
+      const emailExists = await User.findOne({ email: lowerEmail });
       if (emailExists && emailExists._id.toString() !== user._id.toString()) {
         return res.status(400).json({ message: 'Email is already taken by another account' });
       }
-      user.email = req.body.email;
+      user.email = lowerEmail;
     }
 
     // Admins can update roles
