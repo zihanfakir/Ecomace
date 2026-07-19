@@ -85,10 +85,10 @@ connectDB().then(async () => {
       const Coupon = require('./models/Coupon');
       const Setting = require('./models/Setting');
       
-      if (state.users && state.users.length > 0) { await User.deleteMany({}); await User.insertMany(state.users); }
-      if (state.products && state.products.length > 0) { await Product.deleteMany({}); await Product.insertMany(state.products); }
-      if (state.orders && state.orders.length > 0) { await Order.deleteMany({}); await Order.insertMany(state.orders); }
-      if (state.coupons && state.coupons.length > 0) { await Coupon.deleteMany({}); await Coupon.insertMany(state.coupons); }
+      if (state.users && state.users.length > 0) { await User.deleteMany({}); await User.insertMany(state.users, { ordered: false }); }
+      if (state.products && state.products.length > 0) { await Product.deleteMany({}); await Product.insertMany(state.products, { ordered: false }); }
+      if (state.orders && state.orders.length > 0) { await Order.deleteMany({}); await Order.insertMany(state.orders, { ordered: false }); }
+      if (state.coupons && state.coupons.length > 0) { await Coupon.deleteMany({}); await Coupon.insertMany(state.coupons, { ordered: false }); }
       if (state.settings) { await Setting.deleteMany({}); await Setting.create({ settingType: 'global', state: state.settings }); }
       
       // Mark as migrated so it doesn't run again
