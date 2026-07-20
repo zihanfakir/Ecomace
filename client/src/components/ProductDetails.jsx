@@ -28,7 +28,21 @@ const ProductDetails = () => {
   }, [id]);
 
   if (isLoading) {
-    return <div style={{ textAlign: 'center', padding: '100px' }}>Loading product details...</div>;
+    return (
+      <div style={{ padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' }}>
+        <div className="skeleton" style={{ width: '120px', height: '20px', marginBottom: '30px', borderRadius: '8px' }}></div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+          <div className="skeleton" style={{ aspectRatio: '1/1', borderRadius: '20px' }}></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div className="skeleton" style={{ height: '50px', borderRadius: '8px' }}></div>
+            <div className="skeleton" style={{ height: '30px', width: '60%', borderRadius: '8px' }}></div>
+            <div className="skeleton" style={{ height: '80px', borderRadius: '8px' }}></div>
+            <div className="skeleton" style={{ height: '60px', borderRadius: '8px' }}></div>
+            <div className="skeleton" style={{ height: '50px', borderRadius: '8px' }}></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!product) {
