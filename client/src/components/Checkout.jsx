@@ -29,7 +29,7 @@ const Checkout = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/settings`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/settings`);
         if (response.data?.paymentMethods) {
           const methods = response.data.paymentMethods;
           setAdminPaymentAccounts(methods);
@@ -87,7 +87,7 @@ const Checkout = () => {
   const handleApplyCoupon = async () => {
     if (!couponCode) return;
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/coupons/validate`, { code: couponCode });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/coupons/validate`, { code: couponCode });
       const coupon = res.data;
       
       let applicableSubtotal = 0;
@@ -167,7 +167,7 @@ const Checkout = () => {
     
     setIsProcessing(true);
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders/checkout`, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/orders/checkout`, {
         cartItems: cart,
         customerDetails,
         paymentMethod,

@@ -47,7 +47,7 @@ export const uploadToImgBB = async (file, maxWidth = 800, quality = 0.7) => {
   // Remove the data URL prefix
   const base64Data = base64String.split(',')[1];
 
-  const apiUrl = import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com';
+  const apiUrl = import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app';
   
   try {
     const response = await axios.post(`${apiUrl}/api/upload`, {

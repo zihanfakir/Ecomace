@@ -22,7 +22,7 @@ const Home = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/products`);
         setProducts(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -32,7 +32,7 @@ const Home = () => {
     };
     const fetchSettings = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/settings`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/settings`);
         if (response.data && response.data.categoryOrder) {
           setCategoryOrder(response.data.categoryOrder);
         }

@@ -27,7 +27,7 @@ export const CartProvider = ({ children }) => {
       try {
         const refreshedCart = await Promise.all(cart.map(async (item) => {
           try {
-            const res = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${item.product._id}`);
+            const res = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/products/${item.product._id}`);
             return { ...item, product: res.data };
           } catch (err) {
             // If product deleted or failed to fetch, keep old or remove? Let's just keep old for now.
@@ -53,7 +53,7 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (product) => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${product._id}`);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/products/${product._id}`);
       const liveProduct = res.data;
       const maxStock = liveProduct.stockKeys?.length || 0;
 
@@ -99,7 +99,7 @@ export const CartProvider = ({ children }) => {
     
     try {
       if (amount > 0) {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${productId}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/products/${productId}`);
         const liveProduct = res.data;
         const maxStock = liveProduct.stockKeys?.length || 0;
         

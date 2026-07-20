@@ -28,7 +28,7 @@ const StoreLayout = ({ theme, toggleTheme, siteSettings }) => {
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/settings`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/settings`);
         if (response.data?.banners) {
           setBanners(response.data.banners.filter(b => b.isActive !== false));
         }
@@ -319,7 +319,7 @@ function App() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/settings`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/settings`);
         if (response.data) {
           setSiteSettings(prev => ({
             ...prev,

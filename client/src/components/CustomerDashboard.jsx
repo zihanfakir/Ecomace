@@ -32,7 +32,7 @@ const CustomerDashboard = () => {
       try {
         // BUG-006 FIX: Include Authorization header — server route requires protect middleware
         const activeToken = token || localStorage.getItem('token');
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders/user/${user._id}`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/orders/user/${user._id}`, {
           headers: { Authorization: `Bearer ${activeToken}` }
         });
         setOrders(Array.isArray(response.data) ? response.data : []);
@@ -78,7 +78,7 @@ const CustomerDashboard = () => {
         delete payload.password;
       }
       const activeToken = token || localStorage.getItem('token');
-      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/users/${user._id}`, payload, {
+      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/users/${user._id}`, payload, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       updateUser(response.data);

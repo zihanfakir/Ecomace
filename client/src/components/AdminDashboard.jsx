@@ -77,7 +77,7 @@ const AdminDashboard = () => {
 
   const fetchOrdersSilently = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders`);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/orders`);
       setOrders(prevOrders => {
         const newData = Array.isArray(response.data) ? response.data : [];
         if (prevOrders.length > 0 && newData.length > prevOrders.length) {
@@ -98,7 +98,7 @@ const AdminDashboard = () => {
     try {
       const activeToken = token || localStorage.getItem('token');
       const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/settings`, config);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/settings`, config);
       if (response.data?.paymentMethods) {
         setPaymentMethods(response.data.paymentMethods);
       }
@@ -124,7 +124,7 @@ const AdminDashboard = () => {
     try {
       const activeToken = token || localStorage.getItem('token');
       const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products`, config);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/products`, config);
       setProducts(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Failed to fetch products:', error);
@@ -136,7 +136,7 @@ const AdminDashboard = () => {
     try {
       const activeToken = token || localStorage.getItem('token');
       const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/users`, config);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/users`, config);
       setUsers(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -147,7 +147,7 @@ const AdminDashboard = () => {
     try {
       const activeToken = token || localStorage.getItem('token');
       const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders`, config);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/orders`, config);
       setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -158,7 +158,7 @@ const AdminDashboard = () => {
     try {
       const activeToken = token || localStorage.getItem('token');
       const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/coupons`, config);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/coupons`, config);
       setCoupons(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching coupons:', error);
@@ -170,7 +170,7 @@ const AdminDashboard = () => {
   const handleUpdateOrderStatus = async (orderId, status) => {
     try {
       const activeToken = token || localStorage.getItem('token');
-      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders/${orderId}/status`, { status }, {
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/orders/${orderId}/status`, { status }, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       fetchOrders();
@@ -184,7 +184,7 @@ const AdminDashboard = () => {
     if (!orderToDelete) return;
     try {
       const activeToken = token || localStorage.getItem('token');
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/orders/${orderToDelete}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/orders/${orderToDelete}`, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       setOrderToDelete(null);
@@ -205,7 +205,7 @@ const AdminDashboard = () => {
     setIsLoading(true);
     try {
       const activeToken = token || localStorage.getItem('token');
-      await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/coupons`, newCoupon, {
+      await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/coupons`, newCoupon, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       setIsCouponModalOpen(false);
@@ -222,7 +222,7 @@ const AdminDashboard = () => {
   const handleToggleCoupon = async (coupon) => {
     try {
       const activeToken = token || localStorage.getItem('token');
-      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/coupons/${coupon._id}`, { isActive: !coupon.isActive }, {
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/coupons/${coupon._id}`, { isActive: !coupon.isActive }, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       fetchCoupons();
@@ -236,7 +236,7 @@ const AdminDashboard = () => {
     if (!couponToDelete) return;
     try {
       const activeToken = token || localStorage.getItem('token');
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/coupons/${couponToDelete}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/coupons/${couponToDelete}`, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       setCouponToDelete(null);
@@ -257,7 +257,7 @@ const AdminDashboard = () => {
     try {
       if (editingProductId) {
         // Edit existing product
-        await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${editingProductId}`, newProduct, {
+        await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/products/${editingProductId}`, newProduct, {
           headers: { 
             'Content-Type': 'application/json',
             Authorization: token ? `Bearer ${token}` : undefined
@@ -265,7 +265,7 @@ const AdminDashboard = () => {
         });
       } else {
         // Add new product
-        await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products`, newProduct, {
+        await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/products`, newProduct, {
           headers: { 
             'Content-Type': 'application/json',
             Authorization: token ? `Bearer ${token}` : undefined
@@ -290,7 +290,7 @@ const AdminDashboard = () => {
     if (!productToDelete) return;
     try {
       const activeToken = token || localStorage.getItem('token');
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${productToDelete}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/products/${productToDelete}`, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       setProductToDelete(null);
@@ -348,7 +348,7 @@ const AdminDashboard = () => {
     
     try {
       const activeToken = token || localStorage.getItem('token');
-      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/reorder`, { items }, {
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/products/reorder`, { items }, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       addToast('Product order updated', 'success');
@@ -369,7 +369,7 @@ const AdminDashboard = () => {
     if (!categoryModalProduct) return;
     try {
       // H-4: Only send the category field — avoid stale client-state overwriting server stock
-      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/products/${categoryModalProduct._id}`, { 
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/products/${categoryModalProduct._id}`, { 
         category: categoryModalInput || 'Uncategorized'
       }, {
         headers: { 
@@ -396,7 +396,7 @@ const AdminDashboard = () => {
         delete payload.password;
       }
       const activeToken = token || localStorage.getItem('token');
-      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/users/${user._id}`, payload, {
+      const response = await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/users/${user._id}`, payload, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       updateUser(response.data);
@@ -414,7 +414,7 @@ const AdminDashboard = () => {
     setPaymentSettingsLoading(true);
     try {
       const activeToken = token || localStorage.getItem('token');
-      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/settings`, { 
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/settings`, { 
         paymentMethods, banners, 
         footerText: siteTextSettings.footerText, 
         telegramLink: siteTextSettings.telegramLink,
@@ -449,7 +449,7 @@ const AdminDashboard = () => {
   const handleUpdateRole = async (userId, newRole) => {
     try {
       const activeToken = token || localStorage.getItem('token');
-      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/users/${userId}`, { role: newRole, requesterId: user._id }, {
+      await axios.put(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/users/${userId}`, { role: newRole, requesterId: user._id }, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       addToast('User role updated successfully', 'success');

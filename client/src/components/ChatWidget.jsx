@@ -33,7 +33,7 @@ const ChatWidget = ({ siteSettings }) => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}/api/chat`, { message: userMsg, language });
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/chat`, { message: userMsg, language });
       setMessages(prev => [...prev, { sender: 'bot', text: response.data.reply }]);
     } catch (error) {
       console.error('Chat error:', error);

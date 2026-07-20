@@ -27,7 +27,7 @@ const Auth = () => {
 
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace.onrender.com'}${endpoint}`, formData);
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}${endpoint}`, formData);
       
       login(response.data.user, response.data.token);
       

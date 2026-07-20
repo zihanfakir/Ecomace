@@ -15,7 +15,7 @@ if (!process.env.JWT_SECRET) {
 
 
 // Middleware
-const allowedOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : ['http://localhost:5173', 'https://ecomace.onrender.com', 'https://ecomace.vercel.app'];
+const allowedOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : ['http://localhost:5173', 'https://ecomace-9ntk.vercel.app', 'https://ecomace.vercel.app'];
 app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ limit: '5mb', extended: true }));
