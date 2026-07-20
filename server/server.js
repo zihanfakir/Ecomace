@@ -100,7 +100,11 @@ connectDB().then(async () => {
     console.error("Auto-migration failed:", err);
   }
 
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  if (require.main === module) {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  }
 }).catch(console.error);
+
+module.exports = app;
