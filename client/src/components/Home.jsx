@@ -20,10 +20,29 @@ const Home = () => {
   }, [searchTerm]);
 
   useEffect(() => {
+    // Stale-While-Revalidate: Load from cache first for instant render
+    const cachedProducts = localStorage.getItem('ecomace_products_cache');
+    const cachedSettings = localStorage.getItem('ecomace_category_cache');
+    
+    if (cachedProducts) {
+      try {
+        setProducts(JSON.parse(cachedProducts));
+        setLoading(false); // Instant render
+      } catch (e) { }
+    }
+    
+    if (cachedSettings) {
+      try {
+        setCategoryOrder(JSON.parse(cachedSettings));
+      } catch (e) { }
+    }
+
     const fetchProducts = async () => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/products`);
-        setProducts(Array.isArray(response.data) ? response.data : []);
+        const data = Array.isArray(response.data) ? response.data : [];
+        setProducts(data);
+        localStorage.setItem('ecomace_products_cache', JSON.stringify(data));
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {
@@ -35,6 +54,7 @@ const Home = () => {
         const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/settings`);
         if (response.data && response.data.categoryOrder) {
           setCategoryOrder(response.data.categoryOrder);
+          localStorage.setItem('ecomace_category_cache', JSON.stringify(response.data.categoryOrder));
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
