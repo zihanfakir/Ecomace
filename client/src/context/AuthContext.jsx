@@ -4,25 +4,24 @@ import axios from 'axios';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try { return JSON.parse(storedUser); } catch (e) { localStorage.removeItem('user'); return null; }
+    }
+    return null;
+  });
+  
+  const [token, setToken] = useState(() => {
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+      return storedToken;
+    }
+    return null;
+  });
 
   useEffect(() => {
-    // Load from local storage
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
-    
-    if (storedUser && storedToken) {
-      try {
-        setUser(JSON.parse(storedUser));
-        setToken(storedToken);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-      } catch (e) {
-        // Corrupted localStorage data — clear it and force re-login
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-      }
-    }
 
     // Set up interceptor for all future requests
     const interceptor = axios.interceptors.request.use((config) => {
