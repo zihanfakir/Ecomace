@@ -77,7 +77,9 @@ const AdminDashboard = () => {
 
   const fetchOrdersSilently = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/orders`);
+      const activeToken = token || localStorage.getItem('token');
+      const config = activeToken ? { headers: { Authorization: `Bearer ${activeToken}` } } : {};
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app'}/api/orders`, config);
       setOrders(prevOrders => {
         const newData = Array.isArray(response.data) ? response.data : [];
         if (prevOrders.length > 0 && newData.length > prevOrders.length) {

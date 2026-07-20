@@ -49,9 +49,14 @@ export const uploadToImgBB = async (file, maxWidth = 800, quality = 0.7) => {
 
   const apiUrl = import.meta.env.VITE_API_URL || 'https://ecomace-9ntk.vercel.app';
   
+  // Include JWT token — upload route requires authentication
+  const token = localStorage.getItem('token');
+  
   try {
     const response = await axios.post(`${apiUrl}/api/upload`, {
       image: base64Data
+    }, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
 
     if (response.data && response.data.url) {
