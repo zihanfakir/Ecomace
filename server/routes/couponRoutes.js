@@ -9,7 +9,7 @@ const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // Get all coupons (Admin)
 router.get('/', protect, admin, async (req, res) => {
   try {
-    const coupons = await Coupon.find({}).sort({ createdAt: -1 });
+    const coupons = await Coupon.find({}).sort({ createdAt: -1 }).lean();
     res.json(coupons);
   } catch (err) {
     res.status(500).json({ message: err.message });

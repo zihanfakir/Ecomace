@@ -110,10 +110,10 @@ router.get('/', async (req, res) => {
       } catch (e) {}
     }
 
-    const products = await Product.find({}).sort({ sortOrder: 1, createdAt: -1 });
+    const products = await Product.find({}).sort({ sortOrder: 1, createdAt: -1 }).lean();
 
     const safeProducts = products.map(p => {
-      const productObj = p.toObject ? p.toObject() : p;
+      const productObj = p;
       if (isAdmin) return productObj;
       return {
         ...productObj,
@@ -143,12 +143,12 @@ router.get('/:id', async (req, res) => {
       } catch (e) {}
     }
 
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).lean();
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    const productObj = product.toObject ? product.toObject() : product;
+    const productObj = product;
     const safeProduct = isAdmin ? productObj : {
       ...productObj,
       stockKeys: productObj.stockKeys ? new Array(productObj.stockKeys.length).fill('HIDDEN_KEY') : []

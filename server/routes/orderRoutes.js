@@ -11,7 +11,7 @@ const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // Get all orders (Admin only)
 router.get('/', protect, admin, async (req, res) => {
   try {
-    const orders = await Order.find({}).sort({ createdAt: -1 });
+    const orders = await Order.find({}).sort({ createdAt: -1 }).lean();
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -42,9 +42,9 @@ router.get('/user/:userId', protect, async (req, res) => {
     return res.status(403).json({ message: 'Not authorized to view these orders' });
   }
   try {
-    const userOrders = await Order.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+    const userOrders = await Order.find({ userId: req.params.userId }).sort({ createdAt: -1 }).lean();
     const safeOrders = userOrders.map(o => {
-      const orderObj = o.toObject ? o.toObject() : o;
+      const orderObj = o;
       if (orderObj.status !== 'completed' && orderObj.status !== 'approved') {
         return {
           ...orderObj,
