@@ -72,7 +72,6 @@ app.use((err, req, res, next) => {
 });
 
 // Connect to MongoDB
-const { connectDB } = require('./data/db');
 connectDB().then(async () => {
   // Auto-migration Logic (Run once on startup if needed)
   try {
