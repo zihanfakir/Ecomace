@@ -38,6 +38,13 @@ app.get('/', (req, res) => {
 // Serve uploaded files statically
 app.use('/downloads', express.static(__dirname + '/uploads'));
 
+// Serverless Database Connection Middleware
+const { connectDB } = require('./data/db');
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
+
 // Routes
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
