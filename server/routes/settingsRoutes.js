@@ -31,6 +31,8 @@ router.get('/', async (req, res) => {
       });
       await settingDoc.save();
     }
+    // Cache the settings for 5 minutes (300 seconds) since they rarely change
+    res.set('Cache-Control', 'public, max-age=300');
     res.json(settingDoc.state || {});
   } catch (err) {
     res.status(500).json({ message: err.message });

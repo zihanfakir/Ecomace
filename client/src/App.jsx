@@ -1,16 +1,16 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Sun, Moon, ShoppingBag, Menu, X, User } from 'lucide-react';
 import axios from 'axios';
 import './index.css';
 
 import Home from './components/Home';
-import Checkout from './components/Checkout';
-import AdminDashboard from './components/AdminDashboard';
-import ProductDetails from './components/ProductDetails';
+const Checkout = React.lazy(() => import('./components/Checkout'));
+const AdminDashboard = React.lazy(() => import('./components/AdminDashboard'));
+const ProductDetails = React.lazy(() => import('./components/ProductDetails'));
 import Auth from './components/Auth';
-import CustomerDashboard from './components/CustomerDashboard';
-import Cart from './components/Cart';
+const CustomerDashboard = React.lazy(() => import('./components/CustomerDashboard'));
+const Cart = React.lazy(() => import('./components/Cart'));
 import ChatWidget from './components/ChatWidget';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider, AuthContext } from './context/AuthContext';
@@ -351,24 +351,31 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <Router>
-            <Routes>
-                          {/* Customer Storefront Routes */}
-              <Route element={<StoreLayout theme={theme} toggleTheme={toggleTheme} siteSettings={siteSettings} />}>
-                <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
-                <Route path="/product/:id" element={<ErrorBoundary><ProductDetails /></ErrorBoundary>} />
-                <Route path="/cart" element={<ErrorBoundary><Cart /></ErrorBoundary>} />
-                <Route path="/checkout" element={<ErrorBoundary><Checkout /></ErrorBoundary>} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/dashboard" element={<ProtectedCustomerRoute><ErrorBoundary><CustomerDashboard /></ErrorBoundary></ProtectedCustomerRoute>} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Route>
+            <Suspense fallback={
+              <div style={{ textAlign: 'center', padding: '100px 20px', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="skeleton" style={{ width: '60px', height: '60px', borderRadius: '50%', marginBottom: '20px' }}></div>
+                <div className="skeleton" style={{ width: '150px', height: '20px', borderRadius: '10px' }}></div>
+              </div>
+            }>
+              <Routes>
+                            {/* Customer Storefront Routes */}
+                <Route element={<StoreLayout theme={theme} toggleTheme={toggleTheme} siteSettings={siteSettings} />}>
+                  <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
+                  <Route path="/product/:id" element={<ErrorBoundary><ProductDetails /></ErrorBoundary>} />
+                  <Route path="/cart" element={<ErrorBoundary><Cart /></ErrorBoundary>} />
+                  <Route path="/checkout" element={<ErrorBoundary><Checkout /></ErrorBoundary>} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/dashboard" element={<ProtectedCustomerRoute><ErrorBoundary><CustomerDashboard /></ErrorBoundary></ProtectedCustomerRoute>} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Route>
 
-            {/* Separate Admin Routes */}
-            <Route path="/admin" element={<AdminLayout theme={theme} toggleTheme={toggleTheme} siteSettings={siteSettings} />}>
-              <Route index element={<AdminDashboard />} />
-            </Route>
-          </Routes>
-          <ChatWidget siteSettings={siteSettings} />
+              {/* Separate Admin Routes */}
+              <Route path="/admin" element={<AdminLayout theme={theme} toggleTheme={toggleTheme} siteSettings={siteSettings} />}>
+                <Route index element={<AdminDashboard />} />
+              </Route>
+            </Routes>
+            </Suspense>
+            <ChatWidget siteSettings={siteSettings} />
           </Router>
         </CartProvider>
       </AuthProvider>

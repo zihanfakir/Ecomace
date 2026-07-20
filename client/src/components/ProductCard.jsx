@@ -27,6 +27,7 @@ const ProductCard = ({ product, delayIndex = 0 }) => {
           <img 
             src={product.photoUrl} 
             alt={product.name} 
+            loading="lazy"
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
             onError={() => setImgError(true)}
           />
